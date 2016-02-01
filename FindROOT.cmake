@@ -194,9 +194,9 @@ function(ROOT_GENERATE_LINKDEF header_linkdef)
 
    message(STATUS "Generating LinkDef header: ${CMAKE_BINARY_DIR}/${header_linkdef}")
 
-   find_program(EXEC_GREP "grep")
-   find_program(EXEC_AWK "awk")
-   find_program(EXEC_SED "sed")
+   find_program(EXEC_GREP NAMES grep)
+   find_program(EXEC_AWK NAMES gawk awk)
+   find_program(EXEC_SED NAMES gsed sed)
 
    if(NOT EXEC_GREP OR NOT EXEC_AWK OR NOT EXEC_SED)
       message(FATAL_ERROR "FATAL: ROOT_GENERATE_LINKDEF function requires grep, awk, and sed commands")
@@ -217,7 +217,7 @@ function(ROOT_GENERATE_LINKDEF header_linkdef)
         endif()
 
         # Build a list of user_headers to use in dictionary generation
-        execute_process(COMMAND grep -m1 -H ClassDef ${header} RESULT_VARIABLE exit_code OUTPUT_QUIET)
+        execute_process(COMMAND ${EXEC_GREP} -m1 -H ClassDef ${header} RESULT_VARIABLE exit_code OUTPUT_QUIET)
         if (NOT ${exit_code})
            list(APPEND headers_cint ${header})
         else()
@@ -231,9 +231,9 @@ function(ROOT_GENERATE_LINKDEF header_linkdef)
    set(cint_dict_objects)
 
    foreach(header ${headers_cint})
-      set(my_exec_cmd awk "match($0,\"ClassDef(.*)\\\\((.*),(.*)\\\\)\",a){printf(a[2]\"\\r\")}")
+      set(my_exec_cmd ${EXEC_AWK} "match($0,\"ClassDef(.*)\\\\((.*),(.*)\\\\)\",a){printf(a[2]\"\\r\")}")
 
-      execute_process(COMMAND ${my_exec_cmd} ${header} COMMAND sed -e "s/\\s\\+/;/g"
+      execute_process(COMMAND ${my_exec_cmd} ${header} COMMAND ${EXEC_SED} -e "s/\\s\\+/;/g"
          RESULT_VARIABLE exit_code OUTPUT_VARIABLE extracted_dict_objects ERROR_VARIABLE extracted_dict_objects
          OUTPUT_STRIP_TRAILING_WHITESPACE)
       list(APPEND cint_dict_objects ${extracted_dict_objects})
