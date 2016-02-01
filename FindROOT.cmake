@@ -90,6 +90,7 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
   CMAKE_PARSE_ARGUMENTS(ARG "" "" "LINKDEF;OPTIONS" "" ${ARGN})
   #---Get the list of include directories------------------
   get_directory_property(incdirs INCLUDE_DIRECTORIES)
+  list(REMOVE_ITEM incdirs "/usr/include")
   set(includedirs)
   foreach( d ${incdirs})
      set(includedirs ${includedirs} -I${d})
