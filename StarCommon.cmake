@@ -22,3 +22,12 @@ if(ROOT_FOUND)
 	endif()
 
 endif()
+
+
+# Make use of the $STAR_HOST_SYS evironment variable. If it is set use it as the
+# typical STAR installation prefix
+set(STAR_ADDITIONAL_INSTALL_PREFIX ".")
+
+if(DEFINED ENV{STAR_HOST_SYS})
+	set(STAR_ADDITIONAL_INSTALL_PREFIX ".$ENV{STAR_HOST_SYS}")
+endif()
