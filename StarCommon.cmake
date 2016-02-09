@@ -1,3 +1,9 @@
+# Special treatment of linker options for MacOS X to get a gcc linux-like behavior
+if(APPLE)
+	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -undefined dynamic_lookup")
+endif()
+
+
 # Check whether the compiler supports c++11
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
