@@ -11,6 +11,7 @@ find_path( MYSQL_INCLUDE_DIRS "mysql.h"
 		"/usr/include/mysql"
 		"/usr/local/include/mysql"
 		"/usr/mysql/include/mysql"
+		"/opt/local/include/mysql"
 		"$ENV{PROGRAMFILES}/MySQL/*/include"
 		"$ENV{SYSTEMDRIVE}/MySQL/*/include" )
 
@@ -20,6 +21,7 @@ find_library( MYSQL_LIBRARIES
 		"/usr/lib/mysql"
 		"/usr/local/lib/mysql"
 		"/usr/mysql/lib/mysql"
+		"/opt/local/lib/mysql"
 		"$ENV{PROGRAMFILES}/MySQL/*/lib"
 		"$ENV{SYSTEMDRIVE}/MySQL/*/lib" )
 mark_as_advanced( MYSQL_LIBRARIES  MYSQL_INCLUDE_DIRS )
