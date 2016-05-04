@@ -26,6 +26,11 @@ if(ROOT_FOUND)
 	if (STAR_ROOT_CXX_FLAGS_M)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m${CMAKE_MATCH_3}")
 		message(STATUS "Found -m${CMAKE_MATCH_3} option in $ROOT_CXX_FLAGS (root-config). Will add it to $CMAKE_CXX_FLAGS")
+
+		if (CMAKE_MATCH_3 EQUAL 32)
+			set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
+		endif()
+
 	endif()
 
 endif()
