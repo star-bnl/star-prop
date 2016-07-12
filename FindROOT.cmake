@@ -114,7 +114,11 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
   #---Get LinkDef.h file------------------------------------
   set(linkdefs)
   foreach( f ${ARG_LINKDEF})
-    find_file(linkFile ${f} HINTS ${incdirs})
+    if(IS_ABSOLUTE ${f})
+      set(linkFile ${f})
+    else()
+      find_file(linkFile ${f} HINTS ${incdirs})
+    endif()
     set(linkdefs ${linkdefs} ${linkFile})
     unset(linkFile CACHE)
   endforeach()
@@ -193,7 +197,7 @@ endfunction()
 #
 function(ROOT_GENERATE_LINKDEF header_linkdef)
 
-   message(STATUS "Generating LinkDef header: ${CMAKE_BINARY_DIR}/${header_linkdef}")
+   message(STATUS "Generating LinkDef header: ${header_linkdef}")
 
    find_program(EXEC_GREP NAMES grep)
    find_program(EXEC_AWK NAMES gawk awk)
@@ -241,15 +245,15 @@ function(ROOT_GENERATE_LINKDEF header_linkdef)
    endforeach()
 
    # Create and write contents to LinkDef file
-   set_source_files_properties(${CMAKE_BINARY_DIR}/${header_linkdef} PROPERTIES GENERATED TRUE)
-   file(WRITE ${CMAKE_BINARY_DIR}/${header_linkdef}
+   set_source_files_properties(${header_linkdef} PROPERTIES GENERATED TRUE)
+   file(WRITE ${header_linkdef}
       "#ifdef __CINT__\n\n#pragma link off all globals;\n#pragma link off all classes;\n#pragma link off all functions;\n\n")
 
    foreach(cint_dict_object ${cint_dict_objects})
-      file(APPEND ${CMAKE_BINARY_DIR}/${header_linkdef} "#pragma link C++ class ${cint_dict_object}+;\n")
+      file(APPEND ${header_linkdef} "#pragma link C++ class ${cint_dict_object}+;\n")
    endforeach()
 
-   file(APPEND ${CMAKE_BINARY_DIR}/${header_linkdef} "\n#endif\n")
+   file(APPEND ${header_linkdef} "\n#endif\n")
 
 endfunction()
 
@@ -263,7 +267,8 @@ function(ROOT_GENERATE_LINKDEF_AND_DICTIONARY user_base_file_name)
 
    CMAKE_PARSE_ARGUMENTS(ARG "" "" "HEADERS" ${ARGN})
 
-   root_generate_linkdef(${user_base_file_name}_LinkDef.h HEADERS ${ARG_HEADERS})
-   root_generate_dictionary(${user_base_file_name}_dict ${ARG_HEADERS} LINKDEF ${user_base_file_name}_LinkDef.h OPTIONS "-p")
+   set(header_linkdef "${CMAKE_BINARY_DIR}/${user_base_file_name}_LinkDef.h")
+   root_generate_linkdef(${header_linkdef} HEADERS ${ARG_HEADERS})
+   root_generate_dictionary(${user_base_file_name}_dict ${ARG_HEADERS} LINKDEF ${header_linkdef} OPTIONS "-p")
 
 endfunction()
