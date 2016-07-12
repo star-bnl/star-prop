@@ -267,7 +267,7 @@ function(ROOT_GENERATE_LINKDEF_AND_DICTIONARY user_base_file_name)
 
    CMAKE_PARSE_ARGUMENTS(ARG "" "" "HEADERS" ${ARGN})
 
-   set(header_linkdef "${CMAKE_BINARY_DIR}/${user_base_file_name}_LinkDef.h")
+   set(header_linkdef "${CMAKE_CURRENT_BINARY_DIR}/${user_base_file_name}_LinkDef.h")
    root_generate_linkdef(${header_linkdef} HEADERS ${ARG_HEADERS})
    root_generate_dictionary(${user_base_file_name}_dict ${ARG_HEADERS} LINKDEF ${header_linkdef} OPTIONS "-p")
 
