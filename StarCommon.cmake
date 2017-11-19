@@ -44,6 +44,55 @@ endif()
 message(STATUS "StarCommon: CMAKE_CXX_FLAGS = \"${CMAKE_CXX_FLAGS}\"")
 
 
+#
+# Builds a list of header files from which a ROOT dictionary can be created for
+# a given subdirectory `stroot_dir`. The list is put into the `headers_for_dict`
+# variable that is returned to the parent scope. Only *.h and *.hh files
+# containing ROOT's ClassDef macro are selected while any LinkDef files are
+# ignored.
+#
+function(STAR_HEADERS_FOR_ROOT_DICTIONARY stroot_dir headers_for_dict)
+
+	find_program(EXEC_GREP NAMES grep)
+
+	if(NOT EXEC_GREP)
+		message(FATAL_ERROR "FATAL: STAR_HEADERS_FOR_ROOT_DICTIONARY function requires grep")
+	endif()
+
+	# Get all header files in 'stroot_dir'
+	file(GLOB_RECURSE stroot_dir_headers "${stroot_dir}/*.h" "${stroot_dir}/*.hh")
+
+	# Create an empty list
+	set(valid_headers)
+
+	foreach(header ${stroot_dir_headers})
+
+		# Skip LinkDef files from globbing result
+		if(header MATCHES LinkDef)
+			message(STATUS "WARNING: Skipping LinkDef header ${header}")
+			continue()
+		endif()
+
+		# Check for at least one ClassDef macro in the header file
+		execute_process(COMMAND ${EXEC_GREP} -m1 -H ClassDef ${header} RESULT_VARIABLE exit_code OUTPUT_QUIET)
+
+		if (NOT ${exit_code})
+			# May want to verify that the header file does exist in the include directories
+			#get_filename_component( headerFileName ${userHeader} NAME)
+			#find_file(headerFile ${headerFileName} HINTS ${incdirs})
+
+			list(APPEND valid_headers ${header})
+		else()
+			message(STATUS "WARNING: No ClassDef macro found in ${header}")
+		endif()
+
+	endforeach()
+
+	set(${headers_for_dict} ${valid_headers} PARENT_SCOPE)
+
+endfunction()
+
+
 # Make use of the $STAR_HOST_SYS evironment variable. If it is set use it as the
 # typical STAR installation prefix
 set(STAR_ADDITIONAL_INSTALL_PREFIX ".")
