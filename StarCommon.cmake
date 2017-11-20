@@ -93,6 +93,45 @@ function(STAR_HEADERS_FOR_ROOT_DICTIONARY stroot_dir headers_for_dict)
 endfunction()
 
 
+#
+# Generates a ROOT dictionary for `stroot_dir`.
+#
+function(STAR_GENERATE_DICTIONARY stroot_dir)
+
+	CMAKE_PARSE_ARGUMENTS(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS" "" ${ARGN})
+
+	# If the user provided header files use them. Otherwise collect headers
+	# for the dictionary automatically
+	set( linkdef_headers )
+
+	if( ARG_LINKDEF_HEADERS )
+		set( linkdef_headers ${ARG_LINKDEF_HEADERS} )
+	else()
+		STAR_HEADERS_FOR_ROOT_DICTIONARY( ${stroot_dir} linkdef_headers )
+	endif()
+
+	# Set default name for LinkDef file
+	set( linkdef_file "${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h" )
+
+	# Generate a basic LinkDef file if not provided by the user
+	if( ARG_LINKDEF )
+		set( linkdef_file ${ARG_LINKDEF} )
+	else()
+		root_generate_linkdef(${linkdef_file} HEADERS ${linkdef_headers})
+	endif()
+
+	# Set default options
+	set( linkdef_options "-p" )
+
+	if( ARG_LINKDEF_OPTIONS )
+		set(linkdef_options ${ARG_LINKDEF_OPTIONS})
+	endif()
+
+	root_generate_dictionary(${stroot_dir}_dict ${linkdef_headers} LINKDEF ${linkdef_file} OPTIONS ${linkdef_options})
+
+endfunction()
+
+
 # Make use of the $STAR_HOST_SYS evironment variable. If it is set use it as the
 # typical STAR installation prefix
 set(STAR_ADDITIONAL_INSTALL_PREFIX ".")
