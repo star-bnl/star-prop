@@ -132,6 +132,39 @@ function(STAR_GENERATE_DICTIONARY stroot_dir)
 endfunction()
 
 
+#
+# Adds a target to build a library from all source files (*.cxx, *.cc, and *.cpp)
+# recursively found in the specified subdirectory `stroot_dir`. It is possible
+# to EXCLUDE some files matching an optional pattern.
+#
+function(STAR_ADD_LIBRARY stroot_dir)
+
+	CMAKE_PARSE_ARGUMENTS(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
+
+	if(NOT TARGET ${stroot_dir}_dict.cxx)
+		star_generate_dictionary( ${stroot_dir}
+			LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${ARG_LINKDEF_HEADERS} LINKDEF_OPTIONS ${ARG_LINKDEF_OPTIONS}
+		)
+	endif()
+
+	file(GLOB_RECURSE sources "${stroot_dir}/*.cxx" "${stroot_dir}/*.cc" "${stroot_dir}/*.cpp")
+
+	if( ARG_EXCLUDE )
+		# Starting cmake 3.6 one can simply use list( FILTER ... )
+		#list( FILTER sources EXCLUDE REGEX "${ARG_EXCLUDE}" )
+		foreach(source_file ${sources})
+			if("${source_file}" MATCHES ${ARG_EXCLUDE})
+				# Remove current source_file from the list
+				list(REMOVE_ITEM sources ${source_file})
+			endif()
+		endforeach()
+	endif()
+
+	add_library(${stroot_dir} SHARED ${sources} ${stroot_dir}_dict.cxx)
+
+endfunction()
+
+
 # Make use of the $STAR_HOST_SYS evironment variable. If it is set use it as the
 # typical STAR installation prefix
 set(STAR_ADDITIONAL_INSTALL_PREFIX ".")
