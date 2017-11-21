@@ -1,3 +1,11 @@
+# Load this cmake file only once
+if( StarCommonLoaded )
+	return()
+else()
+	set(StarCommonLoaded TRUE)
+endif()
+
+
 # Special treatment of linker options for MacOS X to get a gcc linux-like behavior
 if(APPLE)
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -undefined dynamic_lookup")
