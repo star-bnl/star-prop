@@ -38,6 +38,8 @@ if(ROOT_FOUND)
 
 	endif()
 
+else()
+	message(FATAL_ERROR "FATAL: ROOT package not found")
 endif()
 
 
