@@ -131,6 +131,7 @@ function(ROOT_GENERATE_DICTIONARY dictionary)
                      COMMAND ${ROOTCINT_EXECUTABLE} -cint -f  ${dictionary}.cxx
                                           -c ${ARG_OPTIONS} ${includedirs} ${headerfiles} ${linkdefs}
                      DEPENDS ${headerfiles} ${linkdefs} VERBATIM)
+  add_custom_target(${dictionary}.cxx)
 endfunction()
 
 #----------------------------------------------------------------------------
