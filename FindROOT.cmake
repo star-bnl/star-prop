@@ -241,7 +241,7 @@ function(ROOT_GENERATE_LINKDEF header_linkdef)
    set(cint_dict_objects)
 
    foreach(header ${headers_cint})
-      set(my_exec_cmd ${EXEC_AWK} "match($0,\"ClassDef(.*)\\\\((.*),(.*)\\\\)\",a){printf(a[2]\"\\r\")}")
+      set(my_exec_cmd ${EXEC_AWK} "match($0,\"^[[:space:]]*ClassDef(.*)\\\\(([^#]+),(.*)\\\\)\",a){ printf(a[2]\"\\r\") }")
 
       execute_process(COMMAND ${my_exec_cmd} ${header} COMMAND ${EXEC_SED} -e "s/\\s\\+/;/g"
          RESULT_VARIABLE exit_code OUTPUT_VARIABLE extracted_dict_objects ERROR_VARIABLE extracted_dict_objects
