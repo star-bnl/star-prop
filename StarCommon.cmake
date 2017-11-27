@@ -201,16 +201,6 @@ function(STAR_GENERATE_DICTIONARY stroot_dir)
 
 	CMAKE_PARSE_ARGUMENTS(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS" "" ${ARGN})
 
-	# If the user provided header files use them. Otherwise collect headers
-	# for the dictionary automatically
-	set( linkdef_headers )
-
-	if( ARG_LINKDEF_HEADERS )
-		set( linkdef_headers ${ARG_LINKDEF_HEADERS} )
-	else()
-		STAR_HEADERS_FOR_ROOT_DICTIONARY( ${stroot_dir} linkdef_headers )
-	endif()
-
 	# Generate a basic LinkDef file and, if available, merge with the one
 	# provided by the user
 	STAR_GENERATE_LINKDEF(${stroot_dir} LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${linkdef_headers})
@@ -236,12 +226,37 @@ function(STAR_ADD_LIBRARY stroot_dir)
 
 	CMAKE_PARSE_ARGUMENTS(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
 
-	if(NOT TARGET ${stroot_dir}_dict.cxx)
+	# Deal with headers
+	if( NOT TARGET ${stroot_dir}_dict.cxx )
+
+		# If the user provided header files use them. Otherwise collect headers
+		# for the dictionary automatically
+		set( linkdef_headers )
+
+		if( ARG_LINKDEF_HEADERS )
+			file( GLOB_RECURSE linkdef_headers ${ARG_LINKDEF_HEADERS} )
+		else()
+			STAR_HEADERS_FOR_ROOT_DICTIONARY( ${stroot_dir} linkdef_headers )
+		endif()
+
+		if( ARG_EXCLUDE )
+			# Starting cmake 3.6 one can simply use list( FILTER ... )
+			#list( FILTER sources EXCLUDE REGEX "${ARG_EXCLUDE}" )
+			foreach(source_file ${linkdef_headers})
+				if("${source_file}" MATCHES ${ARG_EXCLUDE})
+					# Remove current source_file from the list
+					list(REMOVE_ITEM linkdef_headers ${source_file})
+				endif()
+			endforeach()
+		endif()
+
 		star_generate_dictionary( ${stroot_dir}
 			LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${ARG_LINKDEF_HEADERS} LINKDEF_OPTIONS ${ARG_LINKDEF_OPTIONS}
 		)
+
 	endif()
 
+	# Deal with sources
 	file(GLOB_RECURSE sources "${stroot_dir}/*.cxx" "${stroot_dir}/*.cc" "${stroot_dir}/*.cpp")
 
 	if( ARG_EXCLUDE )
