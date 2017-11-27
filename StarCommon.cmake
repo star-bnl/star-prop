@@ -105,8 +105,7 @@ endfunction()
 
 #
 # Generates a basic LinkDef header ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h
-# by parsing the user provided header files with standard linux utilities such
-# as grep, awk, and sed.
+# by parsing the user provided header files with standard linux utilities awk and sed.
 #
 function(STAR_GENERATE_LINKDEF stroot_dir)
 
@@ -117,12 +116,11 @@ function(STAR_GENERATE_LINKDEF stroot_dir)
 	message(STATUS "Generating LinkDef header: ${linkdef_file}")
 
 	# Check availability of required system tools
-	find_program(EXEC_GREP NAMES grep)
 	find_program(EXEC_AWK NAMES gawk awk)
 	find_program(EXEC_SED NAMES gsed sed)
 
-	if(NOT EXEC_GREP OR NOT EXEC_AWK OR NOT EXEC_SED)
-		message(FATAL_ERROR "FATAL: STAR_GENERATE_LINKDEF function requires grep, awk, and sed commands")
+	if(NOT EXEC_AWK OR NOT EXEC_SED)
+		message(FATAL_ERROR "StarCommon: FATAL: STAR_GENERATE_LINKDEF function requires awk and sed commands")
 	endif()
 
 	CMAKE_PARSE_ARGUMENTS(ARG "" "" "LINKDEF;LINKDEF_HEADERS" ${ARGN})
@@ -213,15 +211,9 @@ function(STAR_GENERATE_DICTIONARY stroot_dir)
 		STAR_HEADERS_FOR_ROOT_DICTIONARY( ${stroot_dir} linkdef_headers )
 	endif()
 
-	# Set default name for LinkDef file
-	set( linkdef_file "${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h" )
-
-	# Generate a basic LinkDef file if not provided by the user
-	if( ARG_LINKDEF )
-		set( linkdef_file ${ARG_LINKDEF} )
-	else()
-		root_generate_linkdef(${linkdef_file} HEADERS ${linkdef_headers})
-	endif()
+	# Generate a basic LinkDef file and, if available, merge with the one
+	# provided by the user
+	STAR_GENERATE_LINKDEF(${stroot_dir} LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${linkdef_headers})
 
 	# Set default options
 	set( linkdef_options "-p" )
@@ -230,7 +222,7 @@ function(STAR_GENERATE_DICTIONARY stroot_dir)
 		set(linkdef_options ${ARG_LINKDEF_OPTIONS})
 	endif()
 
-	root_generate_dictionary(${stroot_dir}_dict ${linkdef_headers} LINKDEF ${linkdef_file} OPTIONS ${linkdef_options})
+	root_generate_dictionary(${stroot_dir}_dict ${linkdef_headers} LINKDEF ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h OPTIONS ${linkdef_options})
 
 endfunction()
 
