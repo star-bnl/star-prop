@@ -104,6 +104,99 @@ endfunction()
 
 
 #
+# Generates a basic LinkDef header ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h
+# by parsing the user provided header files with standard linux utilities such
+# as grep, awk, and sed.
+#
+function(STAR_GENERATE_LINKDEF stroot_dir)
+
+	# Set default name for LinkDef file
+	set( linkdef_file "${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h" )
+	set_source_files_properties(${linkdef_file} PROPERTIES GENERATED TRUE)
+
+	message(STATUS "Generating LinkDef header: ${linkdef_file}")
+
+	# Check availability of required system tools
+	find_program(EXEC_GREP NAMES grep)
+	find_program(EXEC_AWK NAMES gawk awk)
+	find_program(EXEC_SED NAMES gsed sed)
+
+	if(NOT EXEC_GREP OR NOT EXEC_AWK OR NOT EXEC_SED)
+		message(FATAL_ERROR "FATAL: STAR_GENERATE_LINKDEF function requires grep, awk, and sed commands")
+	endif()
+
+	CMAKE_PARSE_ARGUMENTS(ARG "" "" "LINKDEF;LINKDEF_HEADERS" ${ARGN})
+
+	# If provided by the user read the contents of their LinkDef file into a list
+	set( linkdef_contents )
+
+	if( ARG_LINKDEF )
+		file(READ ${ARG_LINKDEF} linkdef_contents)
+		# Convert file lines into a CMake list
+		STRING(REGEX REPLACE ";" "\\\\;" linkdef_contents "${linkdef_contents}")
+		STRING(REGEX REPLACE "\n" ";" linkdef_contents "${linkdef_contents}")
+	endif()
+
+	# Parse header files for ClassDef() statements and collect all entities into
+	# a list
+	set( dict_entities )
+
+	foreach( header ${ARG_LINKDEF_HEADERS} )
+		set( my_exec_cmd ${EXEC_AWK} "match($0,\"^[[:space:]]*ClassDef(.*)\\\\(([^#]+),(.*)\\\\)\",a){ printf(a[2]\"\\r\") }" )
+
+		execute_process( COMMAND ${my_exec_cmd} ${header} COMMAND ${EXEC_SED} -e "s/\\s\\+/;/g"
+			RESULT_VARIABLE exit_code OUTPUT_VARIABLE extracted_dict_objects ERROR_VARIABLE extracted_dict_objects
+			OUTPUT_STRIP_TRAILING_WHITESPACE )
+		list( APPEND dict_entities ${extracted_dict_objects} )
+	endforeach()
+
+
+	# Special case dealing with StEvent containers
+	set( dict_entities_stcontainers )
+
+	if( "${stroot_dir}" MATCHES "StEvent" )
+		foreach( header ${ARG_LINKDEF_HEADERS} )
+			set( my_exec_cmd ${EXEC_AWK} "match($0,\"^[[:space:]]*StCollectionDef(.*)\\\\(([^#]+)\\\\)\",a){ printf(a[2]\"\\r\") }" )
+			
+			execute_process( COMMAND ${my_exec_cmd} ${header} COMMAND ${EXEC_SED} -e "s/\\s\\+/;/g"
+				RESULT_VARIABLE exit_code OUTPUT_VARIABLE extracted_dict_objects ERROR_VARIABLE extracted_dict_objects
+				OUTPUT_STRIP_TRAILING_WHITESPACE )
+			list( APPEND dict_entities_stcontainers ${extracted_dict_objects} )
+		endforeach()
+	endif()
+
+	
+	# Write contents to the generated *_LinkDef.h file
+	file(WRITE ${linkdef_file}
+		"#ifdef __CINT__\n\n#pragma link off all globals;\n#pragma link off all classes;\n#pragma link off all functions;\n\n")
+
+	foreach( linkdef_line ${linkdef_contents} )
+		if( "${linkdef_line}" MATCHES "#pragma")
+			file( APPEND ${linkdef_file} "${linkdef_line}\n" )
+		endif()
+	endforeach()
+	
+	file( APPEND ${linkdef_file} "\n\n// Collected dictionary entities\n\n" )
+
+	foreach( dict_entity ${dict_entities} )
+		if( NOT "${linkdef_contents}" MATCHES "class[ ]+${dict_entity}[< ;+-]+")
+			file( APPEND ${linkdef_file} "#pragma link C++ class ${dict_entity}+;\n" )
+		endif()
+	endforeach()
+
+	file( APPEND ${linkdef_file} "\n\n" )
+
+	foreach( dict_entity ${dict_entities_stcontainers} )
+		file( APPEND ${linkdef_file} "#pragma link C++ class StPtrVec${dict_entity}-;\n" )
+		file( APPEND ${linkdef_file} "#pragma link C++ class StSPtrVec${dict_entity}-;\n" )
+	endforeach()
+
+	file( APPEND ${linkdef_file} "\n#endif\n" )
+
+endfunction()
+
+
+#
 # Generates a ROOT dictionary for `stroot_dir`.
 #
 function(STAR_GENERATE_DICTIONARY stroot_dir)
