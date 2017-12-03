@@ -275,6 +275,27 @@ function(STAR_ADD_LIBRARY stroot_dir)
 endfunction()
 
 
+function( FILTER_LIST arg_list arg_regexs )
+
+	# Starting cmake 3.6 one can simply use list( FILTER ... )
+	#list( FILTER sources EXCLUDE REGEX "${ARG_EXCLUDE}" )
+
+	foreach( item ${${arg_list}} )
+		foreach( regex ${${arg_regexs}} )
+
+			if( ${item} MATCHES "${regex}" )
+				list(REMOVE_ITEM ${arg_list} ${item})
+				break()
+			endif()
+
+		endforeach()
+	endforeach()
+
+	set( ${arg_list} ${${arg_list}} PARENT_SCOPE)
+
+endfunction()
+
+
 # Make use of the $STAR_HOST_SYS evironment variable. If it is set use it as the
 # typical STAR installation prefix
 set(STAR_ADDITIONAL_INSTALL_PREFIX ".")
