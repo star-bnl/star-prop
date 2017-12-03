@@ -13,7 +13,7 @@ if(APPLE)
 endif()
 
 # Set compile warning options for gcc compilers
-if (CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+if( CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 endif()
 
@@ -47,7 +47,7 @@ if(ROOT_FOUND)
 	endif()
 
 else()
-	message(FATAL_ERROR "FATAL: ROOT package not found")
+	message(FATAL_ERROR "StarCommon: FATAL: ROOT package not found")
 endif()
 
 
@@ -62,7 +62,7 @@ message(STATUS "StarCommon: CMAKE_CXX_FLAGS = \"${CMAKE_CXX_FLAGS}\"")
 # ignored. With optional argument VERIFY the headers can be checked to contain
 # the 'ClassDef' macro.
 #
-function(STAR_HEADERS_FOR_ROOT_DICTIONARY stroot_dir headers_for_dict)
+function( STAR_HEADERS_FOR_ROOT_DICTIONARY stroot_dir headers_for_dict )
 
 	cmake_parse_arguments(ARG "VERIFY" "" "" ${ARGN})
 
@@ -98,7 +98,7 @@ function(STAR_HEADERS_FOR_ROOT_DICTIONARY stroot_dir headers_for_dict)
 
 	endforeach()
 
-	set(${headers_for_dict} ${valid_headers} PARENT_SCOPE)
+	set( ${headers_for_dict} ${valid_headers} PARENT_SCOPE )
 
 endfunction()
 
@@ -145,7 +145,7 @@ function(STAR_GENERATE_LINKDEF stroot_dir dict_headers)
 	set( linkdef_file "${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h" )
 	set_source_files_properties(${linkdef_file} PROPERTIES GENERATED TRUE)
 
-	message(STATUS "Generating LinkDef header: ${linkdef_file}")
+	message(STATUS "StarCommon: Generating LinkDef header: ${linkdef_file}")
 
 	# Check availability of required system tools
 	find_program(EXEC_AWK NAMES gawk awk)
@@ -155,7 +155,7 @@ function(STAR_GENERATE_LINKDEF stroot_dir dict_headers)
 		message(FATAL_ERROR "StarCommon: FATAL: STAR_GENERATE_LINKDEF function requires awk and sed commands")
 	endif()
 
-	CMAKE_PARSE_ARGUMENTS(ARG "" "" "LINKDEF;LINKDEF_HEADERS" ${ARGN})
+	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS" ${ARGN})
 
 	# If provided by the user read the contents of their LinkDef file into a list
 	set( linkdef_contents )
@@ -244,7 +244,7 @@ function(STAR_GENERATE_LINKDEF stroot_dir dict_headers)
 		file( APPEND ${linkdef_file} "#pragma link C++ class StSPtrVec${dict_entity}-;\n" )
 	endforeach()
 
-	file( APPEND ${linkdef_file} "\n#endif\n" )
+	file( APPEND ${linkdef_file} "#endif\n" )
 
 endfunction()
 
@@ -254,7 +254,7 @@ endfunction()
 #
 function(STAR_GENERATE_DICTIONARY stroot_dir)
 
-	CMAKE_PARSE_ARGUMENTS(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
+	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
 
 	# If the user provided header files use them in addition to automatically
 	# collected ones.
@@ -273,7 +273,10 @@ function(STAR_GENERATE_DICTIONARY stroot_dir)
 	file( GLOB_RECURSE user_linkdef_headers ${ARG_LINKDEF_HEADERS} )
 	list( APPEND dict_headers ${user_linkdef_headers} )
 
-	root_generate_dictionary( ${stroot_dir}_dict ${dict_headers} LINKDEF ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h OPTIONS ${ARG_LINKDEF_OPTIONS} )
+	root_generate_dictionary( ${stroot_dir}_dict ${dict_headers}
+		LINKDEF ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h
+		OPTIONS ${ARG_LINKDEF_OPTIONS}
+	)
 
 endfunction()
 
@@ -285,10 +288,10 @@ endfunction()
 #
 function(STAR_ADD_LIBRARY stroot_dir)
 
-	CMAKE_PARSE_ARGUMENTS(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
+	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
 
 	# Set default regex'es to exclude from globbed
-	list(APPEND ARG_EXCLUDE "${stroot_dir}/macros;${stroot_dir}/doc;${stroot_dir}/examples")
+	list( APPEND ARG_EXCLUDE "${stroot_dir}/macros;${stroot_dir}/doc;${stroot_dir}/examples" )
 
 	# Deal with headers
 	if( NOT TARGET ${stroot_dir}_dict.cxx )
@@ -306,7 +309,9 @@ function(STAR_ADD_LIBRARY stroot_dir)
 		list(APPEND ARG_LINKDEF_OPTIONS "-p;-D__ROOT__" )
 
 		star_generate_dictionary( ${stroot_dir}
-			LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${ARG_LINKDEF_HEADERS} LINKDEF_OPTIONS ${ARG_LINKDEF_OPTIONS}
+			LINKDEF ${ARG_LINKDEF}
+			LINKDEF_HEADERS ${ARG_LINKDEF_HEADERS}
+			LINKDEF_OPTIONS ${ARG_LINKDEF_OPTIONS}
 			EXCLUDE ${ARG_EXCLUDE}
 		)
 
