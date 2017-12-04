@@ -261,6 +261,9 @@ function(STAR_ADD_LIBRARY stroot_dir)
 
 	CMAKE_PARSE_ARGUMENTS(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
 
+	# Set default regex'es to exclude from globbed
+	list(APPEND ARG_EXCLUDE "${stroot_dir}/macros;${stroot_dir}/doc;${stroot_dir}/examples")
+
 	# Deal with headers
 	if( NOT TARGET ${stroot_dir}_dict.cxx )
 
@@ -275,14 +278,7 @@ function(STAR_ADD_LIBRARY stroot_dir)
 		endif()
 
 		if( ARG_EXCLUDE )
-			# Starting cmake 3.6 one can simply use list( FILTER ... )
-			#list( FILTER sources EXCLUDE REGEX "${ARG_EXCLUDE}" )
-			foreach(source_file ${linkdef_headers})
-				if("${source_file}" MATCHES ${ARG_EXCLUDE})
-					# Remove current source_file from the list
-					list(REMOVE_ITEM linkdef_headers ${source_file})
-				endif()
-			endforeach()
+			FILTER_LIST( linkdef_headers ARG_EXCLUDE )
 		endif()
 
 		star_generate_dictionary( ${stroot_dir}
@@ -295,14 +291,7 @@ function(STAR_ADD_LIBRARY stroot_dir)
 	file(GLOB_RECURSE sources "${stroot_dir}/*.cxx" "${stroot_dir}/*.cc" "${stroot_dir}/*.cpp")
 
 	if( ARG_EXCLUDE )
-		# Starting cmake 3.6 one can simply use list( FILTER ... )
-		#list( FILTER sources EXCLUDE REGEX "${ARG_EXCLUDE}" )
-		foreach(source_file ${sources})
-			if("${source_file}" MATCHES ${ARG_EXCLUDE})
-				# Remove current source_file from the list
-				list(REMOVE_ITEM sources ${source_file})
-			endif()
-		endforeach()
+		FILTER_LIST( sources ARG_EXCLUDE )
 	endif()
 
 	add_library(${stroot_dir} SHARED ${sources} ${stroot_dir}_dict.cxx)
