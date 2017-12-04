@@ -172,7 +172,7 @@ function(STAR_GENERATE_LINKDEF stroot_dir dict_headers)
 	set( dict_entities )
 
 	foreach( header ${ARG_LINKDEF_HEADERS} )
-		set( my_exec_cmd ${EXEC_AWK} "match($0,\"^[[:space:]]*ClassDef(.*)\\\\(([^#]+),(.*)\\\\)\",a){ printf(a[2]\"\\r\") }" )
+		set( my_exec_cmd ${EXEC_AWK} "match($0,\"^[[:space:]]*ClassDef[[:space:]]*\\\\(([^#]+),.*\\\\)\",a){ printf(a[1]\"\\r\") }" )
 
 		execute_process( COMMAND ${my_exec_cmd} ${header} COMMAND ${EXEC_SED} -e "s/\\s\\+/;/g"
 			RESULT_VARIABLE exit_code OUTPUT_VARIABLE extracted_dict_objects ERROR_VARIABLE extracted_dict_objects
@@ -186,7 +186,7 @@ function(STAR_GENERATE_LINKDEF stroot_dir dict_headers)
 
 	if( "${stroot_dir}" MATCHES "StEvent" )
 		foreach( header ${ARG_LINKDEF_HEADERS} )
-			set( my_exec_cmd ${EXEC_AWK} "match($0,\"^[[:space:]]*StCollectionDef(.*)\\\\(([^#]+)\\\\)\",a){ printf(a[2]\"\\r\") }" )
+			set( my_exec_cmd ${EXEC_AWK} "match($0,\"^[[:space:]]*StCollectionDef[[:space:]]*\\\\(([^#]+)\\\\)\",a){ printf(a[1]\"\\r\") }" )
 			
 			execute_process( COMMAND ${my_exec_cmd} ${header} COMMAND ${EXEC_SED} -e "s/\\s\\+/;/g"
 				RESULT_VARIABLE exit_code OUTPUT_VARIABLE extracted_dict_objects ERROR_VARIABLE extracted_dict_objects
@@ -203,7 +203,7 @@ function(STAR_GENERATE_LINKDEF stroot_dir dict_headers)
 		"#ifdef __CINT__\n\n#pragma link off all globals;\n#pragma link off all classes;\n#pragma link off all functions;\n\n")
 
 	foreach( linkdef_line ${linkdef_contents} )
-		if( "${linkdef_line}" MATCHES "#pragma")
+		if( "${linkdef_line}" MATCHES "#pragma[ \t]+link")
 			file( APPEND ${linkdef_file} "${linkdef_line}\n" )
 		endif()
 	endforeach()
