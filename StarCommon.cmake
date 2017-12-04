@@ -104,6 +104,38 @@ endfunction()
 
 
 #
+# Checks whether the file contains at least one ClassDef macro
+#
+function( STAR_VERIFY_HEADER_FOR_ROOT_DICTIONARY header_file valid_header )
+
+	find_program( EXEC_GREP NAMES grep )
+
+	if( NOT EXEC_GREP )
+		message( FATAL_ERROR "StarCommon: FATAL: STAR_VERIFY_HEADER_FOR_ROOT_DICTIONARY function requires grep" )
+	endif()
+
+	# May want to verify that the header file does exist in the include directories
+	#get_filename_component( headerFileName ${userHeader} NAME)
+	#find_file(headerFile ${headerFileName} HINTS ${incdirs})
+
+	set( valid )
+
+	# Check for at least one ClassDef macro in the header file
+	execute_process( COMMAND ${EXEC_GREP} -m1 -H "^[[:space:]]*ClassDef" ${header_file} RESULT_VARIABLE exit_code OUTPUT_QUIET )
+
+	if( NOT ${exit_code} )
+		set( valid TRUE )
+	else()
+		message( STATUS "StarCommon: WARNING: No ClassDef macro found in ${header_file}" )
+		set( valid FALSE )
+	endif()
+
+	set( ${valid_header} ${valid} PARENT_SCOPE )
+
+endfunction()
+
+
+#
 # Generates a basic LinkDef header ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h
 # by parsing the user provided header files with standard linux utilities awk and sed.
 #
