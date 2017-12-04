@@ -176,8 +176,8 @@ function(STAR_GENERATE_LINKDEF stroot_dir dict_headers)
 		set( my_exec_cmd ${EXEC_AWK} "match($0,\"^[[:space:]]*ClassDef[[:space:]]*\\\\(([^#]+),.*\\\\)\",a){ printf(a[1]\"\\r\") }" )
 
 		execute_process( COMMAND ${my_exec_cmd} ${header} COMMAND ${EXEC_SED} -e "s/\\s\\+/;/g"
-			RESULT_VARIABLE exit_code OUTPUT_VARIABLE extracted_dict_objects ERROR_VARIABLE extracted_dict_objects
-			OUTPUT_STRIP_TRAILING_WHITESPACE )
+			OUTPUT_VARIABLE extracted_dict_objects OUTPUT_STRIP_TRAILING_WHITESPACE )
+
 		list( APPEND dict_entities ${extracted_dict_objects} )
 
 		if( extracted_dict_objects )
@@ -202,8 +202,8 @@ function(STAR_GENERATE_LINKDEF stroot_dir dict_headers)
 			set( my_exec_cmd ${EXEC_AWK} "match($0,\"^[[:space:]]*StCollectionDef[[:space:]]*\\\\(([^#]+)\\\\)\",a){ printf(a[1]\"\\r\") }" )
 			
 			execute_process( COMMAND ${my_exec_cmd} ${header} COMMAND ${EXEC_SED} -e "s/\\s\\+/;/g"
-				RESULT_VARIABLE exit_code OUTPUT_VARIABLE extracted_dict_objects ERROR_VARIABLE extracted_dict_objects
-				OUTPUT_STRIP_TRAILING_WHITESPACE )
+				OUTPUT_VARIABLE extracted_dict_objects OUTPUT_STRIP_TRAILING_WHITESPACE )
+
 			list( APPEND dict_entities_stcontainers ${extracted_dict_objects} )
 
 			if( extracted_dict_objects )
