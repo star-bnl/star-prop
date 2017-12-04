@@ -59,15 +59,12 @@ message(STATUS "StarCommon: CMAKE_CXX_FLAGS = \"${CMAKE_CXX_FLAGS}\"")
 # a given subdirectory `stroot_dir`. The list is put into the `headers_for_dict`
 # variable that is returned to the parent scope. Only *.h and *.hh files
 # containing ROOT's ClassDef macro are selected while any LinkDef files are
-# ignored.
+# ignored. With optional argument VERIFY the headers can be checked to contain
+# the 'ClassDef' macro.
 #
 function(STAR_HEADERS_FOR_ROOT_DICTIONARY stroot_dir headers_for_dict)
 
-	find_program(EXEC_GREP NAMES grep)
-
-	if(NOT EXEC_GREP)
-		message(FATAL_ERROR "FATAL: STAR_HEADERS_FOR_ROOT_DICTIONARY function requires grep")
-	endif()
+	cmake_parse_arguments(ARG "VERIFY" "" "" ${ARGN})
 
 	# Get all header files in 'stroot_dir'
 	file(GLOB_RECURSE stroot_dir_headers "${stroot_dir}/*.h" "${stroot_dir}/*.hh")
@@ -75,25 +72,28 @@ function(STAR_HEADERS_FOR_ROOT_DICTIONARY stroot_dir headers_for_dict)
 	# Create an empty list
 	set(valid_headers)
 
-	foreach(header ${stroot_dir_headers})
+	# stroot_dir_headers should containd absolute paths to globed headers
+	foreach( full_path_header ${stroot_dir_headers} )
+
+		get_filename_component( header_file_name ${full_path_header} NAME )
+
+		string( TOLOWER ${header_file_name} header_file_name )
 
 		# Skip LinkDef files from globbing result
-		if(header MATCHES LinkDef)
-			message(STATUS "WARNING: Skipping LinkDef header ${header}")
+		if( ${header_file_name} MATCHES "linkdef" )
+			# Uncomment next line to make it verbose
+			#message( STATUS "StarCommon: WARNING: Skipping LinkDef header ${full_path_header}" )
 			continue()
 		endif()
 
-		# Check for at least one ClassDef macro in the header file
-		execute_process(COMMAND ${EXEC_GREP} -m1 -H ClassDef ${header} RESULT_VARIABLE exit_code OUTPUT_QUIET)
+		set( valid_header TRUE )
 
-		if (NOT ${exit_code})
-			# May want to verify that the header file does exist in the include directories
-			#get_filename_component( headerFileName ${userHeader} NAME)
-			#find_file(headerFile ${headerFileName} HINTS ${incdirs})
+		if( ${ARG_VERIFY} )
+			star_verify_header_for_root_dictionary( ${full_path_header} valid_header)
+		endif()
 
-			list(APPEND valid_headers ${header})
-		else()
-			message(STATUS "WARNING: No ClassDef macro found in ${header}")
+		if( ${valid_header} )
+			list( APPEND valid_headers ${full_path_header} )
 		endif()
 
 	endforeach()
