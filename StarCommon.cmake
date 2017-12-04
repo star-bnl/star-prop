@@ -254,13 +254,24 @@ endfunction()
 #
 function(STAR_GENERATE_DICTIONARY stroot_dir)
 
-	CMAKE_PARSE_ARGUMENTS(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS" "" ${ARGN})
+	CMAKE_PARSE_ARGUMENTS(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
+
+	# If the user provided header files use them in addition to automatically
+	# collected ones.
+	set( linkdef_headers )
+	star_headers_for_root_dictionary( ${stroot_dir} linkdef_headers )
+
+	if( ARG_EXCLUDE )
+		FILTER_LIST( linkdef_headers ARG_EXCLUDE )
+	endif()
 
 	# Generate a basic LinkDef file and, if available, merge with the one
 	# provided by the user
 	set( dict_headers )
-	star_generate_linkdef( ${stroot_dir} dict_headers LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${ARG_LINKDEF_HEADERS})
+	star_generate_linkdef( ${stroot_dir} dict_headers LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${linkdef_headers})
 
+	file( GLOB_RECURSE user_linkdef_headers ${ARG_LINKDEF_HEADERS} )
+	list( APPEND dict_headers ${user_linkdef_headers} )
 
 	root_generate_dictionary( ${stroot_dir}_dict ${dict_headers} LINKDEF ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h OPTIONS ${ARG_LINKDEF_OPTIONS} )
 
@@ -282,25 +293,13 @@ function(STAR_ADD_LIBRARY stroot_dir)
 	# Deal with headers
 	if( NOT TARGET ${stroot_dir}_dict.cxx )
 
-		# If the user provided header files use them. Otherwise collect headers
-		# for the dictionary automatically
-		set( linkdef_headers )
-
-		if( ARG_LINKDEF_HEADERS )
-			file( GLOB_RECURSE linkdef_headers ${ARG_LINKDEF_HEADERS} )
-		else()
-			STAR_HEADERS_FOR_ROOT_DICTIONARY( ${stroot_dir} linkdef_headers )
-		endif()
-
-		if( ARG_EXCLUDE )
-			FILTER_LIST( linkdef_headers ARG_EXCLUDE )
-		endif()
 
 		# Set default options
 		list(APPEND ARG_LINKDEF_OPTIONS "-p;-D__ROOT__" )
 
 		star_generate_dictionary( ${stroot_dir}
 			LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${ARG_LINKDEF_HEADERS} LINKDEF_OPTIONS ${ARG_LINKDEF_OPTIONS}
+			EXCLUDE ${ARG_EXCLUDE}
 		)
 
 	endif()
