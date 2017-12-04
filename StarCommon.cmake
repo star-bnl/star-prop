@@ -293,6 +293,14 @@ function(STAR_ADD_LIBRARY stroot_dir)
 	# Deal with headers
 	if( NOT TARGET ${stroot_dir}_dict.cxx )
 
+		# Search for default LinkDef if not specified
+		file( GLOB user_linkdefs "${stroot_dir}/*LinkDef.h" "${stroot_dir}/*LinkDef.hh" )
+
+		if( NOT ARG_LINKDEF AND user_linkdefs )
+			# Get the first LinkDef from the list
+			list( GET user_linkdefs 0 user_linkdef )
+			set( ARG_LINKDEF ${user_linkdef} )
+		endif()
 
 		# Set default options
 		list(APPEND ARG_LINKDEF_OPTIONS "-p;-D__ROOT__" )
