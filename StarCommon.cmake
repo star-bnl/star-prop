@@ -173,10 +173,20 @@ function(STAR_GENERATE_LINKDEF stroot_dir dict_headers)
 	set( dict_valid_headers )
 
 	foreach( header ${ARG_LINKDEF_HEADERS} )
+
+		# Parse for special namespace marked with $NMSPC in the header file
+		set( my_exec_cmd ${EXEC_AWK} "match($0,\"namespace[[:space:]]+(\\\\w+).*\\\\$NMSPC\", a) { printf(a[1]\"\\r\") }" )
+		execute_process(COMMAND ${my_exec_cmd} ${header} OUTPUT_VARIABLE extracted_namespace OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 		set( my_exec_cmd ${EXEC_AWK} "match($0,\"^[[:space:]]*ClassDef[[:space:]]*\\\\(([^#]+),.*\\\\)\",a){ printf(a[1]\"\\r\") }" )
 
 		execute_process( COMMAND ${my_exec_cmd} ${header} COMMAND ${EXEC_SED} -e "s/\\s\\+/;/g"
 			OUTPUT_VARIABLE extracted_dict_objects OUTPUT_STRIP_TRAILING_WHITESPACE )
+
+		# Prepend dictionary types with namespace
+		if( extracted_namespace )
+			string(REGEX REPLACE "([^;]+)" "${extracted_namespace}::\\1" extracted_dict_objects "${extracted_dict_objects}")
+		endif()
 
 		list( APPEND dict_entities ${extracted_dict_objects} )
 
