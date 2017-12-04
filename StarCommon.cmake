@@ -240,14 +240,8 @@ function(STAR_GENERATE_DICTIONARY stroot_dir)
 	set( dict_headers )
 	star_generate_linkdef( ${stroot_dir} dict_headers LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${ARG_LINKDEF_HEADERS})
 
-	# Set default options
-	set( linkdef_options "-p" )
 
-	if( ARG_LINKDEF_OPTIONS )
-		set(linkdef_options ${ARG_LINKDEF_OPTIONS})
-	endif()
-
-	root_generate_dictionary( ${stroot_dir}_dict ${dict_headers} LINKDEF ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h OPTIONS ${linkdef_options} )
+	root_generate_dictionary( ${stroot_dir}_dict ${dict_headers} LINKDEF ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h OPTIONS ${ARG_LINKDEF_OPTIONS} )
 
 endfunction()
 
@@ -280,6 +274,9 @@ function(STAR_ADD_LIBRARY stroot_dir)
 		if( ARG_EXCLUDE )
 			FILTER_LIST( linkdef_headers ARG_EXCLUDE )
 		endif()
+
+		# Set default options
+		list(APPEND ARG_LINKDEF_OPTIONS "-p;-D__ROOT__" )
 
 		star_generate_dictionary( ${stroot_dir}
 			LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${ARG_LINKDEF_HEADERS} LINKDEF_OPTIONS ${ARG_LINKDEF_OPTIONS}
