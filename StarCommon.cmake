@@ -170,6 +170,7 @@ function(STAR_GENERATE_LINKDEF stroot_dir dict_headers)
 	# Parse header files for ClassDef() statements and collect all entities into
 	# a list
 	set( dict_entities )
+	set( dict_valid_headers )
 
 	foreach( header ${ARG_LINKDEF_HEADERS} )
 		set( my_exec_cmd ${EXEC_AWK} "match($0,\"^[[:space:]]*ClassDef[[:space:]]*\\\\(([^#]+),.*\\\\)\",a){ printf(a[1]\"\\r\") }" )
@@ -178,6 +179,18 @@ function(STAR_GENERATE_LINKDEF stroot_dir dict_headers)
 			RESULT_VARIABLE exit_code OUTPUT_VARIABLE extracted_dict_objects ERROR_VARIABLE extracted_dict_objects
 			OUTPUT_STRIP_TRAILING_WHITESPACE )
 		list( APPEND dict_entities ${extracted_dict_objects} )
+
+		if( extracted_dict_objects )
+			list( APPEND dict_valid_headers ${header} )
+		else()
+			# if header base name matches linkdef_contents then use this header
+			get_filename_component( header_base_name ${header} NAME_WE )
+
+			if( "${linkdef_contents}" MATCHES "${header_base_name}" )
+				list( APPEND dict_valid_headers ${header} )
+			endif()
+		endif()
+
 	endforeach()
 
 
@@ -192,6 +205,10 @@ function(STAR_GENERATE_LINKDEF stroot_dir dict_headers)
 				RESULT_VARIABLE exit_code OUTPUT_VARIABLE extracted_dict_objects ERROR_VARIABLE extracted_dict_objects
 				OUTPUT_STRIP_TRAILING_WHITESPACE )
 			list( APPEND dict_entities_stcontainers ${extracted_dict_objects} )
+
+			if( extracted_dict_objects )
+				list( APPEND dict_valid_headers ${header} )
+			endif()
 		endforeach()
 	endif()
 
