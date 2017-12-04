@@ -216,8 +216,12 @@ function(STAR_GENERATE_LINKDEF stroot_dir dict_headers)
 	set( ${dict_headers} ${dict_valid_headers} PARENT_SCOPE )
 
 	# Write contents to the generated *_LinkDef.h file
-	file(WRITE ${linkdef_file}
-		"#ifdef __CINT__\n\n#pragma link off all globals;\n#pragma link off all classes;\n#pragma link off all functions;\n\n")
+
+	if( "${linkdef_contents}" MATCHES "pragma[ \t]+link[ \t]+off[ \t]+all" )
+		file(WRITE ${linkdef_file} "#ifdef __CINT__\n\n")
+	else()
+		file(WRITE ${linkdef_file} "#ifdef __CINT__\n\n#pragma link off all globals;\n#pragma link off all classes;\n#pragma link off all functions;\n\n")
+	endif()
 
 	foreach( linkdef_line ${linkdef_contents} )
 		if( "${linkdef_line}" MATCHES "#pragma[ \t]+link")
