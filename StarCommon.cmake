@@ -139,7 +139,7 @@ endfunction()
 # Generates a basic LinkDef header ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h
 # by parsing the user provided header files with standard linux utilities awk and sed.
 #
-function(STAR_GENERATE_LINKDEF stroot_dir)
+function(STAR_GENERATE_LINKDEF stroot_dir dict_headers)
 
 	# Set default name for LinkDef file
 	set( linkdef_file "${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h" )
@@ -195,7 +195,9 @@ function(STAR_GENERATE_LINKDEF stroot_dir)
 		endforeach()
 	endif()
 
-	
+	# Assign new validated headers 
+	set( ${dict_headers} ${dict_valid_headers} PARENT_SCOPE )
+
 	# Write contents to the generated *_LinkDef.h file
 	file(WRITE ${linkdef_file}
 		"#ifdef __CINT__\n\n#pragma link off all globals;\n#pragma link off all classes;\n#pragma link off all functions;\n\n")
@@ -235,7 +237,8 @@ function(STAR_GENERATE_DICTIONARY stroot_dir)
 
 	# Generate a basic LinkDef file and, if available, merge with the one
 	# provided by the user
-	STAR_GENERATE_LINKDEF(${stroot_dir} LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${linkdef_headers})
+	set( dict_headers )
+	star_generate_linkdef( ${stroot_dir} dict_headers LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${ARG_LINKDEF_HEADERS})
 
 	# Set default options
 	set( linkdef_options "-p" )
@@ -244,7 +247,7 @@ function(STAR_GENERATE_DICTIONARY stroot_dir)
 		set(linkdef_options ${ARG_LINKDEF_OPTIONS})
 	endif()
 
-	root_generate_dictionary(${stroot_dir}_dict ${linkdef_headers} LINKDEF ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h OPTIONS ${linkdef_options})
+	root_generate_dictionary( ${stroot_dir}_dict ${dict_headers} LINKDEF ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h OPTIONS ${linkdef_options} )
 
 endfunction()
 
