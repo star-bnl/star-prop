@@ -305,29 +305,26 @@ function(STAR_ADD_LIBRARY stroot_dir)
 	list( APPEND ARG_EXCLUDE "${stroot_dir}.*macros;${stroot_dir}.*doc;${stroot_dir}.*examples" )
 
 	# Deal with headers
-	if( NOT TARGET ${stroot_dir}_dict.cxx )
 
-		# Search for default LinkDef if not specified
-		file( GLOB user_linkdefs "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*LinkDef.h"
-		                         "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*LinkDef.hh" )
+	# Search for default LinkDef if not specified
+	file( GLOB user_linkdefs "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*LinkDef.h"
+	                         "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*LinkDef.hh" )
 
-		if( NOT ARG_LINKDEF AND user_linkdefs )
-			# Get the first LinkDef from the list
-			list( GET user_linkdefs 0 user_linkdef )
-			set( ARG_LINKDEF ${user_linkdef} )
-		endif()
-
-		# Set default options
-		list(APPEND ARG_LINKDEF_OPTIONS "-p;-D__ROOT__" )
-
-		star_generate_dictionary( ${stroot_dir}
-			LINKDEF ${ARG_LINKDEF}
-			LINKDEF_HEADERS ${ARG_LINKDEF_HEADERS}
-			LINKDEF_OPTIONS ${ARG_LINKDEF_OPTIONS}
-			EXCLUDE ${ARG_EXCLUDE}
-		)
-
+	if( NOT ARG_LINKDEF AND user_linkdefs )
+		# Get the first LinkDef from the list
+		list( GET user_linkdefs 0 user_linkdef )
+		set( ARG_LINKDEF ${user_linkdef} )
 	endif()
+
+	# Set default options
+	list(APPEND ARG_LINKDEF_OPTIONS "-p;-D__ROOT__" )
+
+	star_generate_dictionary( ${stroot_dir}
+		LINKDEF ${ARG_LINKDEF}
+		LINKDEF_HEADERS ${ARG_LINKDEF_HEADERS}
+		LINKDEF_OPTIONS ${ARG_LINKDEF_OPTIONS}
+		EXCLUDE ${ARG_EXCLUDE}
+	)
 
 	# Deal with sources
 	file(GLOB_RECURSE sources "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*.cxx"
