@@ -364,6 +364,96 @@ function( FILTER_LIST arg_list arg_regexs )
 endfunction()
 
 
+
+# A list of regex'es to exclude from any processing in star_repo directories
+set( STAR_BLACKLIST_DIR_NAMES
+	.git
+	cmake
+	macros
+	Mini
+	Pool
+	StarGenerator
+	StBTofSimMaker
+	StBTofMixerMaker
+	StFgt
+	StFtpc
+	StHbt
+	StJetMaker
+	StTagsMaker
+	StTofHitMaker
+	StTrgDatFileReader
+	StTrgMaker
+	StTriggerUtilities
+	Geometry
+	StarAgmlChecker
+	StarAgmlViewer
+	StarGeometry
+	StarVMCApplication
+	Stv
+	StVmcTools
+	xgeometry
+)
+
+
+function(STAR_ADD_SUBDIRECTORY star_repo)
+
+	cmake_parse_arguments(ARG "" "" "INCLUDE_DIRS" "" ${ARGN})
+
+	star_include_directories( include_dirs ${ARG_INCLUDE_DIRS} ${star_repo})
+
+	# special cases
+	set( St_base_LINKDEF_HEADERS "star-base/St_base/Stypes.h" )
+	set( StEvent_LINKDEF_OPTIONS "-p;-D__STEVENT_CONTAINERS_CINT__" )
+	set( StMcEvent_LINKDEF_OPTIONS "-p;-D__STEVENT_CONTAINERS_CINT__" )
+
+	file(GLOB stroot_dir_candidates RELATIVE ${CMAKE_SOURCE_DIR}/${star_repo} ${star_repo}/*)
+	#file(GLOB stroot_dir_candidates ${star_repo}/*)
+
+	FILTER_LIST( stroot_dir_candidates "${STAR_BLACKLIST_DIR_NAMES}" )
+
+	# Save include dirs property for the current dir. This is needed because we
+	# don't go into the directories
+	get_directory_property(parent_include_dirs INCLUDE_DIRECTORIES)
+
+	set( stroot_dirs "" )
+
+	foreach(stroot_dir ${stroot_dir_candidates})
+		if(IS_DIRECTORY  ${CMAKE_SOURCE_DIR}/${star_repo}/${stroot_dir})
+
+			# The following setup is necessary to fool the call to
+			# star_add_library() and other functions because we don't really switch
+			# the directories but traverse them anyway
+			set( CMAKE_CURRENT_SOURCE_DIR "${CMAKE_SOURCE_DIR}/${star_repo}" )
+			set( CMAKE_CURRENT_BINARY_DIR "${CMAKE_BINARY_DIR}/${star_repo}" )
+			set( CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${star_repo}" )
+
+			set_directory_properties( PROPERTIES INCLUDE_DIRECTORIES "${parent_include_dirs};${include_dirs}" )
+
+			list( APPEND stroot_dirs "${stroot_dir}" )
+
+			star_add_library( ${stroot_dir} LINKDEF_HEADERS "${${stroot_dir}_LINKDEF_HEADERS}" LINKDEF_OPTIONS "${${stroot_dir}_LINKDEF_OPTIONS}" )
+
+		endif()
+	endforeach()
+
+	set_directory_properties( PROPERTIES INCLUDE_DIRECTORIES "${parent_include_dirs}" )
+
+	# A collective target to build all libraries in this project. Can be used to
+	# build all specified targets from a parent project
+	add_custom_target( ${star_repo} DEPENDS "${stroot_dirs}" )
+
+	# Installation section
+	install(TARGETS ${stroot_dirs}
+		DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
+	)
+
+	if( ${star_repo} MATCHES "star-bfchain" )
+		install(DIRECTORY "star-bfchain/StBFChain" DESTINATION "${CMAKE_BINARY_DIR}/StRoot")
+	endif()
+
+endfunction()
+
+
 # Make use of the $STAR_HOST_SYS evironment variable. If it is set use it as the
 # typical STAR installation prefix
 set(STAR_ADDITIONAL_INSTALL_PREFIX ".")
