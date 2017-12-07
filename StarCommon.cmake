@@ -67,7 +67,8 @@ function( STAR_HEADERS_FOR_ROOT_DICTIONARY stroot_dir headers_for_dict )
 	cmake_parse_arguments(ARG "VERIFY" "" "" ${ARGN})
 
 	# Get all header files in 'stroot_dir'
-	file(GLOB_RECURSE stroot_dir_headers "${stroot_dir}/*.h" "${stroot_dir}/*.hh")
+	file(GLOB_RECURSE stroot_dir_headers "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*.h"
+	                                     "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*.hh")
 
 	# Create an empty list
 	set(valid_headers)
@@ -283,7 +284,7 @@ function(STAR_GENERATE_DICTIONARY stroot_dir)
 	file( GLOB_RECURSE user_linkdef_headers ${ARG_LINKDEF_HEADERS} )
 	list( APPEND dict_headers ${user_linkdef_headers} )
 
-	root_generate_dictionary( ${stroot_dir}_dict ${dict_headers}
+	root_generate_dictionary( ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_dict ${dict_headers}
 		LINKDEF ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h
 		OPTIONS ${ARG_LINKDEF_OPTIONS}
 	)
@@ -307,7 +308,8 @@ function(STAR_ADD_LIBRARY stroot_dir)
 	if( NOT TARGET ${stroot_dir}_dict.cxx )
 
 		# Search for default LinkDef if not specified
-		file( GLOB user_linkdefs "${stroot_dir}/*LinkDef.h" "${stroot_dir}/*LinkDef.hh" )
+		file( GLOB user_linkdefs "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*LinkDef.h"
+		                         "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*LinkDef.hh" )
 
 		if( NOT ARG_LINKDEF AND user_linkdefs )
 			# Get the first LinkDef from the list
@@ -328,13 +330,15 @@ function(STAR_ADD_LIBRARY stroot_dir)
 	endif()
 
 	# Deal with sources
-	file(GLOB_RECURSE sources "${stroot_dir}/*.cxx" "${stroot_dir}/*.cc" "${stroot_dir}/*.cpp")
+	file(GLOB_RECURSE sources "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*.cxx"
+	                          "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*.cc"
+	                          "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*.cpp")
 
 	if( ARG_EXCLUDE )
 		FILTER_LIST( sources "${ARG_EXCLUDE}" )
 	endif()
 
-	add_library(${stroot_dir} SHARED ${sources} ${stroot_dir}_dict.cxx)
+	add_library(${stroot_dir} SHARED ${sources} ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_dict.cxx)
 
 endfunction()
 
