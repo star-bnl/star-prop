@@ -272,7 +272,7 @@ function(STAR_GENERATE_DICTIONARY stroot_dir)
 	star_headers_for_root_dictionary( ${stroot_dir} linkdef_headers )
 
 	if( ARG_EXCLUDE )
-		FILTER_LIST( linkdef_headers ARG_EXCLUDE )
+		FILTER_LIST( linkdef_headers "${ARG_EXCLUDE}" )
 	endif()
 
 	# Generate a basic LinkDef file and, if available, merge with the one
@@ -331,7 +331,7 @@ function(STAR_ADD_LIBRARY stroot_dir)
 	file(GLOB_RECURSE sources "${stroot_dir}/*.cxx" "${stroot_dir}/*.cc" "${stroot_dir}/*.cpp")
 
 	if( ARG_EXCLUDE )
-		FILTER_LIST( sources ARG_EXCLUDE )
+		FILTER_LIST( sources "${ARG_EXCLUDE}" )
 	endif()
 
 	add_library(${stroot_dir} SHARED ${sources} ${stroot_dir}_dict.cxx)
@@ -345,7 +345,7 @@ function( FILTER_LIST arg_list arg_regexs )
 	#list( FILTER sources EXCLUDE REGEX "${ARG_EXCLUDE}" )
 
 	foreach( item ${${arg_list}} )
-		foreach( regex ${${arg_regexs}} )
+		foreach( regex ${arg_regexs} )
 
 			if( ${item} MATCHES "${regex}" )
 				list(REMOVE_ITEM ${arg_list} ${item})
