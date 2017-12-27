@@ -302,7 +302,7 @@ function(STAR_ADD_LIBRARY stroot_dir)
 	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
 
 	# Set default regex'es to exclude from globbed
-	list( APPEND ARG_EXCLUDE "${stroot_dir}/macros;${stroot_dir}/doc;${stroot_dir}/examples" )
+	list( APPEND ARG_EXCLUDE "${stroot_dir}.*macros;${stroot_dir}.*doc;${stroot_dir}.*examples" )
 
 	# Deal with headers
 	if( NOT TARGET ${stroot_dir}_dict.cxx )
