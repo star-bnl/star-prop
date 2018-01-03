@@ -364,6 +364,40 @@ function( FILTER_LIST arg_list arg_regexs )
 endfunction()
 
 
+# Creates a list of subdirectories starting with "St" of all directories passed
+# to this function
+function(STAR_INCLUDE_DIRECTORIES star_include_dirs)
+
+	cmake_parse_arguments(ARG "" "" "" "" ${ARGN})
+
+	set( inc_dirs "" )
+
+	foreach( inc_dir ${ARG_UNPARSED_ARGUMENTS})
+
+		list( APPEND inc_dirs "${CMAKE_SOURCE_DIR}/${inc_dir}" )
+
+		# star-detectors is exceptional in a sense that it has too many subdirectories
+		# So, don't include them in the final list. The user can add necessary
+		# subdirectories by hand
+		if( ${inc_dir} MATCHES "star-detectors")
+			continue()
+		endif()
+
+		file( GLOB inc_subdirs ${inc_dir}/St* )
+
+		# For each subdir do...
+		foreach( inc_subdir ${inc_subdirs} )
+			if( IS_DIRECTORY ${inc_subdir} )
+				list( APPEND inc_dirs "${inc_subdir}" )
+			endif()
+		endforeach()
+
+	endforeach()
+
+	set( ${star_include_dirs} ${inc_dirs} PARENT_SCOPE)
+
+endfunction()
+
 
 # A list of regex'es to exclude from any processing in star_repo directories
 set( STAR_BLACKLIST_DIR_NAMES
