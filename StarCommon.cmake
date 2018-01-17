@@ -1,5 +1,6 @@
 # Load this cmake file only once
 if( StarCommonLoaded )
+	message(STATUS "StarCommon: Should be included only once")
 	return()
 else()
 	set(StarCommonLoaded TRUE)
@@ -20,8 +21,10 @@ endif()
 
 # Check whether the compiler supports c++11
 include(CheckCXXCompilerFlag)
+
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+
 if(COMPILER_SUPPORTS_CXX11)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 elseif(COMPILER_SUPPORTS_CXX0X)
@@ -41,7 +44,7 @@ if(ROOT_FOUND)
 		message(STATUS "StarCommon: Found -m${CMAKE_MATCH_3} option in $ROOT_CXX_FLAGS (root-config). Will add it to $CMAKE_CXX_FLAGS")
 
 		if (CMAKE_MATCH_3 EQUAL 32)
-			set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
+			set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS FALSE)
 		endif()
 
 	endif()
@@ -52,6 +55,16 @@ endif()
 
 
 message(STATUS "StarCommon: CMAKE_CXX_FLAGS = \"${CMAKE_CXX_FLAGS}\"")
+
+
+# Make use of the $STAR_HOST_SYS evironment variable. If it is set use it as the
+# typical STAR installation prefix
+set(STAR_ADDITIONAL_INSTALL_PREFIX ".")
+
+if(DEFINED ENV{STAR_HOST_SYS})
+	set(STAR_ADDITIONAL_INSTALL_PREFIX ".$ENV{STAR_HOST_SYS}")
+endif()
+
 
 
 #
@@ -483,12 +496,3 @@ function(STAR_ADD_SUBDIRECTORY star_repo)
 	endif()
 
 endfunction()
-
-
-# Make use of the $STAR_HOST_SYS evironment variable. If it is set use it as the
-# typical STAR installation prefix
-set(STAR_ADDITIONAL_INSTALL_PREFIX ".")
-
-if(DEFINED ENV{STAR_HOST_SYS})
-	set(STAR_ADDITIONAL_INSTALL_PREFIX ".$ENV{STAR_HOST_SYS}")
-endif()
