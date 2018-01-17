@@ -34,6 +34,9 @@ else()
 endif()
 
 
+# STAR software heavily depends on ROOT
+find_package( ROOT COMPONENTS Table HistPainter Minuit Geom Spectrum )
+
 # Since most of STAR projects depend on ROOT check the flags and use the same
 if(ROOT_FOUND)
 
@@ -55,6 +58,9 @@ endif()
 
 
 message(STATUS "StarCommon: CMAKE_CXX_FLAGS = \"${CMAKE_CXX_FLAGS}\"")
+
+
+add_definitions( -D__ROOT__ )
 
 
 # Make use of the $STAR_HOST_SYS evironment variable. If it is set use it as the
