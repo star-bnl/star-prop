@@ -472,22 +472,23 @@ function(STAR_ADD_SUBDIRECTORY star_repo)
 	set( stroot_dirs "" )
 
 	foreach(stroot_dir ${stroot_dir_candidates})
-		if(IS_DIRECTORY  ${CMAKE_SOURCE_DIR}/${star_repo}/${stroot_dir})
-
-			# The following setup is necessary to fool the call to
-			# star_add_library() and other functions because we don't really switch
-			# the directories but traverse them anyway
-			set( CMAKE_CURRENT_SOURCE_DIR "${CMAKE_SOURCE_DIR}/${star_repo}" )
-			set( CMAKE_CURRENT_BINARY_DIR "${CMAKE_BINARY_DIR}/${star_repo}" )
-			set( CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${star_repo}" )
-
-			set_directory_properties( PROPERTIES INCLUDE_DIRECTORIES "${parent_include_dirs};${include_dirs}" )
-
-			list( APPEND stroot_dirs "${stroot_dir}" )
-
-			star_add_library( ${stroot_dir} LINKDEF_HEADERS "${${stroot_dir}_LINKDEF_HEADERS}" LINKDEF_OPTIONS "${${stroot_dir}_LINKDEF_OPTIONS}" )
-
+		if( NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/${star_repo}/${stroot_dir} )
+			continue()
 		endif()
+
+		# The following setup is necessary to fool the call to
+		# star_add_library() and other functions because we don't really switch
+		# the directories but traverse them anyway
+		set( CMAKE_CURRENT_SOURCE_DIR "${CMAKE_SOURCE_DIR}/${star_repo}" )
+		set( CMAKE_CURRENT_BINARY_DIR "${CMAKE_BINARY_DIR}/${star_repo}" )
+		set( CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${star_repo}" )
+
+		set_directory_properties( PROPERTIES INCLUDE_DIRECTORIES "${parent_include_dirs};${include_dirs}" )
+
+		list( APPEND stroot_dirs "${stroot_dir}" )
+
+		star_add_library( ${stroot_dir} LINKDEF_HEADERS "${${stroot_dir}_LINKDEF_HEADERS}" LINKDEF_OPTIONS "${${stroot_dir}_LINKDEF_OPTIONS}" )
+
 	endforeach()
 
 	set_directory_properties( PROPERTIES INCLUDE_DIRECTORIES "${parent_include_dirs}" )
