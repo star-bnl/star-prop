@@ -504,5 +504,22 @@ function(STAR_ADD_SUBDIRECTORY star_repo)
 	if( ${star_repo} MATCHES "star-bfchain" )
 		install(DIRECTORY "star-bfchain/StBFChain" DESTINATION "${CMAKE_BINARY_DIR}/StRoot")
 	endif()
+endfunction()
+
+
+#
+# Flattens the hierarchy of header files found in `parent_dir` at 1 level deep
+# by copying them to `${STAR_ADDITIONAL_INSTALL_PREFIX}/include/`
+#
+function( STAR_PREINSTALL_HEADERS parent_dir )
+
+	# Get all header files in 'parent_dir'
+	file( GLOB header_files "${CMAKE_CURRENT_SOURCE_DIR}/${parent_dir}/*/*.h"
+	                        "${CMAKE_CURRENT_SOURCE_DIR}/${parent_dir}/*/*.hh" )
+
+	foreach( header_file ${header_files})
+		get_filename_component( header_file_name ${header_file} NAME )
+		configure_file( "${header_file}" "${STAR_ADDITIONAL_INSTALL_PREFIX}/include/${header_file_name}" COPYONLY )
+	endforeach()
 
 endfunction()
