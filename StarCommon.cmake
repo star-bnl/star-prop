@@ -448,6 +448,10 @@ set( STAR_BLACKLIST_DIR_NAMES
 	xgeometry
 )
 
+# special cases
+set( St_base_LINKDEF_HEADERS "star-base/St_base/Stypes.h" )
+set( StEvent_LINKDEF_OPTIONS "-p;-D__STEVENT_CONTAINERS_CINT__" )
+set( StMcEvent_LINKDEF_OPTIONS "-p;-D__STEVENT_CONTAINERS_CINT__" )
 
 function(STAR_ADD_SUBDIRECTORY star_repo)
 
@@ -455,10 +459,6 @@ function(STAR_ADD_SUBDIRECTORY star_repo)
 
 	star_include_directories( include_dirs ${ARG_INCLUDE_DIRS} ${star_repo})
 
-	# special cases
-	set( St_base_LINKDEF_HEADERS "star-base/St_base/Stypes.h" )
-	set( StEvent_LINKDEF_OPTIONS "-p;-D__STEVENT_CONTAINERS_CINT__" )
-	set( StMcEvent_LINKDEF_OPTIONS "-p;-D__STEVENT_CONTAINERS_CINT__" )
 
 	file(GLOB stroot_dir_candidates RELATIVE ${CMAKE_SOURCE_DIR}/${star_repo} ${star_repo}/*)
 	#file(GLOB stroot_dir_candidates ${star_repo}/*)
