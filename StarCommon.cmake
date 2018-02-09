@@ -322,6 +322,14 @@ endfunction()
 #
 function(STAR_ADD_LIBRARY stroot_dir)
 
+	# First check that the path exists
+	if( NOT IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir} )
+		message( WARNING "StarCommon: Subdirectory \"${star_lib_dir}\" not found in ${CMAKE_CURRENT_SOURCE_DIR}. Skipping" )
+		return()
+	endif()
+
+	get_filename_component( star_lib_name ${star_lib_dir} NAME )
+
 	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
 
 	# Set default regex'es to exclude from globbed
@@ -359,6 +367,10 @@ function(STAR_ADD_LIBRARY stroot_dir)
 	endif()
 
 	add_library(${stroot_dir} SHARED ${sources} ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_dict.cxx)
+
+	install( TARGETS ${star_lib_name}
+		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
+	)
 
 endfunction()
 
@@ -496,11 +508,6 @@ function(STAR_ADD_SUBDIRECTORY star_repo)
 	# A collective target to build all libraries in this project. Can be used to
 	# build all specified targets from a parent project
 	add_custom_target( ${star_repo} DEPENDS "${stroot_dirs}" )
-
-	# Installation section
-	install(TARGETS ${stroot_dirs}
-		DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
-	)
 
 	if( ${star_repo} MATCHES "star-bfchain" )
 		install(DIRECTORY "star-bfchain/StBFChain" DESTINATION "${CMAKE_BINARY_DIR}/StRoot")
