@@ -368,6 +368,10 @@ function(STAR_ADD_LIBRARY stroot_dir)
 
 	add_library(${stroot_dir} SHARED ${sources} ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_dict.cxx)
 
+	get_subdirs( ${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir} star_lib_subdirs )
+
+	target_include_directories( ${star_lib_name} PRIVATE "${star_lib_subdirs}" )
+
 	install( TARGETS ${star_lib_name}
 		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
 	)
@@ -394,6 +398,26 @@ function( FILTER_LIST arg_list arg_regexs )
 	set( ${arg_list} ${${arg_list}} PARENT_SCOPE)
 
 endfunction()
+
+
+# Builds a list of subdirectories with complete path found in the
+# 'parent_directory'
+macro( GET_SUBDIRS parent_directory subdirectories  )
+
+	file( GLOB all_files RELATIVE ${parent_directory} ${parent_directory}/* )
+
+	# Include the parent directory in the list
+	set( sub_dirs "${parent_directory}" )
+	
+	foreach( sub_dir ${all_files} )
+		if( IS_DIRECTORY ${parent_directory}/${sub_dir} )
+			list( APPEND sub_dirs ${parent_directory}/${sub_dir} )
+		endif()
+	endforeach()
+	
+	set( ${subdirectories} ${sub_dirs} )
+
+endmacro()
 
 
 # Creates a list of subdirectories starting with "St" of all directories passed
