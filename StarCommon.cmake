@@ -79,25 +79,25 @@ endif()
 
 #
 # Builds a list of header files from which a ROOT dictionary can be created for
-# a given subdirectory `stroot_dir`. The list is put into the `headers_for_dict`
+# a given subdirectory `star_lib_dir`. The list is put into the `headers_for_dict`
 # variable that is returned to the parent scope. Only *.h and *.hh files
 # containing ROOT's ClassDef macro are selected while any LinkDef files are
 # ignored. With optional argument VERIFY the headers can be checked to contain
 # the 'ClassDef' macro.
 #
-function( STAR_HEADERS_FOR_ROOT_DICTIONARY stroot_dir headers_for_dict )
+function( STAR_HEADERS_FOR_ROOT_DICTIONARY star_lib_dir headers_for_dict )
 
 	cmake_parse_arguments(ARG "VERIFY" "" "" ${ARGN})
 
-	# Get all header files in 'stroot_dir'
-	file(GLOB_RECURSE stroot_dir_headers "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*.h"
-	                                     "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*.hh")
+	# Get all header files in 'star_lib_dir'
+	file(GLOB_RECURSE star_lib_dir_headers "${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir}/*.h"
+	                                       "${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir}/*.hh")
 
 	# Create an empty list
 	set(valid_headers)
 
-	# stroot_dir_headers should containd absolute paths to globed headers
-	foreach( full_path_header ${stroot_dir_headers} )
+	# star_lib_dir_headers should containd absolute paths to globed headers
+	foreach( full_path_header ${star_lib_dir_headers} )
 
 		get_filename_component( header_file_name ${full_path_header} NAME )
 
@@ -160,13 +160,13 @@ endfunction()
 
 
 #
-# Generates a basic LinkDef header ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h
+# Generates a basic LinkDef header ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_LinkDef.h
 # by parsing the user provided header files with standard linux utilities awk and sed.
 #
-function(STAR_GENERATE_LINKDEF stroot_dir dict_headers)
+function(STAR_GENERATE_LINKDEF star_lib_dir dict_headers)
 
 	# Set default name for LinkDef file
-	set( linkdef_file "${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h" )
+	set( linkdef_file "${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_LinkDef.h" )
 	set_source_files_properties(${linkdef_file} PROPERTIES GENERATED TRUE)
 
 	message(STATUS "StarCommon: Generating LinkDef header: ${linkdef_file}")
@@ -231,7 +231,7 @@ function(STAR_GENERATE_LINKDEF stroot_dir dict_headers)
 	# Special case dealing with StEvent containers
 	set( dict_entities_stcontainers )
 
-	if( "${stroot_dir}" MATCHES "StEvent" )
+	if( "${star_lib_dir}" MATCHES "StEvent" )
 		foreach( header ${ARG_LINKDEF_HEADERS} )
 			set( my_exec_cmd ${EXEC_AWK} "match($0,\"^[[:space:]]*StCollectionDef[[:space:]]*\\\\(([^#]+)\\\\)\",a){ printf(a[1]\"\\r\") }" )
 			
@@ -284,16 +284,16 @@ endfunction()
 
 
 #
-# Generates a ROOT dictionary for `stroot_dir`.
+# Generates a ROOT dictionary for `star_lib_dir`.
 #
-function(STAR_GENERATE_DICTIONARY stroot_dir)
+function(STAR_GENERATE_DICTIONARY star_lib_dir)
 
 	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
 
 	# If the user provided header files use them in addition to automatically
 	# collected ones.
 	set( linkdef_headers )
-	star_headers_for_root_dictionary( ${stroot_dir} linkdef_headers )
+	star_headers_for_root_dictionary( ${star_lib_dir} linkdef_headers )
 
 	if( ARG_EXCLUDE )
 		FILTER_LIST( linkdef_headers "${ARG_EXCLUDE}" )
@@ -302,13 +302,13 @@ function(STAR_GENERATE_DICTIONARY stroot_dir)
 	# Generate a basic LinkDef file and, if available, merge with the one
 	# provided by the user
 	set( dict_headers )
-	star_generate_linkdef( ${stroot_dir} dict_headers LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${linkdef_headers})
+	star_generate_linkdef( ${star_lib_dir} dict_headers LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${linkdef_headers})
 
 	file( GLOB_RECURSE user_linkdef_headers ${ARG_LINKDEF_HEADERS} )
 	list( APPEND dict_headers ${user_linkdef_headers} )
 
-	root_generate_dictionary( ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_dict ${dict_headers}
-		LINKDEF ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_LinkDef.h
+	root_generate_dictionary( ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_dict ${dict_headers}
+		LINKDEF ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_LinkDef.h
 		OPTIONS ${ARG_LINKDEF_OPTIONS}
 	)
 
@@ -317,10 +317,10 @@ endfunction()
 
 #
 # Adds a target to build a library from all source files (*.cxx, *.cc, and *.cpp)
-# recursively found in the specified subdirectory `stroot_dir`. It is possible
+# recursively found in the specified subdirectory `star_lib_dir`. It is possible
 # to EXCLUDE some files matching an optional pattern.
 #
-function(STAR_ADD_LIBRARY stroot_dir)
+function(STAR_ADD_LIBRARY star_lib_dir)
 
 	# First check that the path exists
 	if( NOT IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir} )
@@ -333,13 +333,13 @@ function(STAR_ADD_LIBRARY stroot_dir)
 	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
 
 	# Set default regex'es to exclude from globbed
-	list( APPEND ARG_EXCLUDE "${stroot_dir}.*macros;${stroot_dir}.*doc;${stroot_dir}.*examples" )
+	list( APPEND ARG_EXCLUDE "${star_lib_dir}.*macros;${star_lib_dir}.*doc;${star_lib_dir}.*examples" )
 
 	# Deal with headers
 
 	# Search for default LinkDef if not specified
-	file( GLOB user_linkdefs "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*LinkDef.h"
-	                         "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*LinkDef.hh" )
+	file( GLOB user_linkdefs "${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir}/*LinkDef.h"
+	                         "${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir}/*LinkDef.hh" )
 
 	if( NOT ARG_LINKDEF AND user_linkdefs )
 		# Get the first LinkDef from the list
@@ -350,7 +350,7 @@ function(STAR_ADD_LIBRARY stroot_dir)
 	# Set default options
 	list(APPEND ARG_LINKDEF_OPTIONS "-p;-D__ROOT__" )
 
-	star_generate_dictionary( ${stroot_dir}
+	star_generate_dictionary( ${star_lib_dir}
 		LINKDEF ${ARG_LINKDEF}
 		LINKDEF_HEADERS ${ARG_LINKDEF_HEADERS}
 		LINKDEF_OPTIONS ${ARG_LINKDEF_OPTIONS}
@@ -358,15 +358,15 @@ function(STAR_ADD_LIBRARY stroot_dir)
 	)
 
 	# Deal with sources
-	file(GLOB_RECURSE sources "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*.cxx"
-	                          "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*.cc"
-	                          "${CMAKE_CURRENT_SOURCE_DIR}/${stroot_dir}/*.cpp")
+	file(GLOB_RECURSE sources "${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir}/*.cxx"
+	                          "${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir}/*.cc"
+	                          "${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir}/*.cpp")
 
 	if( ARG_EXCLUDE )
 		FILTER_LIST( sources "${ARG_EXCLUDE}" )
 	endif()
 
-	add_library(${stroot_dir} SHARED ${sources} ${CMAKE_CURRENT_BINARY_DIR}/${stroot_dir}_dict.cxx)
+	add_library(${star_lib_name} SHARED ${sources} ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_dict.cxx)
 
 	get_subdirs( ${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir} star_lib_subdirs )
 
@@ -489,43 +489,44 @@ set( St_base_LINKDEF_HEADERS "star-base/St_base/Stypes.h" )
 set( StEvent_LINKDEF_OPTIONS "-p;-D__STEVENT_CONTAINERS_CINT__" )
 set( StMcEvent_LINKDEF_OPTIONS "-p;-D__STEVENT_CONTAINERS_CINT__" )
 
-function(STAR_ADD_SUBDIRECTORY star_repo)
+
+function( STAR_ADD_SUBDIRECTORY star_parent_dir )
 
 	cmake_parse_arguments(ARG "" "" "INCLUDE_DIRS" "" ${ARGN})
 
-	star_include_directories( include_dirs ${ARG_INCLUDE_DIRS} ${star_repo})
+	star_include_directories( include_dirs ${ARG_INCLUDE_DIRS} ${star_parent_dir} )
 
 
-	file(GLOB stroot_dir_candidates RELATIVE ${CMAKE_SOURCE_DIR}/${star_repo} ${star_repo}/*)
-	#file(GLOB stroot_dir_candidates ${star_repo}/*)
+	file( GLOB star_lib_dir_candidates RELATIVE ${CMAKE_SOURCE_DIR}/${star_parent_dir} ${star_parent_dir}/* )
+	#file(GLOB star_lib_dir_candidates ${star_parent_dir}/*)
 
-	FILTER_LIST( stroot_dir_candidates "${STAR_BLACKLIST_DIR_NAMES}" )
+	FILTER_LIST( star_lib_dir_candidates "${STAR_BLACKLIST_DIR_NAMES}" )
 
 	# Save include dirs property for the current dir. This is needed because we
 	# don't go into the directories
 	get_directory_property(parent_include_dirs INCLUDE_DIRECTORIES)
 
-	set( stroot_dirs "" )
+	set( star_lib_dirs "" )
 
-	foreach(stroot_dir ${stroot_dir_candidates})
-		if( NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/${star_repo}/${stroot_dir} )
+	foreach( star_lib_dir ${star_lib_dir_candidates} )
+		if( NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/${star_parent_dir}/${star_lib_dir} )
 			continue()
 		endif()
 
 		# The following setup is necessary to fool the call to
 		# star_add_library() and other functions because we don't really switch
 		# the directories but traverse them anyway
-		set( CMAKE_CURRENT_SOURCE_DIR "${CMAKE_SOURCE_DIR}/${star_repo}" )
-		set( CMAKE_CURRENT_BINARY_DIR "${CMAKE_BINARY_DIR}/${star_repo}" )
-		set( CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${star_repo}" )
+		set( CMAKE_CURRENT_SOURCE_DIR "${CMAKE_SOURCE_DIR}/${star_parent_dir}" )
+		set( CMAKE_CURRENT_BINARY_DIR "${CMAKE_BINARY_DIR}/${star_parent_dir}" )
+		set( CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${star_parent_dir}" )
 
 		set_directory_properties( PROPERTIES INCLUDE_DIRECTORIES "${parent_include_dirs};${include_dirs}" )
 
-		list( APPEND stroot_dirs "${stroot_dir}" )
+		list( APPEND star_lib_dirs "${star_lib_dir}" )
 
-		star_add_library( ${stroot_dir} LINKDEF_HEADERS "${${stroot_dir}_LINKDEF_HEADERS}" LINKDEF_OPTIONS "${${stroot_dir}_LINKDEF_OPTIONS}" )
+		star_add_library( ${star_lib_dir} LINKDEF_HEADERS "${${star_lib_dir}_LINKDEF_HEADERS}" LINKDEF_OPTIONS "${${star_lib_dir}_LINKDEF_OPTIONS}" )
 
-		if( ${star_dir} MATCHES "StBFChain" )
+		if( ${star_lib_dir} MATCHES "StBFChain" )
 			install(DIRECTORY "${star_parent_dir}/StBFChain" DESTINATION "${CMAKE_BINARY_DIR}/StRoot")
 		endif()
 
@@ -535,7 +536,7 @@ function(STAR_ADD_SUBDIRECTORY star_repo)
 
 	# A collective target to build all libraries in this project. Can be used to
 	# build all specified targets from a parent project
-	add_custom_target( ${star_repo} DEPENDS "${stroot_dirs}" )
+	add_custom_target( ${star_parent_dir} DEPENDS "${star_lib_dirs}" )
 
 endfunction()
 
