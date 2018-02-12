@@ -308,7 +308,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 
 	star_generate_dictionary( ${star_lib_dir}
 		LINKDEF ${ARG_LINKDEF}
-		LINKDEF_HEADERS ${ARG_LINKDEF_HEADERS}
+		LINKDEF_HEADERS ${ARG_LINKDEF_HEADERS} ${${star_lib_name}_LINKDEF_HEADERS}
 		LINKDEF_OPTIONS ${ARG_LINKDEF_OPTIONS}
 		EXCLUDE ${ARG_EXCLUDE}
 	)
@@ -441,7 +441,7 @@ set( STAR_BLACKLIST_DIR_NAMES
 )
 
 # special cases
-set( St_base_LINKDEF_HEADERS "star-base/St_base/Stypes.h" )
+set( St_base_LINKDEF_HEADERS "StRoot/St_base/Stypes.h" )
 set( StEvent_LINKDEF_OPTIONS "-p;-D__STEVENT_CONTAINERS_CINT__" )
 set( StMcEvent_LINKDEF_OPTIONS "-p;-D__STEVENT_CONTAINERS_CINT__" )
 
