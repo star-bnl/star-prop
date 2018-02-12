@@ -81,13 +81,9 @@ endif()
 # Builds a list of header files from which a ROOT dictionary can be created for
 # a given subdirectory `star_lib_dir`. The list is put into the `headers_for_dict`
 # variable that is returned to the parent scope. Only *.h and *.hh files
-# containing ROOT's ClassDef macro are selected while any LinkDef files are
-# ignored. With optional argument VERIFY the headers can be checked to contain
-# the 'ClassDef' macro.
+# are selected while any LinkDef files are ignored.
 #
 function( STAR_HEADERS_FOR_ROOT_DICTIONARY star_lib_dir headers_for_dict )
-
-	cmake_parse_arguments(ARG "VERIFY" "" "" ${ARGN})
 
 	# Get all header files in 'star_lib_dir'
 	file(GLOB_RECURSE star_lib_dir_headers "${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir}/*.h"
@@ -110,51 +106,11 @@ function( STAR_HEADERS_FOR_ROOT_DICTIONARY star_lib_dir headers_for_dict )
 			continue()
 		endif()
 
-		set( valid_header TRUE )
-
-		if( ${ARG_VERIFY} )
-			star_verify_header_for_root_dictionary( ${full_path_header} valid_header)
-		endif()
-
-		if( ${valid_header} )
-			list( APPEND valid_headers ${full_path_header} )
-		endif()
+		list( APPEND valid_headers ${full_path_header} )
 
 	endforeach()
 
 	set( ${headers_for_dict} ${valid_headers} PARENT_SCOPE )
-
-endfunction()
-
-
-#
-# Checks whether the file contains at least one ClassDef macro
-#
-function( STAR_VERIFY_HEADER_FOR_ROOT_DICTIONARY header_file valid_header )
-
-	find_program( EXEC_GREP NAMES grep )
-
-	if( NOT EXEC_GREP )
-		message( FATAL_ERROR "StarCommon: FATAL: STAR_VERIFY_HEADER_FOR_ROOT_DICTIONARY function requires grep" )
-	endif()
-
-	# May want to verify that the header file does exist in the include directories
-	#get_filename_component( headerFileName ${userHeader} NAME)
-	#find_file(headerFile ${headerFileName} HINTS ${incdirs})
-
-	set( valid )
-
-	# Check for at least one ClassDef macro in the header file
-	execute_process( COMMAND ${EXEC_GREP} -m1 -H "^[[:space:]]*ClassDef" ${header_file} RESULT_VARIABLE exit_code OUTPUT_QUIET )
-
-	if( NOT ${exit_code} )
-		set( valid TRUE )
-	else()
-		message( STATUS "StarCommon: WARNING: No ClassDef macro found in ${header_file}" )
-		set( valid FALSE )
-	endif()
-
-	set( ${valid_header} ${valid} PARENT_SCOPE )
 
 endfunction()
 
