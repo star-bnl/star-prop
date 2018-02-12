@@ -525,6 +525,10 @@ function(STAR_ADD_SUBDIRECTORY star_repo)
 
 		star_add_library( ${stroot_dir} LINKDEF_HEADERS "${${stroot_dir}_LINKDEF_HEADERS}" LINKDEF_OPTIONS "${${stroot_dir}_LINKDEF_OPTIONS}" )
 
+		if( ${star_dir} MATCHES "StBFChain" )
+			install(DIRECTORY "${star_parent_dir}/StBFChain" DESTINATION "${CMAKE_BINARY_DIR}/StRoot")
+		endif()
+
 	endforeach()
 
 	set_directory_properties( PROPERTIES INCLUDE_DIRECTORIES "${parent_include_dirs}" )
@@ -533,9 +537,6 @@ function(STAR_ADD_SUBDIRECTORY star_repo)
 	# build all specified targets from a parent project
 	add_custom_target( ${star_repo} DEPENDS "${stroot_dirs}" )
 
-	if( ${star_repo} MATCHES "star-bfchain" )
-		install(DIRECTORY "star-bfchain/StBFChain" DESTINATION "${CMAKE_BINARY_DIR}/StRoot")
-	endif()
 endfunction()
 
 
