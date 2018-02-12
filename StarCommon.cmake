@@ -260,8 +260,10 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir)
 	set( dict_headers )
 	star_generate_linkdef( ${star_lib_dir} dict_headers LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${linkdef_headers})
 
-	file( GLOB_RECURSE user_linkdef_headers ${ARG_LINKDEF_HEADERS} )
-	list( APPEND dict_headers ${user_linkdef_headers} )
+	foreach( header ${ARG_LINKDEF_HEADERS})
+		get_filename_component( header_absolute_path ${header} ABSOLUTE )
+		list( APPEND dict_headers "${header_absolute_path}" )
+	endforeach()
 
 	root_generate_dictionary( ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_dict ${dict_headers}
 		LINKDEF ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_LinkDef.h
