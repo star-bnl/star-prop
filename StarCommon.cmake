@@ -6,6 +6,8 @@ else()
 	set(StarCommonLoaded TRUE)
 endif()
 
+# By default build shared libraries but allow the user to change if desired
+OPTION( BUILD_SHARED_LIBS "Global flag to cause add_library to create shared libraries if on" ON )
 
 # Special treatment of linker options for MacOS X to get a gcc linux-like behavior
 if(APPLE)
@@ -324,7 +326,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 		FILTER_LIST( sources "${ARG_EXCLUDE}" )
 	endif()
 
-	add_library(${star_lib_name} SHARED ${sources} ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_dict.cxx)
+	add_library(${star_lib_name} ${sources} ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_dict.cxx)
 
 	get_subdirs( ${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir} star_lib_subdirs )
 
@@ -332,6 +334,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 
 	install( TARGETS ${star_lib_name}
 		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
+		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
 	)
 
 endfunction()
