@@ -127,6 +127,7 @@ set( star_lib_dirs
 	StRoot/StEmcUtil
 	StRoot/StEpcMaker
 	StRoot/StEpdDbMaker
+	StRoot/StEvent
 	StRoot/StEventCompendiumMaker
 	StRoot/StEventMaker
 	StRoot/StEventUtilities

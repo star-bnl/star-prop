@@ -444,6 +444,16 @@ set( STAR_BLACKLIST_DIR_NAMES
 
 # special cases
 set( St_base_LINKDEF_HEADERS "StRoot/St_base/Stypes.h" )
+set( StEvent_LINKDEF_HEADERS
+	"StRoot/StDaqLib/TRG/trgStructures2000.h"
+	"StRoot/StDaqLib/TRG/trgStructures2002.h"
+	"StRoot/StDaqLib/TRG/trgStructures2003.h"
+	"StRoot/StDaqLib/TRG/trgStructures2004.h"
+	"StRoot/StDaqLib/TRG/trgStructures2005.h"
+	"StRoot/StDaqLib/TRG/trgStructures2007.h"
+	"StRoot/StDaqLib/TRG/trgStructures.h"
+	"StRoot/StEvent/StArray_cint.h"
+)
 set( StEvent_LINKDEF_OPTIONS "-p;-D__STEVENT_CONTAINERS_CINT__" )
 set( StMcEvent_LINKDEF_OPTIONS "-p;-D__STEVENT_CONTAINERS_CINT__" )
 
