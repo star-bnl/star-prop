@@ -239,7 +239,7 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir)
 
 	foreach( header ${ARG_LINKDEF_HEADERS})
 		get_filename_component( header_absolute_path ${header} ABSOLUTE )
-		list( APPEND dict_headers "${header_absolute_path}" )
+		list( INSERT dict_headers 0 "${header_absolute_path}" )
 	endforeach()
 
 	root_generate_dictionary( ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_dict ${dict_headers}
