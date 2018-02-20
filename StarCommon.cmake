@@ -36,33 +36,8 @@ else()
 endif()
 
 
-# STAR software heavily depends on ROOT
-find_package( ROOT COMPONENTS Table HistPainter Minuit Geom Spectrum )
-
-# Since most of STAR projects depend on ROOT check the flags and use the same
-if(ROOT_FOUND)
-
-	string(REGEX MATCH "(^|[\t ]+)-m([\t ]*)(32|64)([\t ]+|$)" STAR_ROOT_CXX_FLAGS_M ${ROOT_CXX_FLAGS})
-
-	if (STAR_ROOT_CXX_FLAGS_M)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m${CMAKE_MATCH_3}")
-		message(STATUS "StarCommon: Found -m${CMAKE_MATCH_3} option in $ROOT_CXX_FLAGS (root-config). Will add it to $CMAKE_CXX_FLAGS")
-
-		if (CMAKE_MATCH_3 EQUAL 32)
-			set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS FALSE)
-		endif()
-
-	endif()
-
-else()
-	message(FATAL_ERROR "StarCommon: FATAL: ROOT package not found")
-endif()
-
-
 message(STATUS "StarCommon: CMAKE_CXX_FLAGS = \"${CMAKE_CXX_FLAGS}\"")
 
-
-add_definitions( -D__ROOT__ )
 
 # Remove dependency of "install" target on "all" target. This allows to
 # build and install individual libraries
