@@ -437,59 +437,6 @@ set( StEvent_LINKDEF_HEADERS
 	"StRoot/StDaqLib/TRG/trgStructures.h"
 	"StRoot/StEvent/StArray_cint.h"
 )
-set( StEvent_LINKDEF_OPTIONS "-p;-D__STEVENT_CONTAINERS_CINT__" )
-set( StMcEvent_LINKDEF_OPTIONS "-p;-D__STEVENT_CONTAINERS_CINT__" )
-
-
-function( STAR_ADD_SUBDIRECTORY star_parent_dir )
-
-	cmake_parse_arguments(ARG "" "" "INCLUDE_DIRS" "" ${ARGN})
-
-	star_include_directories( include_dirs ${ARG_INCLUDE_DIRS} ${star_parent_dir} )
-
-
-	file( GLOB star_lib_dir_candidates RELATIVE ${CMAKE_SOURCE_DIR}/${star_parent_dir} ${star_parent_dir}/* )
-	#file(GLOB star_lib_dir_candidates ${star_parent_dir}/*)
-
-	FILTER_LIST( star_lib_dir_candidates "${STAR_BLACKLIST_DIR_NAMES}" )
-
-	# Save include dirs property for the current dir. This is needed because we
-	# don't go into the directories
-	get_directory_property(parent_include_dirs INCLUDE_DIRECTORIES)
-
-	set( star_lib_dirs "" )
-
-	foreach( star_lib_dir ${star_lib_dir_candidates} )
-		if( NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/${star_parent_dir}/${star_lib_dir} )
-			continue()
-		endif()
-
-		# The following setup is necessary to fool the call to
-		# star_add_library() and other functions because we don't really switch
-		# the directories but traverse them anyway
-		set( CMAKE_CURRENT_SOURCE_DIR "${CMAKE_SOURCE_DIR}/${star_parent_dir}" )
-		set( CMAKE_CURRENT_BINARY_DIR "${CMAKE_BINARY_DIR}/${star_parent_dir}" )
-		set( CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${star_parent_dir}" )
-
-		set_directory_properties( PROPERTIES INCLUDE_DIRECTORIES "${parent_include_dirs};${include_dirs}" )
-
-		list( APPEND star_lib_dirs "${star_lib_dir}" )
-
-		star_add_library( ${star_lib_dir} LINKDEF_HEADERS "${${star_lib_dir}_LINKDEF_HEADERS}" LINKDEF_OPTIONS "${${star_lib_dir}_LINKDEF_OPTIONS}" )
-
-		if( ${star_lib_dir} MATCHES "StBFChain" )
-			install(DIRECTORY "${star_parent_dir}/StBFChain" DESTINATION "${CMAKE_BINARY_DIR}/StRoot")
-		endif()
-
-	endforeach()
-
-	set_directory_properties( PROPERTIES INCLUDE_DIRECTORIES "${parent_include_dirs}" )
-
-	# A collective target to build all libraries in this project. Can be used to
-	# build all specified targets from a parent project
-	add_custom_target( ${star_parent_dir} DEPENDS "${star_lib_dirs}" )
-
-endfunction()
 
 
 #
