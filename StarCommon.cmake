@@ -52,6 +52,7 @@ if(DEFINED ENV{STAR_HOST_SYS})
 	set(STAR_ADDITIONAL_INSTALL_PREFIX ".$ENV{STAR_HOST_SYS}")
 endif()
 
+set( STAR_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}" )
 
 
 #
@@ -435,7 +436,7 @@ set( StEvent_LINKDEF_HEADERS
 	"StRoot/StDaqLib/TRG/trgStructures2005.h"
 	"StRoot/StDaqLib/TRG/trgStructures2007.h"
 	"StRoot/StDaqLib/TRG/trgStructures.h"
-	"StRoot/StEvent/StArray_cint.h"
+	"${STAR_CMAKE_DIR}/StArray_cint.h"
 )
 
 
