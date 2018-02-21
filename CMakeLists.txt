@@ -251,7 +251,6 @@ set( star_lib_dirs
 	StRoot/StTrgMaker
 	StRoot/StTriggerDataMaker
 	StRoot/StTriggerUtilities
-	StRoot/StTrsMaker
 	StRoot/StUtilities
 	StRoot/Stv
 	StRoot/StvMaker

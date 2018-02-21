@@ -497,11 +497,6 @@ function( STAR_PREINSTALL_HEADERS parent_dir )
 	file( GLOB header_files "${CMAKE_CURRENT_SOURCE_DIR}/${parent_dir}/*/*.h"
 	                        "${CMAKE_CURRENT_SOURCE_DIR}/${parent_dir}/*/*.hh" )
 
-	# Get all header files in 'parent_dir'
-	file( GLOB header_files_extra "${CMAKE_CURRENT_SOURCE_DIR}/${parent_dir}/StTrsMaker/*/*.h"
-	                              "${CMAKE_CURRENT_SOURCE_DIR}/${parent_dir}/StTrsMaker/*/*.hh" )
-
-	list( APPEND header_files "${header_files_extra}" )
 
 	foreach( header_file ${header_files})
 		get_filename_component( header_file_name ${header_file} NAME )
