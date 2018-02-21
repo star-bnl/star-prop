@@ -269,3 +269,8 @@ set( star_lib_dirs
 foreach( star_lib_dir ${star_lib_dirs} )
 	star_add_library( "${STAR_SRC}/${star_lib_dir}" )
 endforeach()
+
+
+install(DIRECTORY ${parent_dir} DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/include"
+        MESSAGE_NEVER
+        FILES_MATCHING REGEX "\\.(h|hh)$")
