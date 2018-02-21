@@ -303,6 +303,11 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 
 	add_library(${star_lib_name} ${sources} ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_dict.cxx)
 
+	# Output the library to the respecitve subdirectory in the binary directory
+	get_filename_component( star_lib_path ${star_lib_dir} DIRECTORY )
+	set_target_properties( ${star_lib_name} PROPERTIES
+		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${star_lib_path}" )
+
 	get_subdirs( ${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir} star_lib_subdirs )
 
 	target_include_directories( ${star_lib_name} PRIVATE "${star_lib_subdirs}" )
