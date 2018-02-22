@@ -438,6 +438,7 @@ set( StEvent_LINKDEF_HEADERS
 	"StRoot/StDaqLib/TRG/trgStructures.h"
 	"${STAR_CMAKE_DIR}/StArray_cint.h"
 )
+set( StiMaker_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TH1K.h" )
 
 
 #
