@@ -64,8 +64,8 @@ set( STAR_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}" )
 function( STAR_HEADERS_FOR_ROOT_DICTIONARY star_lib_dir headers_for_dict )
 
 	# Get all header files in 'star_lib_dir'
-	file(GLOB_RECURSE star_lib_dir_headers "${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir}/*.h"
-	                                       "${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir}/*.hh")
+	file(GLOB_RECURSE star_lib_dir_headers "${STAR_SRC}/${star_lib_dir}/*.h"
+	                                       "${STAR_SRC}/${star_lib_dir}/*.hh")
 
 	# Create an empty list
 	set(valid_headers)
@@ -259,8 +259,8 @@ endfunction()
 function(STAR_ADD_LIBRARY star_lib_dir)
 
 	# First check that the path exists
-	if( NOT IS_DIRECTORY ${star_lib_dir} )
-		message( WARNING "StarCommon: Directory \"${star_lib_dir}\" not found. Skipping" )
+	if( NOT IS_DIRECTORY ${STAR_SRC}/${star_lib_dir} )
+		message( WARNING "StarCommon: Subdirectory \"${star_lib_dir}\" not found in ${STAR_SRC}. Skipping" )
 		return()
 	endif()
 
@@ -274,8 +274,8 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	# Deal with headers
 
 	# Search for default LinkDef if not specified
-	file( GLOB user_linkdefs "${star_lib_dir}/*LinkDef.h"
-	                         "${star_lib_dir}/*LinkDef.hh" )
+	file( GLOB user_linkdefs "${STAR_SRC}/${star_lib_dir}/*LinkDef.h"
+	                         "${STAR_SRC}/${star_lib_dir}/*LinkDef.hh" )
 
 	if( NOT ARG_LINKDEF AND user_linkdefs )
 		# Get the first LinkDef from the list
@@ -294,22 +294,22 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	)
 
 	# Deal with sources
-	file(GLOB_RECURSE sources "${star_lib_dir}/*.cxx"
-	                          "${star_lib_dir}/*.cc"
-	                          "${star_lib_dir}/*.cpp")
+	file(GLOB_RECURSE sources "${STAR_SRC}/${star_lib_dir}/*.cxx"
+	                          "${STAR_SRC}/${star_lib_dir}/*.cc"
+	                          "${STAR_SRC}/${star_lib_dir}/*.cpp")
 
 	if( ARG_EXCLUDE )
 		FILTER_LIST( sources "${ARG_EXCLUDE}" )
 	endif()
 
-	add_library(${star_lib_name} ${sources} ${star_lib_dir}_dict.cxx)
+	add_library(${star_lib_name} ${sources} ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_dict.cxx)
 
 	# Output the library to the respecitve subdirectory in the binary directory
 	get_filename_component( star_lib_path ${star_lib_dir} DIRECTORY )
 	set_target_properties( ${star_lib_name} PROPERTIES
-		LIBRARY_OUTPUT_DIRECTORY "${star_lib_path}" )
+		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${star_lib_path}" )
 
-	get_subdirs( ${star_lib_dir} star_lib_subdirs )
+	get_subdirs( ${STAR_SRC}/${star_lib_dir} star_lib_subdirs )
 
 	target_include_directories( ${star_lib_name} PRIVATE "${star_lib_subdirs}" )
 
@@ -384,8 +384,8 @@ set( StiMaker_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TH1K.h" )
 function( STAR_PREINSTALL_HEADERS parent_dir )
 
 	# Get all header files in 'parent_dir'
-	file( GLOB header_files "${CMAKE_CURRENT_SOURCE_DIR}/${parent_dir}/*/*.h"
-	                        "${CMAKE_CURRENT_SOURCE_DIR}/${parent_dir}/*/*.hh" )
+	file( GLOB header_files "${STAR_SRC}/${parent_dir}/*/*.h"
+	                        "${STAR_SRC}/${parent_dir}/*/*.hh" )
 
 
 	foreach( header_file ${header_files})
