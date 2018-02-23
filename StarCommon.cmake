@@ -259,8 +259,8 @@ endfunction()
 function(STAR_ADD_LIBRARY star_lib_dir)
 
 	# First check that the path exists
-	if( NOT IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir} )
-		message( WARNING "StarCommon: Subdirectory \"${star_lib_dir}\" not found in ${CMAKE_CURRENT_SOURCE_DIR}. Skipping" )
+	if( NOT IS_DIRECTORY ${star_lib_dir} )
+		message( WARNING "StarCommon: Directory \"${star_lib_dir}\" not found. Skipping" )
 		return()
 	endif()
 

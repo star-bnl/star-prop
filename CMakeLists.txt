@@ -2,8 +2,10 @@ cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
 project(star-cvs)
 
+set(STAR_SRC "$ENV{STAR}" CACHE PATH "Path to star software source code")
+
 # Add to path in order to pick up the FindXXX.cmake files included in this project
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/star-cmake")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 
 # STAR software depends on ROOT
 find_package(ROOT COMPONENTS Table HistPainter Minuit Geom Spectrum)
@@ -36,11 +38,11 @@ include_directories(
 	${LIBXML2_INCLUDE_DIR}
 	${LOG4CXX_INCLUDE_DIR}
 	${MYSQL_INCLUDE_DIRS}
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/StRoot
-	${CMAKE_CURRENT_SOURCE_DIR}/StRoot/RTS/include
-	${CMAKE_CURRENT_SOURCE_DIR}/StRoot/RTS/src
-	${CMAKE_CURRENT_SOURCE_DIR}/StRoot/RTS/trg/include
+	${STAR_SRC}
+	${STAR_SRC}/StRoot
+	${STAR_SRC}/StRoot/RTS/include
+	${STAR_SRC}/StRoot/RTS/src
+	${STAR_SRC}/StRoot/RTS/trg/include
 	${CMAKE_BINARY_DIR}/${STAR_ADDITIONAL_INSTALL_PREFIX}/include
 	# The following directories need to be included until header files can
 	# be generated from idl
@@ -265,5 +267,5 @@ set( star_lib_dirs
 
 
 foreach( star_lib_dir ${star_lib_dirs} )
-	star_add_library( ${star_lib_dir} )
+	star_add_library( "${STAR_SRC}/${star_lib_dir}" )
 endforeach()
