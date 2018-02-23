@@ -274,8 +274,8 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	# Deal with headers
 
 	# Search for default LinkDef if not specified
-	file( GLOB user_linkdefs "${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir}/*LinkDef.h"
-	                         "${CMAKE_CURRENT_SOURCE_DIR}/${star_lib_dir}/*LinkDef.hh" )
+	file( GLOB user_linkdefs "${star_lib_dir}/*LinkDef.h"
+	                         "${star_lib_dir}/*LinkDef.hh" )
 
 	if( NOT ARG_LINKDEF AND user_linkdefs )
 		# Get the first LinkDef from the list
