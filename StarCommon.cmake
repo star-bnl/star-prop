@@ -363,15 +363,15 @@ endmacro()
 
 
 # special cases
-set( St_base_LINKDEF_HEADERS "StRoot/St_base/Stypes.h" )
+set( St_base_LINKDEF_HEADERS "${STAR_SRC}/StRoot/St_base/Stypes.h" )
 set( StEvent_LINKDEF_HEADERS
-	"StRoot/StDaqLib/TRG/trgStructures2000.h"
-	"StRoot/StDaqLib/TRG/trgStructures2002.h"
-	"StRoot/StDaqLib/TRG/trgStructures2003.h"
-	"StRoot/StDaqLib/TRG/trgStructures2004.h"
-	"StRoot/StDaqLib/TRG/trgStructures2005.h"
-	"StRoot/StDaqLib/TRG/trgStructures2007.h"
-	"StRoot/StDaqLib/TRG/trgStructures.h"
+	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2000.h"
+	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2002.h"
+	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2003.h"
+	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2004.h"
+	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2005.h"
+	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2007.h"
+	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures.h"
 	"${STAR_CMAKE_DIR}/StArray_cint.h"
 )
 set( StiMaker_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TH1K.h" )
