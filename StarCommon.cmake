@@ -362,35 +362,6 @@ macro( GET_SUBDIRS parent_directory subdirectories  )
 endmacro()
 
 
-# A list of regex'es to exclude from any processing in star_repo directories
-set( STAR_BLACKLIST_DIR_NAMES
-	.git
-	cmake
-	macros
-	Mini
-	Pool
-	StarGenerator
-	StBTofSimMaker
-	StBTofMixerMaker
-	StFgt
-	StFtpc
-	StHbt
-	StJetMaker
-	StTagsMaker
-	StTofHitMaker
-	StTrgDatFileReader
-	StTrgMaker
-	StTriggerUtilities
-	Geometry
-	StarAgmlChecker
-	StarAgmlViewer
-	StarGeometry
-	StarVMCApplication
-	Stv
-	StVmcTools
-	xgeometry
-)
-
 # special cases
 set( St_base_LINKDEF_HEADERS "StRoot/St_base/Stypes.h" )
 set( StEvent_LINKDEF_HEADERS
