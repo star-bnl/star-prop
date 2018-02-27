@@ -8,7 +8,7 @@ set(STAR_SRC "$ENV{STAR}" CACHE PATH "Path to star software source code")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 
 # STAR software depends on ROOT
-find_package(ROOT COMPONENTS Table HistPainter Minuit Geom Spectrum)
+find_package(ROOT COMPONENTS Table HistPainter Minuit Geom Spectrum Vc)
 
 if( ${ROOT_CXX_FLAGS} MATCHES "-m32" )
 	message( STATUS "Found -m32 option in $ROOT_CXX_FLAGS (root-config). Will add it to $CMAKE_CXX_FLAGS" )
@@ -269,6 +269,9 @@ set( star_lib_dirs
 foreach( star_lib_dir ${star_lib_dirs} )
 	star_add_library( ${star_lib_dir} )
 endforeach()
+
+# Set package specific properties
+set_target_properties( TPCCATracker PROPERTIES LINK_LIBRARIES "${ROOT_Vc_LIBRARY}" )
 
 
 install(DIRECTORY ${parent_dir} DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/include"
