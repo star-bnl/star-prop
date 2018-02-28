@@ -17,7 +17,7 @@ list( APPEND STAR_INCLUDE_DIRS ${STAR_INCLUDE_DIR_TWO})
 
 
 set( STAR_LIBRARY_DIRS "${CMAKE_CURRENT_BINARY_DIR}/.$ENV{STAR_HOST_SYS}/lib"
-                       "${STAR_ROOT}.$ENV{STAR_HOST_SYS}/lib"
+                       "${STAR_ROOT}/.$ENV{STAR_HOST_SYS}/lib"
                        "$ENV{STAR}/.$ENV{STAR_HOST_SYS}/lib" )
 
 set( star_core_libs
@@ -56,7 +56,7 @@ foreach( star_component ${star_core_libs} ${STAR_FIND_COMPONENTS} )
 	find_library( STAR_${star_component}_LIBRARY ${star_component}
 	              PATHS
 	              "./.$ENV{STAR_HOST_SYS}/lib"
-	              "${STAR_ROOT}.$ENV{STAR_HOST_SYS}/lib"
+	              "${STAR_ROOT}/.$ENV{STAR_HOST_SYS}/lib"
 	              "$ENV{STAR}/.$ENV{STAR_HOST_SYS}/lib"
 	)
 	
