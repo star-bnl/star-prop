@@ -6,12 +6,6 @@
 #  STAR_LIBRARY_DIRS
 #
 
-# Perform some setup standard to STAR experiment environment
-if( STAR_FIND_REQUIRED_FullSetup )
-	include( StarCommon )
-	list( REMOVE_ITEM STAR_FIND_COMPONENTS "FullSetup" )
-endif()
-
 
 set( STAR_INCLUDE_DIRS )
 
