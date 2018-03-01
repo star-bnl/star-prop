@@ -274,6 +274,6 @@ endforeach()
 set_target_properties( TPCCATracker PROPERTIES LINK_LIBRARIES "${ROOT_Vc_LIBRARY}" )
 
 
-install(DIRECTORY ${parent_dir} DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/include"
-        MESSAGE_NEVER
+install(DIRECTORY ${STAR_SRC}/StarVMC ${STAR_SRC}/StRoot
+        DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/include"
         FILES_MATCHING REGEX "\\.(h|hh)$")
