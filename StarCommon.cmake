@@ -94,126 +94,29 @@ endfunction()
 
 
 #
-# Generates a basic LinkDef header ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_LinkDef.h
-# by parsing the user provided header files with standard linux utilities awk and sed.
+# Sets up generation of an automatic LinkDef header ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_LinkDef.h
 #
 function(STAR_GENERATE_LINKDEF star_lib_dir dict_headers)
+	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS" ${ARGN})
 
 	# Set default name for LinkDef file
 	set( linkdef_file "${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_LinkDef.h" )
-	set_source_files_properties(${linkdef_file} PROPERTIES GENERATED TRUE)
-
-	message(STATUS "StarCommon: Generating LinkDef header: ${linkdef_file}")
-
-	# Check availability of required system tools
-	find_program(EXEC_AWK NAMES gawk awk)
-	find_program(EXEC_SED NAMES gsed sed)
-
-	if(NOT EXEC_AWK OR NOT EXEC_SED)
-		message(FATAL_ERROR "StarCommon: FATAL: STAR_GENERATE_LINKDEF function requires awk and sed commands")
-	endif()
-
-	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS" ${ARGN})
-
-	# If provided by the user read the contents of their LinkDef file into a list
-	set( linkdef_contents )
-
+	set( gen_linkdef_args "-o;${linkdef_file};${ARG_LINKDEF_HEADERS}" )
 	if( ARG_LINKDEF )
-		file(READ ${ARG_LINKDEF} linkdef_contents)
-		# Convert file lines into a CMake list
-		STRING(REGEX REPLACE ";" "\\\\;" linkdef_contents "${linkdef_contents}")
-		STRING(REGEX REPLACE "\n" ";" linkdef_contents "${linkdef_contents}")
+		list( APPEND gen_linkdef_args "-l;${ARG_LINKDEF}" )
 	endif()
 
-	# Parse header files for ClassDef() statements and collect all entities into
-	# a list
-	set( dict_entities )
-	set( dict_valid_headers )
+	add_custom_command(
+		OUTPUT ${linkdef_file}
+		COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gen_linkdef.sh" ${gen_linkdef_args}
+		DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/gen_linkdef.sh"
+		)
 
-	foreach( header ${ARG_LINKDEF_HEADERS} )
-
-		# Parse for special namespace marked with $NMSPC in the header file
-		set( my_exec_cmd ${EXEC_AWK} "match($0,\"namespace[[:space:]]+(\\\\w+).*\\\\$NMSPC\", a) { printf(a[1]\"\\r\") }" )
-		execute_process(COMMAND ${my_exec_cmd} ${header} OUTPUT_VARIABLE extracted_namespace OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-		set( my_exec_cmd ${EXEC_AWK} "match($0,\"^[[:space:]]*ClassDef[[:space:]]*\\\\(([^#]+),.*\\\\)\",a){ printf(a[1]\"\\r\") }" )
-
-		execute_process( COMMAND ${my_exec_cmd} ${header} COMMAND ${EXEC_SED} -e "s/\\s\\+/;/g"
-			OUTPUT_VARIABLE extracted_dict_objects OUTPUT_STRIP_TRAILING_WHITESPACE )
-
-		# Prepend dictionary types with namespace
-		if( extracted_namespace )
-			string(REGEX REPLACE "([^;]+)" "${extracted_namespace}::\\1" extracted_dict_objects "${extracted_dict_objects}")
-		endif()
-
-		list( APPEND dict_entities ${extracted_dict_objects} )
-
-		if( extracted_dict_objects )
-			list( APPEND dict_valid_headers ${header} )
-		else()
-			# if header base name matches linkdef_contents then use this header
-			get_filename_component( header_base_name ${header} NAME_WE )
-
-			if( "${linkdef_contents}" MATCHES "${header_base_name}" )
-				list( APPEND dict_valid_headers ${header} )
-			endif()
-		endif()
-
-	endforeach()
-
-
-	# Special case dealing with StEvent containers
-	set( dict_entities_stcontainers )
-
-	if( "${star_lib_dir}" MATCHES "StEvent" )
-		foreach( header ${ARG_LINKDEF_HEADERS} )
-			set( my_exec_cmd ${EXEC_AWK} "match($0,\"^[[:space:]]*StCollectionDef[[:space:]]*\\\\(([^#]+)\\\\)\",a){ printf(a[1]\"\\r\") }" )
-			
-			execute_process( COMMAND ${my_exec_cmd} ${header} COMMAND ${EXEC_SED} -e "s/\\s\\+/;/g"
-				OUTPUT_VARIABLE extracted_dict_objects OUTPUT_STRIP_TRAILING_WHITESPACE )
-
-			list( APPEND dict_entities_stcontainers ${extracted_dict_objects} )
-
-			if( extracted_dict_objects )
-				list( APPEND dict_valid_headers ${header} )
-			endif()
-		endforeach()
-	endif()
-
-	# Assign new validated headers 
-	set( ${dict_headers} ${dict_valid_headers} PARENT_SCOPE )
-
-	# Write contents to the generated *_LinkDef.h file
-
-	if( "${linkdef_contents}" MATCHES "pragma[ \t]+link[ \t]+off[ \t]+all" )
-		file(WRITE ${linkdef_file} "#ifdef __CINT__\n\n")
-	else()
-		file(WRITE ${linkdef_file} "#ifdef __CINT__\n\n#pragma link off all globals;\n#pragma link off all classes;\n#pragma link off all functions;\n\n")
-	endif()
-
-	foreach( linkdef_line ${linkdef_contents} )
-		if( "${linkdef_line}" MATCHES "#pragma[ \t]+link")
-			file( APPEND ${linkdef_file} "${linkdef_line}\n" )
-		endif()
-	endforeach()
-	
-	file( APPEND ${linkdef_file} "\n\n// Collected dictionary entities\n\n" )
-
-	foreach( dict_entity ${dict_entities} )
-		if( NOT "${linkdef_contents}" MATCHES "class[ ]+${dict_entity}[< ;+-]+")
-			file( APPEND ${linkdef_file} "#pragma link C++ class ${dict_entity}+;\n" )
-		endif()
-	endforeach()
-
-	file( APPEND ${linkdef_file} "\n\n" )
-
-	foreach( dict_entity ${dict_entities_stcontainers} )
-		file( APPEND ${linkdef_file} "#pragma link C++ class StPtrVec${dict_entity}-;\n" )
-		file( APPEND ${linkdef_file} "#pragma link C++ class StSPtrVec${dict_entity}-;\n" )
-	endforeach()
-
-	file( APPEND ${linkdef_file} "#endif\n" )
-
+	# XXX We used to return useful headers to ${dict_headers}. Since the
+	# scanning is defered to the build time we can't do it here anymore.
+	# One possible solution would be to merge gen_linkdef.sh and rootcint
+	# stages together. For now let's just return all available headers.
+	set( ${dict_headers} ${ARG_LINKDEF_HEADERS} PARENT_SCOPE )
 endfunction()
 
 
