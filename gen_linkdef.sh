@@ -46,6 +46,7 @@ for INFILE in "$@"; do
 	fi
 	classes+=( "${file_classes[@]}" )
 
+	# check if array is not empty
 	if [ "${#file_classes[@]}" -ne 0 ]; then
 		# if there is at least one ClassDef, then use the header file
 		echo -n "$INFILE;"
@@ -63,7 +64,7 @@ for INFILE in "$@"; do
 	stcontainer_classes+=( $(awk 'match($0,"^[[:space:]]*StCollectionDef[[:space:]]*\\(([^#]+)\\)",a) { print a[1] }' "$INFILE") )
 done
 
-# check if array is not empty
+mkdir -p "$(dirname "$output_linkdef_path")"
 echo "#ifdef __CINT__" > "$output_linkdef_path"
 echo >> "$output_linkdef_path"
 # add "link of all" lines if they are not in the input linkdef
