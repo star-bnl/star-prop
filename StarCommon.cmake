@@ -75,10 +75,14 @@ function( STAR_HEADERS_FOR_ROOT_DICTIONARY star_lib_dir headers_for_dict )
 
 		get_filename_component( header_file_name ${full_path_header} NAME )
 
+		# Check for at least one (not commented out) ClassDef macro in the header file
+		execute_process(COMMAND grep -m1 -H "^[[:space:]]*ClassDef" ${full_path_header}
+		                RESULT_VARIABLE exit_code OUTPUT_QUIET)
+
 		string( TOLOWER ${header_file_name} header_file_name )
 
 		# Skip LinkDef files from globbing result
-		if( ${header_file_name} MATCHES "linkdef" )
+		if( ${header_file_name} MATCHES "linkdef" OR ${exit_code} )
 			# Uncomment next line to make it verbose
 			#message( STATUS "StarCommon: WARNING: Skipping LinkDef header ${full_path_header}" )
 			continue()
