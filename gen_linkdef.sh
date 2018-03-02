@@ -33,7 +33,6 @@ fi
 
 classes=()
 stcontainer_classes=()
-headers=() # TODO this is filled, but not used yet
 
 for INFILE in "$@"; do
 	echo "Scanning $INFILE" >&2
@@ -49,7 +48,7 @@ for INFILE in "$@"; do
 
 	if [ "${#file_classes[@]}" -ne 0 ]; then
 		# if there is at least one ClassDef, then use the header file
-		headers+=( "$INFILE" ) # TODO maybe just print to stdout?
+		echo -n "$INFILE;"
 	else
 		# take filename without extension as the class name
 		header_filename="$(basename "$INFILE")"
@@ -57,7 +56,7 @@ for INFILE in "$@"; do
 
 		# if classname is in the original linkdef, then use the header file
 		if [ -n "$input_linkdef_path" ] && grep "$header_classname" "$input_linkdef_path" 1>/dev/null; then
-			headers+=( "$INFILE" )
+			echo -n "$INFILE;"
 		fi
 	fi
 

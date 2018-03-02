@@ -98,7 +98,7 @@ endfunction()
 
 
 #
-# Sets up generation of an automatic LinkDef header ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_LinkDef.h
+# Generate an automatic LinkDef header ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_LinkDef.h
 #
 function(STAR_GENERATE_LINKDEF star_lib_dir dict_headers)
 	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS" ${ARGN})
@@ -110,17 +110,18 @@ function(STAR_GENERATE_LINKDEF star_lib_dir dict_headers)
 		list( APPEND gen_linkdef_args "-l;${ARG_LINKDEF}" )
 	endif()
 
-	add_custom_command(
-		OUTPUT ${linkdef_file}
+	# It would be better if we had add_custom_command() here, because that
+	# would allow to scan things in parallel. But we can't do that just
+	# here because we need to retrieve a list of "good" headers to use with
+	# rootcint. The TODO is to merge those two steps and have them use
+	# add_custom_command() so that this can run during make phase.
+	set_source_files_properties(${linkdef_file} PROPERTIES GENERATED TRUE)
+	execute_process(
 		COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gen_linkdef.sh" ${gen_linkdef_args}
-		DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/gen_linkdef.sh"
+		OUTPUT_VARIABLE used_headers
 		)
 
-	# XXX We used to return useful headers to ${dict_headers}. Since the
-	# scanning is defered to the build time we can't do it here anymore.
-	# One possible solution would be to merge gen_linkdef.sh and rootcint
-	# stages together. For now let's just return all available headers.
-	set( ${dict_headers} ${ARG_LINKDEF_HEADERS} PARENT_SCOPE )
+	set( ${dict_headers} ${used_headers} PARENT_SCOPE )
 endfunction()
 
 
