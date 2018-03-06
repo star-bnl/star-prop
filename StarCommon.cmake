@@ -96,7 +96,7 @@ endfunction()
 #
 # Generate an automatic LinkDef header ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_LinkDef.h
 #
-function(STAR_GENERATE_LINKDEF star_lib_dir dict_headers)
+function(STAR_GENERATE_LINKDEF star_lib_dir)
 	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS" ${ARGN})
 
 	# Set default name for LinkDef file
@@ -116,9 +116,6 @@ function(STAR_GENERATE_LINKDEF star_lib_dir dict_headers)
 		COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gen_linkdef.sh" ${gen_linkdef_args}
 		DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/gen_linkdef.sh" ${ARG_LINKDEF_HEADERS}
 		)
-
-	# Return a single header file including all "good" headers
-	set( ${dict_headers} ${dictinc_file} PARENT_SCOPE )
 endfunction()
 
 
@@ -140,15 +137,10 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir)
 
 	# Generate a basic LinkDef file and, if available, merge with the one
 	# provided by the user
-	set( dict_headers )
-	star_generate_linkdef( ${star_lib_dir} dict_headers LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${linkdef_headers})
+	star_generate_linkdef( ${star_lib_dir} LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${linkdef_headers})
 
-	foreach( header ${ARG_LINKDEF_HEADERS})
-		get_filename_component( header_absolute_path ${header} ABSOLUTE )
-		list( INSERT dict_headers 0 "${header_absolute_path}" )
-	endforeach()
-
-	root_generate_dictionary( ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_dict ${dict_headers}
+	root_generate_dictionary( ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_dict
+		${ARG_LINKDEF_HEADERS} ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_DictInc.h
 		LINKDEF ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_LinkDef.h
 		OPTIONS ${ARG_LINKDEF_OPTIONS}
 	)
