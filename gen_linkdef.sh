@@ -44,7 +44,6 @@ classes=()
 stcontainer_classes=()
 
 for INFILE in "$@"; do
-	echo "Scanning $INFILE" >&2
 	file_classes=( $(awk 'match($0,"^[[:space:]]*ClassDef[[:space:]]*\\(([^#]+),.*\\)", a) { print a[1] }' "$INFILE") )
 	namespace="$(awk 'match($0,"namespace[[:space:]]+(\\w+).*\\$NMSPC", a) { print a[1] }' "$INFILE")"
 	if [ -n "$namespace" ]; then
