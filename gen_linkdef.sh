@@ -3,7 +3,7 @@
 set -e
 
 function print_usage() {
-    echo "Usage: $0 [-l input_Linkdef.h] -o output [inputs...]" 1>&2;
+    echo "Usage: $0 [-l input_Linkdef.h] -o output_linkdef output_dictinc [inputs...]" 1>&2;
     exit 1;
 }
 
@@ -15,7 +15,13 @@ while true; do
 			input_linkdef_path="$2" ;
 			shift 2 ;;
 		-o)
-			output_linkdef_path="$2" ;
+			o_args=($2) ;
+			if [[ ${#o_args[@]} != 2 ]]; then
+				echo "$0: -o options requires two arguments"
+				print_usage
+			fi
+			output_linkdef_path=${o_args[0]} ;
+			output_dictinc_path=${o_args[1]} ;
 			shift 2 ;;
 		--)
 			shift ;
@@ -30,6 +36,9 @@ if [ -z "${output_linkdef_path}" ]; then
 	echo "Missing -o"
 	print_usage
 fi
+
+
+echo "// Automatically collected header files for ROOT dictionary" > $output_dictinc_path
 
 classes=()
 stcontainer_classes=()
@@ -49,7 +58,7 @@ for INFILE in "$@"; do
 	# check if array is not empty
 	if [ "${#file_classes[@]}" -ne 0 ]; then
 		# if there is at least one ClassDef, then use the header file
-		echo -n "$INFILE;"
+		echo "#include \"$INFILE\"" >> $output_dictinc_path
 	else
 		# take filename without extension as the class name
 		header_filename="$(basename "$INFILE")"
@@ -57,7 +66,7 @@ for INFILE in "$@"; do
 
 		# if classname is in the original linkdef, then use the header file
 		if [ -n "$input_linkdef_path" ] && grep "$header_classname" "$input_linkdef_path" 1>/dev/null; then
-			echo -n "$INFILE;"
+			echo "#include \"$INFILE\"" >> $output_dictinc_path
 		fi
 	fi
 

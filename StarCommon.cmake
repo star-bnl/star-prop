@@ -101,23 +101,24 @@ function(STAR_GENERATE_LINKDEF star_lib_dir dict_headers)
 
 	# Set default name for LinkDef file
 	set( linkdef_file "${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_LinkDef.h" )
-	set( gen_linkdef_args "-o;${linkdef_file};${ARG_LINKDEF_HEADERS}" )
+	set( dictinc_file "${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_DictInc.h" )
+
+	# Pass both files to get_likdef.sh as -o arguments
+	set( gen_linkdef_args "-o;${linkdef_file} ${dictinc_file};${ARG_LINKDEF_HEADERS}" )
+
 	if( ARG_LINKDEF )
 		list( APPEND gen_linkdef_args "-l;${ARG_LINKDEF}" )
 	endif()
 
-	# It would be better if we had add_custom_command() here, because that
-	# would allow to scan things in parallel. But we can't do that just
-	# here because we need to retrieve a list of "good" headers to use with
-	# rootcint. The TODO is to merge those two steps and have them use
-	# add_custom_command() so that this can run during make phase.
-	set_source_files_properties(${linkdef_file} PROPERTIES GENERATED TRUE)
-	execute_process(
+	# Generate the above files to be used in dictionary generation by ROOT
+	add_custom_command(
+		OUTPUT ${linkdef_file} ${dictinc_file}
 		COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gen_linkdef.sh" ${gen_linkdef_args}
-		OUTPUT_VARIABLE used_headers
+		DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/gen_linkdef.sh" ${ARG_LINKDEF_HEADERS}
 		)
 
-	set( ${dict_headers} ${used_headers} PARENT_SCOPE )
+	# Return a single header file including all "good" headers
+	set( ${dict_headers} ${dictinc_file} PARENT_SCOPE )
 endfunction()
 
 
