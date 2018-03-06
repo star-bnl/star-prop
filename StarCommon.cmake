@@ -139,11 +139,22 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir)
 	# provided by the user
 	star_generate_linkdef( ${star_lib_dir} LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${linkdef_headers})
 
-	root_generate_dictionary( ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_dict
-		${ARG_LINKDEF_HEADERS} ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_DictInc.h
-		LINKDEF ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_LinkDef.h
-		OPTIONS ${ARG_LINKDEF_OPTIONS}
-	)
+	# Prepare include directories used in ROOT dictionary generation
+	get_directory_property(all_include_dirs INCLUDE_DIRECTORIES)
+	string(REGEX REPLACE "([^;]+)" "-I\\1" dict_include_dirs "${all_include_dirs}")
+
+	# May need to look for rootcling first
+	find_program(ROOT_DICTGEN_EXECUTABLE rootcint HINTS $ENV{ROOTSYS}/bin)
+	# Define prefix for shorthand
+	set(dict_prefix "${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}")
+
+	# Generate ROOT dictionary using the LinkDef file
+	add_custom_command(OUTPUT ${dict_prefix}_dict.cxx
+	                   COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f ${dict_prefix}_dict.cxx
+	                   -c ${ARG_LINKDEF_OPTIONS} ${dict_include_dirs}
+	                   ${ARG_LINKDEF_HEADERS} ${dict_prefix}_DictInc.h ${dict_prefix}_LinkDef.h
+	                   DEPENDS ${ARG_LINKDEF_HEADERS} ${dict_prefix}_DictInc.h ${dict_prefix}_LinkDef.h
+	                   VERBATIM)
 
 endfunction()
 
