@@ -144,6 +144,12 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir star_lib_dir_out)
 
 	FILTER_LIST( linkdef_headers EXCLUDE ${ARG_EXCLUDE} )
 
+	# This is a hack for the call to this function from STAR_ADD_LIBRARY_GEOMETRY() where the
+	# headers are generated at runtime and cannot be globbed. So, we can specify them by hand.
+	if( NOT linkdef_headers )
+		set(linkdef_headers ${ARG_LINKDEF_HEADERS})
+	endif()
+
 	# Generate a basic LinkDef file and, if available, merge with the one
 	# provided by the user
 	star_generate_linkdef( ${star_lib_dir_out} LINKDEF ${user_linkdef} LINKDEF_HEADERS ${linkdef_headers} )
@@ -361,5 +367,69 @@ function(STAR_PREINSTALL_HEADERS parent_dir)
 		get_filename_component( header_file_name ${header_file} NAME )
 		configure_file( "${header_file}" "${STAR_ADDITIONAL_INSTALL_PREFIX}/include/${header_file_name}" COPYONLY )
 	endforeach()
+
+endfunction()
+
+
+#
+# Creates ROOT TGeo geometries from xml files
+#
+function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
+
+	# Get first optional unnamed parameter
+	set(user_lib_name ${ARGV1})
+
+	star_target_paths(${star_lib_dir} star_lib_name star_lib_dir_abs star_lib_dir_out)
+
+	if( user_lib_name )
+		string(REPLACE ${star_lib_name} ${user_lib_name} star_lib_dir_out ${star_lib_dir_out})
+		set(star_lib_name ${user_lib_name})
+	endif()
+
+	set(geo_py_parser ${STAR_SRC}/mgr/agmlParser.py)
+
+	find_program(EXEC_PYTHON NAMES python2.7 python2)
+
+	file(GLOB_RECURSE geo_xml_paths "${star_lib_dir_abs}/*.xml")
+	FILTER_LIST( geo_xml_paths EXCLUDE "Compat" )
+
+	foreach( geo_xml_path ${geo_xml_paths} )
+
+		get_filename_component(geo_name ${geo_xml_path} NAME_WE)
+
+		set(geo_header ${star_lib_dir_out}/${geo_name}.h)
+		set(geo_source ${star_lib_dir_out}/${geo_name}.cxx)
+
+		add_custom_command(
+			OUTPUT ${geo_header} ${geo_source}
+			COMMAND ${EXEC_PYTHON} ${geo_py_parser} --file=${geo_xml_path} --module=${geo_name} --export=AgROOT --path=${star_lib_dir_out}
+			DEPENDS ${geo_py_parser} ${geo_xml_path})
+
+		if( ${geo_name} MATCHES "Config")
+			list(APPEND geo_config_headers ${geo_header})
+		endif()
+		list(APPEND geo_sources ${geo_source})
+
+	endforeach()
+
+	# Create a string by replacing ; with gcc compiler options
+	string(REGEX REPLACE "([^;]+);" "-include \\1 " geo_config_headers_include "${geo_config_headers};")
+
+	# Special treatment requireed for the aggregate geometry file
+	set_source_files_properties(${star_lib_dir_out}/StarGeo.cxx
+		PROPERTIES COMPILE_FLAGS "${geo_config_headers_include}")
+
+	add_library(${star_lib_name} ${geo_sources} ${star_lib_dir_out}_dict.cxx)
+	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
+	target_include_directories(${star_lib_name} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+
+	# Generate the _dict.cxx file for the library
+	star_generate_dictionary(${star_lib_dir_out} ${star_lib_dir_out}
+		LINKDEF_HEADERS ${star_lib_dir_out}/StarGeo.h
+		LINKDEF_OPTIONS "-p;-D__ROOT__")
+
+	install(TARGETS ${star_lib_name}
+		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
+		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib")
 
 endfunction()

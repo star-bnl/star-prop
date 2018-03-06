@@ -91,6 +91,9 @@ endforeach()
 # Set package specific properties
 set_target_properties( TPCCATracker PROPERTIES LINK_LIBRARIES "${ROOT_Vc_LIBRARY}" )
 
+# Build library with STAR geometry
+star_add_library_geometry( StarVMC/Geometry StarGeometry )
+
 
 install(DIRECTORY ${STAR_SRC}/StarVMC ${STAR_SRC}/StRoot
         DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/include"
