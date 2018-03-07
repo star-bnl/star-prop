@@ -38,7 +38,7 @@ if [ -z "${output_linkdef_path}" ]; then
 fi
 
 
-echo "// Automatically collected header files for ROOT dictionary" > $output_dictinc_path
+echo "// Automatically collected header files for ROOT dictionary" > "$output_dictinc_path"
 
 classes=()
 stcontainer_classes=()
@@ -57,7 +57,7 @@ for INFILE in "$@"; do
 	# check if array is not empty
 	if [ "${#file_classes[@]}" -ne 0 ]; then
 		# if there is at least one ClassDef, then use the header file
-		echo "#include \"$INFILE\"" >> $output_dictinc_path
+		echo "#include \"$INFILE\"" >> "$output_dictinc_path"
 	else
 		# take filename without extension as the class name
 		header_filename="$(basename "$INFILE")"
@@ -65,7 +65,7 @@ for INFILE in "$@"; do
 
 		# if classname is in the original linkdef, then use the header file
 		if [ -n "$input_linkdef_path" ] && grep "$header_classname" "$input_linkdef_path" 1>/dev/null; then
-			echo "#include \"$INFILE\"" >> $output_dictinc_path
+			echo "#include \"$INFILE\"" >> "$output_dictinc_path"
 		fi
 	fi
 
