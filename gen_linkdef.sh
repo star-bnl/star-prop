@@ -3,25 +3,22 @@
 set -e
 
 function print_usage() {
-    echo "Usage: $0 [-l input_Linkdef.h] -o output_linkdef output_dictinc [inputs...]" 1>&2;
+    echo "Usage: $0 [-i input_Linkdef.h] -l output_linkdef -d output_dictinc [inputs...]" 1>&2;
     exit 1;
 }
 
-eval set -- "$(getopt -o "o:l:" -n "$0" -- "$@")"
+eval set -- "$(getopt -o "l:d:i:" -n "$0" -- "$@")"
 
 while true; do
 	case "$1" in
-		-l)
+		-i)
 			input_linkdef_path="$2" ;
 			shift 2 ;;
-		-o)
-			o_args=($2) ;
-			if [[ ${#o_args[@]} != 2 ]]; then
-				echo "$0: -o options requires two arguments"
-				print_usage
-			fi
-			output_linkdef_path=${o_args[0]} ;
-			output_dictinc_path=${o_args[1]} ;
+		-l)
+			output_linkdef_path="$2" ;
+			shift 2 ;;
+		-d)
+			output_dictinc_path="$2" ;
 			shift 2 ;;
 		--)
 			shift ;
@@ -33,7 +30,12 @@ while true; do
 done
 
 if [ -z "${output_linkdef_path}" ]; then
-	echo "Missing -o"
+	echo "Missing -l"
+	print_usage
+fi
+
+if [ -z "${output_dictinc_path}" ]; then
+	echo "Missing -d"
 	print_usage
 fi
 

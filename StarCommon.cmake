@@ -104,10 +104,10 @@ function(STAR_GENERATE_LINKDEF star_lib_dir)
 	set( dictinc_file "${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_DictInc.h" )
 
 	# Pass both files to get_likdef.sh as -o arguments
-	set( gen_linkdef_args "-o;${linkdef_file} ${dictinc_file};${ARG_LINKDEF_HEADERS}" )
+	set( gen_linkdef_args "-l;${linkdef_file};-d;${dictinc_file};${ARG_LINKDEF_HEADERS}" )
 
 	if( ARG_LINKDEF )
-		list( APPEND gen_linkdef_args "-l;${ARG_LINKDEF}" )
+		list( APPEND gen_linkdef_args "-i;${ARG_LINKDEF}" )
 	endif()
 
 	# Generate the above files to be used in dictionary generation by ROOT
