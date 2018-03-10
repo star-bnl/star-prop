@@ -131,6 +131,9 @@ target_include_directories(St_g2t PRIVATE
 	"${STAR_SRC}/asps/Simulation/geant321/include"
 	"${STAR_SRC}/asps/Simulation/starsim/include")
 
+star_add_library_vertexnosti( StRoot/StGenericVertexMaker )
+add_dependencies(StGenericVertexMakerNoSti StDb_Tables)
+
 
 install(DIRECTORY ${STAR_SRC}/StarVMC ${STAR_SRC}/StRoot
 	DESTINATION ${STAR_ADDITIONAL_INSTALL_PREFIX}/include

@@ -467,6 +467,56 @@ function(STAR_ADD_LIBRARY_TABLE star_lib_dir )
 endfunction()
 
 
+# Build customized library StGenericVertexMakerNoSti based on StGenericVertexMaker
+function(STAR_ADD_LIBRARY_VERTEXNOSTI star_lib_dir )
+
+	star_target_paths(${star_lib_dir} star_lib_name star_lib_dir_abs star_lib_dir_out)
+
+	string(REPLACE ${star_lib_name} StGenericVertexMakerNoSti star_lib_dir_out ${star_lib_dir_out})
+	set(vtxnosti_headers
+		${star_lib_dir_abs}/StGenericVertexMaker.h
+		${star_lib_dir_abs}/Minuit/St_VertexCutsC.h)
+	set(linkdef_file "${star_lib_dir_out}_LinkDef.h")
+	set(dictinc_file "${star_lib_dir_out}_DictInc.h")
+
+	add_library(StGenericVertexMakerNoSti SHARED
+		${star_lib_dir_abs}/StCtbUtility.cxx
+		${star_lib_dir_abs}/StFixedVertexFinder.cxx
+		${star_lib_dir_abs}/StGenericVertexFinder.cxx
+		${star_lib_dir_abs}/StGenericVertexMaker.cxx
+		${star_lib_dir_abs}/StppLMVVertexFinder.cxx
+		${star_lib_dir_abs}/VertexFinderOptions.cxx
+		${star_lib_dir_abs}/Minuit/StMinuitVertexFinder.cxx
+		${star_lib_dir_abs}/Minuit/St_VertexCutsC.cxx
+		${star_lib_dir_out}_dict.cxx )
+	# Output the library to the respecitve subdirectory in the binary directory
+	set_target_properties(StGenericVertexMakerNoSti PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
+
+	add_custom_command(
+		OUTPUT ${dictinc_file} ${linkdef_file}
+		COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/gen_linkdef.sh -l ${linkdef_file} -d ${dictinc_file} ${vtxnosti_headers}
+		DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/gen_linkdef.sh ${vtxnosti_headers} )
+
+	get_property(global_include_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
+	string( REGEX REPLACE "([^;]+)" "-I\\1" global_include_dirs "${global_include_dirs}" )
+
+	find_program(ROOT_DICTGEN_EXECUTABLE rootcint HINTS $ENV{ROOTSYS}/bin)
+
+	# Generate ROOT dictionary using the *_LinkDef.h and *_DictInc.h files
+	add_custom_command(
+		OUTPUT ${star_lib_dir_out}_dict.cxx
+		COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f ${star_lib_dir_out}_dict.cxx
+		-c -p -D__ROOT__ ${global_include_dirs}
+		${vtxnosti_headers} ${dictinc_file} ${linkdef_file}
+		DEPENDS ${vtxnosti_headers} ${dictinc_file} ${linkdef_file}
+		VERBATIM )
+
+	install(TARGETS StGenericVertexMakerNoSti
+		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
+		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib")
+endfunction()
+
+
 # Generate source from idl files
 function(STAR_PROCESS_IDL idl_files star_lib_name star_lib_dir_out out_sources_idl out_headers_idl)
 
