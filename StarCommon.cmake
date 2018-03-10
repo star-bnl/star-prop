@@ -217,7 +217,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	set_target_properties( ${star_lib_name} PROPERTIES
 		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${star_lib_path}" )
 
-	get_subdirs( ${STAR_SRC}/${star_lib_dir} star_lib_subdirs )
+	get_subdirs( ${STAR_SRC}/${star_lib_dir} star_lib_subdirs INCLUDE_PARENT )
 
 	target_include_directories( ${star_lib_name} PRIVATE "${star_lib_subdirs}" )
 
@@ -257,7 +257,11 @@ macro( GET_SUBDIRS parent_directory subdirectories  )
 	file( GLOB all_files RELATIVE ${parent_directory} ${parent_directory}/* )
 
 	# Include the parent directory in the list
-	set( sub_dirs "${parent_directory}" )
+	set( sub_dirs "" )
+
+	if( ${ARGN} MATCHES "INCLUDE_PARENT" )
+		set( sub_dirs "${parent_directory}" )
+	endif()
 	
 	foreach( sub_dir ${all_files} )
 		if( IS_DIRECTORY ${parent_directory}/${sub_dir} )
