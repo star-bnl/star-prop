@@ -166,6 +166,13 @@ endfunction()
 #
 function(STAR_ADD_LIBRARY star_lib_dir)
 
+	if( IS_ABSOLUTE ${star_lib_dir} )
+		set(star_lib_dir_absolute ${star_lib_dir})
+		file(RELATIVE_PATH star_lib_dir ${STAR_SRC} ${star_lib_dir})
+	else()
+		set(star_lib_dir_absolute ${STAR_SRC}/${star_lib_dir})
+	endif()
+
 	# First check that the path exists
 	if( NOT IS_DIRECTORY ${STAR_SRC}/${star_lib_dir} )
 		message( WARNING "StarCommon: Subdirectory \"${star_lib_dir}\" not found in ${STAR_SRC}. Skipping" )
