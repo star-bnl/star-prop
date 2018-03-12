@@ -65,47 +65,16 @@ set( star_lib_dir_blacklist
 	StRoot/html
 	StRoot/macros
 	StRoot/qainfo
-	StRoot/RTS
 	StRoot/StarGenerator
-	StRoot/StBTofPool
 	StRoot/StEEmcPool
-	StRoot/StEmcPool
-	StRoot/StEpdHitMaker
-	StRoot/StEpdUtil
-	StRoot/StEStructPool
-	StRoot/StEtrFastSimMaker
-	StRoot/StFgtA2CMaker
-	StRoot/StFgtClusterMaker
-	StRoot/StFgtDbMaker
-	StRoot/StFgtPointMaker
 	StRoot/StFgtPool
-	StRoot/StFgtRawMaker
-	StRoot/StFgtSimulatorMaker
-	StRoot/StFgtUtil
 	StRoot/StFlowMaker
-	StRoot/StFpdMaker
-	StRoot/StFpsRawHitMaker
-	StRoot/StFtpcCalibMaker
-	StRoot/StFtpcClusterMaker
-	StRoot/StFtpcDriftMapMaker
-	StRoot/StFtpcMixerMaker
-	StRoot/StFtpcSlowSimMaker
-	StRoot/StFtpcTrackMaker
 	StRoot/St_geant_Maker
 	StRoot/St_geom_Maker
-	StRoot/StGridCollector
-	StRoot/StHbtMaker
 	StRoot/StHighptPool
-	StRoot/StHitFilterMaker
-	StRoot/StHltMaker
 	StRoot/StJetMaker
-	StRoot/StRichPool
-	StRoot/StSpectraPool
-	StRoot/StSpinMaker
 	StRoot/StSpinPool
-	StRoot/StSvtPool
 	StRoot/StTagsMaker
-	StRoot/StTofHitMaker
 	StRoot/StTofPool
 	StRoot/StTrsMaker
 )
