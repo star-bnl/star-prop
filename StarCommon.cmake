@@ -217,7 +217,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	set_target_properties( ${star_lib_name} PROPERTIES
 		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${star_lib_path}" )
 
-	get_subdirs( ${STAR_SRC}/${star_lib_dir} star_lib_subdirs INCLUDE_PARENT )
+	GET_SUBDIRS( ${STAR_SRC}/${star_lib_dir} star_lib_subdirs INCLUDE_PARENT )
 
 	target_include_directories( ${star_lib_name} PRIVATE "${star_lib_subdirs}" )
 
@@ -253,22 +253,36 @@ endmacro()
 
 
 # Builds a list of subdirectories with complete path found in the
-# 'parent_directory'
-macro( GET_SUBDIRS parent_directory subdirectories  )
+# 'directories'
+macro( GET_SUBDIRS directories subdirectories  )
 
-	file( GLOB all_files RELATIVE ${parent_directory} ${parent_directory}/* )
+	cmake_parse_arguments(ARG "INCLUDE_PARENT" "" "" ${ARGN})
 
-	# Include the parent directory in the list
 	set( sub_dirs "" )
 
-	if( ${ARGN} MATCHES "INCLUDE_PARENT" )
-		set( sub_dirs "${parent_directory}" )
-	endif()
-	
-	foreach( sub_dir ${all_files} )
-		if( IS_DIRECTORY ${parent_directory}/${sub_dir} )
-			list( APPEND sub_dirs ${parent_directory}/${sub_dir} )
+	foreach( dir ${directories} )
+		if( NOT IS_ABSOLUTE ${dir})
+			set( dir ${STAR_SRC}/${dir})
 		endif()
+
+		if( NOT IS_DIRECTORY ${dir} )
+			message( WARNING "StarCommon: Directory ${dir} not found" )
+			continue()
+		endif()
+
+		file( GLOB all_files RELATIVE ${dir} ${dir}/* )
+
+		# Include the parent directory in the list
+		if( ${ARG_INCLUDE_PARENT} )
+			list( APPEND sub_dirs ${dir} )
+		endif()
+
+		foreach( sub_dir ${all_files} )
+			if( IS_DIRECTORY ${dir}/${sub_dir} )
+				list( APPEND sub_dirs ${dir}/${sub_dir} )
+			endif()
+		endforeach()
+
 	endforeach()
 	
 	set( ${subdirectories} ${sub_dirs} )
