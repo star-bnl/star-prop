@@ -45,6 +45,8 @@ include_directories(
 	${STAR_SRC}/StRoot/RTS/include
 	${STAR_SRC}/StRoot/RTS/src
 	${STAR_SRC}/StRoot/RTS/trg/include
+	# Inlude path to header files with flatten directory hierarchy
+	# created by star_preinstall_headers()
 	${CMAKE_BINARY_DIR}/${STAR_ADDITIONAL_INSTALL_PREFIX}/include
 	# The following directories need to be included until header files can
 	# be generated from idl
@@ -67,16 +69,16 @@ set( star_lib_dir_blacklist
 	StRoot/qainfo
 	StRoot/StarGenerator
 	StRoot/StEEmcPool
-	StRoot/StFgtPool
+	StRoot/StFgtPool          # blacklisted in cons
 	StRoot/StFlowMaker
 	StRoot/St_geant_Maker
 	StRoot/St_geom_Maker
-	StRoot/StHighptPool
+	StRoot/StHighptPool       # blacklisted in cons
 	StRoot/StJetMaker
-	StRoot/StSpinPool
+	StRoot/StSpinPool         # blacklisted in cons
 	StRoot/StTagsMaker
 	StRoot/StTofPool
-	StRoot/StTrsMaker
+	StRoot/StTagsMaker        # idl
 )
 
 GET_SUBDIRS( "StarVMC;StRoot" star_lib_dirs )

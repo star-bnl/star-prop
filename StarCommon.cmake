@@ -9,7 +9,7 @@ endif()
 # By default build shared libraries but allow the user to change if desired
 OPTION( BUILD_SHARED_LIBS "Global flag to cause add_library to create shared libraries if on" ON )
 
-# Special treatment of linker options for MacOS X to get a gcc linux-like behavior
+# Special treatment of linker options for MacOS X to get a linux-like behavior for gcc
 if(APPLE)
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -undefined dynamic_lookup")
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -undefined dynamic_lookup")
@@ -57,12 +57,12 @@ set( STAR_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}" )
 
 
 #
-# Builds a list of header files from which a ROOT dictionary can be created for
+# Generates a list of header files from which a ROOT dictionary can be created for
 # a given subdirectory `star_lib_dir`. The list is put into the `headers_for_dict`
 # variable that is returned to the parent scope. Only *.h and *.hh files
 # are selected while any LinkDef files are ignored.
 #
-function( STAR_HEADERS_FOR_ROOT_DICTIONARY star_lib_dir headers_for_dict )
+function(STAR_HEADERS_FOR_ROOT_DICTIONARY star_lib_dir headers_for_dict)
 
 	# Get all header files in 'star_lib_dir'
 	file(GLOB_RECURSE star_lib_dir_headers "${star_lib_dir}/*.h"
@@ -80,8 +80,6 @@ function( STAR_HEADERS_FOR_ROOT_DICTIONARY star_lib_dir headers_for_dict )
 
 		# Skip LinkDef files from globbing result
 		if( ${header_file_name} MATCHES "linkdef" )
-			# Uncomment next line to make it verbose
-			#message( STATUS "StarCommon: WARNING: Skipping LinkDef header ${full_path_header}" )
 			continue()
 		endif()
 
@@ -95,7 +93,11 @@ endfunction()
 
 
 #
-# Generate an automatic LinkDef header ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_LinkDef.h
+# Generates ${star_lib_dir}_LinkDef.h and ${star_lib_dir}_DictInc.h header files
+# used in ROOT dictionary generation by rootcint/rootcling. Only header files
+# passed in LINKDEF_HEADERS argument are used. The user can optionally pass an
+# existing LinkDef file in LINKDEF argument to be incorporated in the generated
+# ${star_lib_dir}_LinkDef.h
 #
 function(STAR_GENERATE_LINKDEF star_lib_dir)
 	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS" ${ARGN})
@@ -121,7 +123,7 @@ endfunction()
 
 
 #
-# Generates a ROOT dictionary for `star_lib_dir`.
+# Generates a ROOT dictionary for `star_lib_dir` in ${STAR_SRC}.
 #
 function(STAR_GENERATE_DICTIONARY star_lib_dir star_lib_dir_out)
 
@@ -138,7 +140,6 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir star_lib_dir_out)
 
 	# If the user provided header files use them in addition to automatically
 	# collected ones.
-	set( linkdef_headers )
 	star_headers_for_root_dictionary( ${star_lib_dir} linkdef_headers )
 
 	FILTER_LIST( linkdef_headers EXCLUDE ${ARG_EXCLUDE} )
@@ -147,7 +148,9 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir star_lib_dir_out)
 	# provided by the user
 	star_generate_linkdef( ${star_lib_dir_out} LINKDEF ${user_linkdef} LINKDEF_HEADERS ${linkdef_headers} )
 
-	# Prepare include directories used in ROOT dictionary generation
+	# Prepare include directories to be used during ROOT dictionary generation.
+	# These directories are tied to the `star_lib_dir` traget via the
+	# INCLUDE_DIRECTORIES property.
 	get_filename_component( star_lib_name ${star_lib_dir} NAME )
 	get_target_property( target_include_dirs ${star_lib_name} INCLUDE_DIRECTORIES )
 	string( REGEX REPLACE "([^;]+)" "-I\\1" dict_include_dirs "${target_include_dirs}" )
@@ -155,7 +158,7 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir star_lib_dir_out)
 	# May need to look for rootcling first
 	find_program(ROOT_DICTGEN_EXECUTABLE rootcint HINTS $ENV{ROOTSYS}/bin)
 
-	# Generate ROOT dictionary using the LinkDef file
+	# Generate ROOT dictionary using the *_LinkDef.h and *_DictInc.h files
 	add_custom_command(OUTPUT ${star_lib_dir_out}_dict.cxx
 	                   COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f ${star_lib_dir_out}_dict.cxx
 	                   -c ${ARG_LINKDEF_OPTIONS} ${dict_include_dirs}
@@ -184,15 +187,16 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	GET_EXCLUDE_LIST( ${star_lib_name} star_lib_exclude )
 	FILTER_LIST( sources EXCLUDE ${star_lib_exclude}  )
 
+	# XXX The hardcoded .cxx extension below should be defined by cmake?
 	add_library(${star_lib_name} ${sources} ${star_lib_dir_out}_dict.cxx)
 
 	# Output the library to the respecitve subdirectory in the binary directory
 	set_target_properties( ${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out} )
 
 	GET_SUBDIRS( ${star_lib_dir_abs} star_lib_subdirs INCLUDE_PARENT )
-
 	target_include_directories( ${star_lib_name} PRIVATE "${star_lib_subdirs}" )
 
+	# Generate the _dict.cxx file for the library
 	star_generate_dictionary(${star_lib_dir_abs} ${star_lib_dir_out}
 		LINKDEF_HEADERS ${${star_lib_name}_LINKDEF_HEADERS}
 		LINKDEF_OPTIONS "-p;-D__ROOT__"
@@ -347,12 +351,11 @@ set( St_base_EXCLUDE "StRoot/St_base/St_staf_dummies.c" )
 # Flattens the hierarchy of header files found in `parent_dir` at 1 level deep
 # by copying them to `${STAR_ADDITIONAL_INSTALL_PREFIX}/include/`
 #
-function( STAR_PREINSTALL_HEADERS parent_dir )
+function(STAR_PREINSTALL_HEADERS parent_dir)
 
 	# Get all header files in 'parent_dir'
 	file( GLOB header_files "${STAR_SRC}/${parent_dir}/*/*.h"
 	                        "${STAR_SRC}/${parent_dir}/*/*.hh" )
-
 
 	foreach( header_file ${header_files})
 		get_filename_component( header_file_name ${header_file} NAME )
