@@ -132,7 +132,7 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir)
 	star_headers_for_root_dictionary( ${star_lib_dir} linkdef_headers )
 
 	if( ARG_EXCLUDE )
-		FILTER_LIST( linkdef_headers "${ARG_EXCLUDE}" )
+		FILTER_LIST( linkdef_headers EXCLUDE ${ARG_EXCLUDE} )
 	endif()
 
 	# Generate a basic LinkDef file and, if available, merge with the one
@@ -207,7 +207,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	                          "${STAR_SRC}/${star_lib_dir}/*.cpp")
 
 	if( ARG_EXCLUDE )
-		FILTER_LIST( sources "${ARG_EXCLUDE}" )
+		FILTER_LIST( sources EXCLUDE ${ARG_EXCLUDE} )
 	endif()
 
 	add_library(${star_lib_name} ${sources} ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_dict.cxx)
@@ -229,13 +229,15 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 endfunction()
 
 
-function( FILTER_LIST arg_list arg_regexs )
+macro( FILTER_LIST arg_list )
 
 	# Starting cmake 3.6 one can simply use list( FILTER ... )
 	#list( FILTER sources EXCLUDE REGEX "${ARG_EXCLUDE}" )
 
+	cmake_parse_arguments(ARG "" "" "EXCLUDE" ${ARGN})
+
 	foreach( item ${${arg_list}} )
-		foreach( regex ${arg_regexs} )
+		foreach( regex ${ARG_EXCLUDE} )
 
 			if( ${item} MATCHES "${regex}" )
 				list(REMOVE_ITEM ${arg_list} ${item})
@@ -245,9 +247,9 @@ function( FILTER_LIST arg_list arg_regexs )
 		endforeach()
 	endforeach()
 
-	set( ${arg_list} ${${arg_list}} PARENT_SCOPE)
+	set( ${arg_list} ${${arg_list}} )
 
-endfunction()
+endmacro()
 
 
 # Builds a list of subdirectories with complete path found in the
