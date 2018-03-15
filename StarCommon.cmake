@@ -37,6 +37,7 @@ endif()
 
 
 message(STATUS "StarCommon: CMAKE_CXX_FLAGS = \"${CMAKE_CXX_FLAGS}\"")
+message(STATUS "StarCommon: CMAKE_C_FLAGS = \"${CMAKE_C_FLAGS}\"")
 
 
 # Remove dependency of "install" target on "all" target. This allows to
@@ -184,7 +185,10 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
 
 	# Set default regex'es to exclude from globbed
-	list( APPEND ARG_EXCLUDE "${star_lib_dir}.*macros;${star_lib_dir}.*doc;${star_lib_dir}.*examples" )
+	list(APPEND ARG_EXCLUDE "${star_lib_dir}.*macros"
+	                        "${star_lib_dir}.*doc"
+	                        "${star_lib_dir}.*examples"
+	                        "StRoot/St_base/St_staf_dummies.c")
 
 	# Deal with headers
 
@@ -211,6 +215,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	# Deal with sources
 	file(GLOB_RECURSE sources "${STAR_SRC}/${star_lib_dir}/*.cxx"
 	                          "${STAR_SRC}/${star_lib_dir}/*.cc"
+	                          "${STAR_SRC}/${star_lib_dir}/*.c"
 	                          "${STAR_SRC}/${star_lib_dir}/*.cpp")
 
 	if( ARG_EXCLUDE )
