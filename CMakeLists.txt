@@ -25,6 +25,7 @@ include(StarCommon)
 
 add_definitions( -D__ROOT__ )
 add_definitions( -D_UCMLOGGER_ ) # Required by StStarLogger
+add_definitions( -DNEW_DAQ_READER ) # Required by StTofHitMaker
 
 # Remove dependency of "install" target on "all" target. This allows to
 # build and install individual libraries
