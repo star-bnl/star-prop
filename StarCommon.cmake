@@ -190,21 +190,14 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 
 	get_filename_component( star_lib_name ${star_lib_dir} NAME )
 
-	cmake_parse_arguments(ARG "" "" "EXCLUDE" "" ${ARGN})
-
-	# Set default regex'es to exclude from globbed
-	list(APPEND ARG_EXCLUDE "${star_lib_dir}.*macros"
-	                        "${star_lib_dir}.*doc"
-	                        "${star_lib_dir}.*examples"
-	                        "StRoot/St_base/St_staf_dummies.c")
-
 	# Deal with sources
 	file(GLOB_RECURSE sources "${STAR_SRC}/${star_lib_dir}/*.cxx"
 	                          "${STAR_SRC}/${star_lib_dir}/*.cc"
 	                          "${STAR_SRC}/${star_lib_dir}/*.c"
 	                          "${STAR_SRC}/${star_lib_dir}/*.cpp")
 
-	FILTER_LIST( sources EXCLUDE ${ARG_EXCLUDE} )
+	GET_EXCLUDE_LIST( ${star_lib_name} star_lib_exclude )
+	FILTER_LIST( sources EXCLUDE ${star_lib_exclude}  )
 
 	add_library(${star_lib_name} ${sources} ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_dict.cxx)
 
@@ -220,7 +213,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	star_generate_dictionary( ${star_lib_dir}
 		LINKDEF_HEADERS ${${star_lib_name}_LINKDEF_HEADERS}
 		LINKDEF_OPTIONS "-p;-D__ROOT__"
-		EXCLUDE ${ARG_EXCLUDE}
+		EXCLUDE ${star_lib_exclude}
 	)
 
 	install( TARGETS ${star_lib_name}
@@ -255,6 +248,16 @@ macro( FILTER_LIST arg_list )
 
 	endif()
 
+endmacro()
+
+
+# Return list of regex'es to exclude from globbed paths for target `star_lib_name`
+macro(GET_EXCLUDE_LIST star_lib_name exclude_list)
+	set( ${exclude_list}
+	     ${star_lib_name}.*macros
+	     ${star_lib_name}.*doc
+	     ${star_lib_name}.*examples
+	     ${${star_lib_name}_EXCLUDE} )
 endmacro()
 
 
@@ -309,6 +312,8 @@ set( StEvent_LINKDEF_HEADERS
 	"${STAR_CMAKE_DIR}/StArray_cint.h"
 )
 set( StiMaker_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TH1K.h" )
+
+set( St_base_EXCLUDE "StRoot/St_base/St_staf_dummies.c" )
 
 
 #
