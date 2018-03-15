@@ -132,9 +132,7 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir)
 	set( linkdef_headers )
 	star_headers_for_root_dictionary( ${star_lib_dir} linkdef_headers )
 
-	if( ARG_EXCLUDE )
-		FILTER_LIST( linkdef_headers EXCLUDE ${ARG_EXCLUDE} )
-	endif()
+	FILTER_LIST( linkdef_headers EXCLUDE ${ARG_EXCLUDE} )
 
 	# Generate a basic LinkDef file and, if available, merge with the one
 	# provided by the user
@@ -218,9 +216,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	                          "${STAR_SRC}/${star_lib_dir}/*.c"
 	                          "${STAR_SRC}/${star_lib_dir}/*.cpp")
 
-	if( ARG_EXCLUDE )
-		FILTER_LIST( sources EXCLUDE ${ARG_EXCLUDE} )
-	endif()
+	FILTER_LIST( sources EXCLUDE ${ARG_EXCLUDE} )
 
 	add_library(${star_lib_name} ${sources} ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_dict.cxx)
 
@@ -248,18 +244,22 @@ macro( FILTER_LIST arg_list )
 
 	cmake_parse_arguments(ARG "" "" "EXCLUDE" ${ARGN})
 
-	foreach( item ${${arg_list}} )
-		foreach( regex ${ARG_EXCLUDE} )
+	if( ${arg_list} AND ARG_EXCLUDE )
 
-			if( ${item} MATCHES "${regex}" )
-				list(REMOVE_ITEM ${arg_list} ${item})
-				break()
-			endif()
+		foreach( item ${${arg_list}} )
+			foreach( regex ${ARG_EXCLUDE} )
 
+				if( ${item} MATCHES "${regex}" )
+					list(REMOVE_ITEM ${arg_list} ${item})
+					break()
+				endif()
+
+			endforeach()
 		endforeach()
-	endforeach()
 
-	set( ${arg_list} ${${arg_list}} )
+		set( ${arg_list} ${${arg_list}} )
+
+	endif()
 
 endmacro()
 
