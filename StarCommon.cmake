@@ -148,8 +148,9 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir)
 	star_generate_linkdef( ${star_lib_dir} LINKDEF ${user_linkdef} LINKDEF_HEADERS ${linkdef_headers})
 
 	# Prepare include directories used in ROOT dictionary generation
-	get_directory_property(all_include_dirs INCLUDE_DIRECTORIES)
-	string(REGEX REPLACE "([^;]+)" "-I\\1" dict_include_dirs "${all_include_dirs}")
+	get_filename_component( star_lib_name ${star_lib_dir} NAME )
+	get_target_property( target_include_dirs ${star_lib_name} INCLUDE_DIRECTORIES )
+	string( REGEX REPLACE "([^;]+)" "-I\\1" dict_include_dirs "${target_include_dirs}" )
 
 	# May need to look for rootcling first
 	find_program(ROOT_DICTGEN_EXECUTABLE rootcint HINTS $ENV{ROOTSYS}/bin)
@@ -197,12 +198,6 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	                        "${star_lib_dir}.*examples"
 	                        "StRoot/St_base/St_staf_dummies.c")
 
-	star_generate_dictionary( ${star_lib_dir}
-		LINKDEF_HEADERS ${${star_lib_name}_LINKDEF_HEADERS}
-		LINKDEF_OPTIONS "-p;-D__ROOT__"
-		EXCLUDE ${ARG_EXCLUDE}
-	)
-
 	# Deal with sources
 	file(GLOB_RECURSE sources "${STAR_SRC}/${star_lib_dir}/*.cxx"
 	                          "${STAR_SRC}/${star_lib_dir}/*.cc"
@@ -221,6 +216,12 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	GET_SUBDIRS( ${STAR_SRC}/${star_lib_dir} star_lib_subdirs INCLUDE_PARENT )
 
 	target_include_directories( ${star_lib_name} PRIVATE "${star_lib_subdirs}" )
+
+	star_generate_dictionary( ${star_lib_dir}
+		LINKDEF_HEADERS ${${star_lib_name}_LINKDEF_HEADERS}
+		LINKDEF_OPTIONS "-p;-D__ROOT__"
+		EXCLUDE ${ARG_EXCLUDE}
+	)
 
 	install( TARGETS ${star_lib_name}
 		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
