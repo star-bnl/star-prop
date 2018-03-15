@@ -125,7 +125,16 @@ endfunction()
 #
 function(STAR_GENERATE_DICTIONARY star_lib_dir)
 
-	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
+	cmake_parse_arguments(ARG "" "" "LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
+
+	# Search for default LinkDef if not specified
+	file( GLOB user_linkdefs "${STAR_SRC}/${star_lib_dir}/*LinkDef.h"
+	                         "${STAR_SRC}/${star_lib_dir}/*LinkDef.hh" )
+
+	# Get the first LinkDef from the list
+	if( user_linkdefs )
+		list( GET user_linkdefs 0 user_linkdef )
+	endif()
 
 	# If the user provided header files use them in addition to automatically
 	# collected ones.
@@ -136,7 +145,7 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir)
 
 	# Generate a basic LinkDef file and, if available, merge with the one
 	# provided by the user
-	star_generate_linkdef( ${star_lib_dir} LINKDEF ${ARG_LINKDEF} LINKDEF_HEADERS ${linkdef_headers})
+	star_generate_linkdef( ${star_lib_dir} LINKDEF ${user_linkdef} LINKDEF_HEADERS ${linkdef_headers})
 
 	# Prepare include directories used in ROOT dictionary generation
 	get_directory_property(all_include_dirs INCLUDE_DIRECTORIES)
@@ -180,7 +189,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 
 	get_filename_component( star_lib_name ${star_lib_dir} NAME )
 
-	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
+	cmake_parse_arguments(ARG "" "" "EXCLUDE" "" ${ARGN})
 
 	# Set default regex'es to exclude from globbed
 	list(APPEND ARG_EXCLUDE "${star_lib_dir}.*macros"
@@ -188,25 +197,9 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	                        "${star_lib_dir}.*examples"
 	                        "StRoot/St_base/St_staf_dummies.c")
 
-	# Deal with headers
-
-	# Search for default LinkDef if not specified
-	file( GLOB user_linkdefs "${STAR_SRC}/${star_lib_dir}/*LinkDef.h"
-	                         "${STAR_SRC}/${star_lib_dir}/*LinkDef.hh" )
-
-	if( NOT ARG_LINKDEF AND user_linkdefs )
-		# Get the first LinkDef from the list
-		list( GET user_linkdefs 0 user_linkdef )
-		set( ARG_LINKDEF ${user_linkdef} )
-	endif()
-
-	# Set default options
-	list(APPEND ARG_LINKDEF_OPTIONS "-p;-D__ROOT__" )
-
 	star_generate_dictionary( ${star_lib_dir}
-		LINKDEF ${ARG_LINKDEF}
-		LINKDEF_HEADERS ${ARG_LINKDEF_HEADERS} ${${star_lib_name}_LINKDEF_HEADERS}
-		LINKDEF_OPTIONS ${ARG_LINKDEF_OPTIONS}
+		LINKDEF_HEADERS ${${star_lib_name}_LINKDEF_HEADERS}
+		LINKDEF_OPTIONS "-p;-D__ROOT__"
 		EXCLUDE ${ARG_EXCLUDE}
 	)
 
