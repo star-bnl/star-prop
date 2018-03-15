@@ -39,6 +39,8 @@ if [ -z "${output_dictinc_path}" ]; then
 	print_usage
 fi
 
+# Create the output directory
+mkdir -p "$(dirname "$output_linkdef_path")"
 
 echo "// Automatically collected header files for ROOT dictionary" > "$output_dictinc_path"
 
@@ -74,7 +76,6 @@ for INFILE in "$@"; do
 	stcontainer_classes+=( $(awk 'match($0,"^[[:space:]]*StCollectionDef[[:space:]]*\\(([^#]+)\\)",a) { print a[1] }' "$INFILE") )
 done
 
-mkdir -p "$(dirname "$output_linkdef_path")"
 echo "#ifdef __CINT__" > "$output_linkdef_path"
 echo >> "$output_linkdef_path"
 # add "link of all" lines if they are not in the input linkdef
