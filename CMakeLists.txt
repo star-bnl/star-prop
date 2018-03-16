@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
-project(star-cvs)
+project(star-cvs LANGUAGES C CXX Fortran)
 
 set(STAR_SRC "$ENV{STAR}" CACHE PATH "Path to star software source code")
 
