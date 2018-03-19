@@ -299,6 +299,45 @@ macro( GET_SUBDIRS directories subdirectories  )
 endmacro()
 
 
+#
+# From `star_lib_dir` extract the library target name and form an absolute and
+# a corresponding output paths. The input path `star_lib_dir` can be either
+# absolute or relative to ${STAR_SRC}
+#
+function(STAR_TARGET_PATHS star_lib_dir lib_name path_abs path_out)
+
+	set(path_abs_)
+	set(path_out_)
+
+	if( IS_ABSOLUTE ${star_lib_dir} )
+
+		get_filename_component(star_src_abs ${STAR_SRC} ABSOLUTE)
+		if( ${star_src_abs} MATCHES ${star_lib_dir} )
+			message( FATAL "StarCommon: Absolute path \"${star_lib_dir}\" must match ${star_src_abs}" )
+		endif()
+
+		set(path_abs_ ${star_lib_dir})
+		file(RELATIVE_PATH path_rel_ ${STAR_SRC} ${star_lib_dir})
+		set(path_out_ ${CMAKE_CURRENT_BINARY_DIR}/${path_rel_})
+	else()
+		set(path_abs_ ${STAR_SRC}/${star_lib_dir})
+		set(path_out_ ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir})
+	endif()
+
+	# First check that the path exists
+	if( NOT IS_DIRECTORY ${path_abs_} )
+		message( FATAL "StarCommon: Directory \"${path_abs_}\" not found" )
+	endif()
+
+	get_filename_component(name ${star_lib_dir} NAME)
+
+	set(${lib_name} ${name} PARENT_SCOPE)
+	set(${path_abs} ${path_abs_} PARENT_SCOPE)
+	set(${path_out} ${path_out_} PARENT_SCOPE)
+
+endfunction()
+
+
 # special cases
 set( St_base_LINKDEF_HEADERS "${STAR_SRC}/StRoot/St_base/Stypes.h" )
 set( StEvent_LINKDEF_HEADERS
