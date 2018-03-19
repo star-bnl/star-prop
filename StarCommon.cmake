@@ -123,7 +123,7 @@ endfunction()
 #
 # Generates a ROOT dictionary for `star_lib_dir`.
 #
-function(STAR_GENERATE_DICTIONARY star_lib_dir)
+function(STAR_GENERATE_DICTIONARY star_lib_dir star_lib_dir_out)
 
 	cmake_parse_arguments(ARG "" "" "LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
 
@@ -145,7 +145,7 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir)
 
 	# Generate a basic LinkDef file and, if available, merge with the one
 	# provided by the user
-	star_generate_linkdef( ${star_lib_dir} LINKDEF ${user_linkdef} LINKDEF_HEADERS ${linkdef_headers})
+	star_generate_linkdef( ${star_lib_dir_out} LINKDEF ${user_linkdef} LINKDEF_HEADERS ${linkdef_headers} )
 
 	# Prepare include directories used in ROOT dictionary generation
 	get_filename_component( star_lib_name ${star_lib_dir} NAME )
@@ -154,15 +154,13 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir)
 
 	# May need to look for rootcling first
 	find_program(ROOT_DICTGEN_EXECUTABLE rootcint HINTS $ENV{ROOTSYS}/bin)
-	# Define prefix for shorthand
-	set(dict_prefix "${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}")
 
 	# Generate ROOT dictionary using the LinkDef file
-	add_custom_command(OUTPUT ${dict_prefix}_dict.cxx
-	                   COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f ${dict_prefix}_dict.cxx
+	add_custom_command(OUTPUT ${star_lib_dir_out}_dict.cxx
+	                   COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f ${star_lib_dir_out}_dict.cxx
 	                   -c ${ARG_LINKDEF_OPTIONS} ${dict_include_dirs}
-	                   ${ARG_LINKDEF_HEADERS} ${dict_prefix}_DictInc.h ${dict_prefix}_LinkDef.h
-	                   DEPENDS ${ARG_LINKDEF_HEADERS} ${dict_prefix}_DictInc.h ${dict_prefix}_LinkDef.h
+	                   ${ARG_LINKDEF_HEADERS} ${star_lib_dir_out}_DictInc.h ${star_lib_dir_out}_LinkDef.h
+	                   DEPENDS ${ARG_LINKDEF_HEADERS} ${star_lib_dir_out}_DictInc.h ${star_lib_dir_out}_LinkDef.h
 	                   VERBATIM)
 
 endfunction()
@@ -195,7 +193,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 
 	target_include_directories( ${star_lib_name} PRIVATE "${star_lib_subdirs}" )
 
-	star_generate_dictionary( ${star_lib_dir_abs}
+	star_generate_dictionary(${star_lib_dir_abs} ${star_lib_dir_out}
 		LINKDEF_HEADERS ${${star_lib_name}_LINKDEF_HEADERS}
 		LINKDEF_OPTIONS "-p;-D__ROOT__"
 		EXCLUDE ${star_lib_exclude}
