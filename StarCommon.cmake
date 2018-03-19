@@ -65,8 +65,8 @@ set( STAR_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}" )
 function( STAR_HEADERS_FOR_ROOT_DICTIONARY star_lib_dir headers_for_dict )
 
 	# Get all header files in 'star_lib_dir'
-	file(GLOB_RECURSE star_lib_dir_headers "${STAR_SRC}/${star_lib_dir}/*.h"
-	                                       "${STAR_SRC}/${star_lib_dir}/*.hh")
+	file(GLOB_RECURSE star_lib_dir_headers "${star_lib_dir}/*.h"
+	                                       "${star_lib_dir}/*.hh")
 
 	# Create an empty list
 	set(valid_headers)
@@ -101,8 +101,8 @@ function(STAR_GENERATE_LINKDEF star_lib_dir)
 	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS" ${ARGN})
 
 	# Set default name for LinkDef file
-	set( linkdef_file "${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_LinkDef.h" )
-	set( dictinc_file "${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_DictInc.h" )
+	set( linkdef_file "${star_lib_dir}_LinkDef.h" )
+	set( dictinc_file "${star_lib_dir}_DictInc.h" )
 
 	# Pass both files to get_likdef.sh as -o arguments
 	set( gen_linkdef_args "-l;${linkdef_file};-d;${dictinc_file};${ARG_LINKDEF_HEADERS}" )
@@ -128,8 +128,8 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir)
 	cmake_parse_arguments(ARG "" "" "LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
 
 	# Search for default LinkDef if not specified
-	file( GLOB user_linkdefs "${STAR_SRC}/${star_lib_dir}/*LinkDef.h"
-	                         "${STAR_SRC}/${star_lib_dir}/*LinkDef.hh" )
+	file( GLOB user_linkdefs "${star_lib_dir}/*LinkDef.h"
+	                         "${star_lib_dir}/*LinkDef.hh" )
 
 	# Get the first LinkDef from the list
 	if( user_linkdefs )
@@ -175,42 +175,27 @@ endfunction()
 #
 function(STAR_ADD_LIBRARY star_lib_dir)
 
-	if( IS_ABSOLUTE ${star_lib_dir} )
-		set(star_lib_dir_absolute ${star_lib_dir})
-		file(RELATIVE_PATH star_lib_dir ${STAR_SRC} ${star_lib_dir})
-	else()
-		set(star_lib_dir_absolute ${STAR_SRC}/${star_lib_dir})
-	endif()
-
-	# First check that the path exists
-	if( NOT IS_DIRECTORY ${STAR_SRC}/${star_lib_dir} )
-		message( WARNING "StarCommon: Subdirectory \"${star_lib_dir}\" not found in ${STAR_SRC}. Skipping" )
-		return()
-	endif()
-
-	get_filename_component( star_lib_name ${star_lib_dir} NAME )
+	star_target_paths( ${star_lib_dir} star_lib_name star_lib_dir_abs star_lib_dir_out )
 
 	# Deal with sources
-	file(GLOB_RECURSE sources "${STAR_SRC}/${star_lib_dir}/*.cxx"
-	                          "${STAR_SRC}/${star_lib_dir}/*.cc"
-	                          "${STAR_SRC}/${star_lib_dir}/*.c"
-	                          "${STAR_SRC}/${star_lib_dir}/*.cpp")
+	file(GLOB_RECURSE sources "${star_lib_dir_abs}/*.cxx"
+	                          "${star_lib_dir_abs}/*.cc"
+	                          "${star_lib_dir_abs}/*.c"
+	                          "${star_lib_dir_abs}/*.cpp")
 
 	GET_EXCLUDE_LIST( ${star_lib_name} star_lib_exclude )
 	FILTER_LIST( sources EXCLUDE ${star_lib_exclude}  )
 
-	add_library(${star_lib_name} ${sources} ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir}_dict.cxx)
+	add_library(${star_lib_name} ${sources} ${star_lib_dir_out}_dict.cxx)
 
 	# Output the library to the respecitve subdirectory in the binary directory
-	get_filename_component( star_lib_path ${star_lib_dir} DIRECTORY )
-	set_target_properties( ${star_lib_name} PROPERTIES
-		LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${star_lib_path}" )
+	set_target_properties( ${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out} )
 
-	GET_SUBDIRS( ${STAR_SRC}/${star_lib_dir} star_lib_subdirs INCLUDE_PARENT )
+	GET_SUBDIRS( ${star_lib_dir_abs} star_lib_subdirs INCLUDE_PARENT )
 
 	target_include_directories( ${star_lib_name} PRIVATE "${star_lib_subdirs}" )
 
-	star_generate_dictionary( ${star_lib_dir}
+	star_generate_dictionary( ${star_lib_dir_abs}
 		LINKDEF_HEADERS ${${star_lib_name}_LINKDEF_HEADERS}
 		LINKDEF_OPTIONS "-p;-D__ROOT__"
 		EXCLUDE ${star_lib_exclude}
