@@ -78,9 +78,7 @@ set( star_lib_dir_blacklist
 	StRoot/StJetMaker
 	StRoot/StSpinMaker        # blacklisted due to error in fortran code
 	StRoot/StSpinPool         # blacklisted in cons
-	StRoot/StTagsMaker
 	StRoot/StTofPool
-	StRoot/StTagsMaker        # idl
 )
 
 GET_SUBDIRS( "StarVMC;StRoot" star_lib_dirs )
