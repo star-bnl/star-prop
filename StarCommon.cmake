@@ -38,6 +38,7 @@ endif()
 
 message(STATUS "StarCommon: CMAKE_CXX_FLAGS = \"${CMAKE_CXX_FLAGS}\"")
 message(STATUS "StarCommon: CMAKE_C_FLAGS = \"${CMAKE_C_FLAGS}\"")
+message(STATUS "StarCommon: CMAKE_Fortran_FLAGS = \"${CMAKE_Fortran_FLAGS}\"")
 
 
 # Remove dependency of "install" target on "all" target. This allows to
@@ -185,10 +186,17 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	star_target_paths( ${star_lib_dir} star_lib_name star_lib_dir_abs star_lib_dir_out )
 
 	# Deal with sources
-	file(GLOB_RECURSE sources "${star_lib_dir_abs}/*.cxx"
+	set(sources)
+
+	file(GLOB_RECURSE sources_cpp "${star_lib_dir_abs}/*.cxx"
 	                          "${star_lib_dir_abs}/*.cc"
 	                          "${star_lib_dir_abs}/*.c"
 	                          "${star_lib_dir_abs}/*.cpp")
+
+	list(APPEND sources ${sources_cpp})
+
+	file(GLOB_RECURSE sources_fortran "${star_lib_dir_abs}/*.F")
+	list(APPEND sources ${sources_fortran})
 
 	GET_EXCLUDE_LIST( ${star_lib_name} star_lib_exclude )
 	FILTER_LIST( sources EXCLUDE ${star_lib_exclude}  )

@@ -15,6 +15,7 @@ if( ${ROOT_CXX_FLAGS} MATCHES "-m32" )
 	set_property( GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS FALSE )
 	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32" )
 	set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32" )
+	set( CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -m32" )
 endif()
 
 find_package(LibXml2)
@@ -75,6 +76,7 @@ set( star_lib_dir_blacklist
 	StRoot/St_geom_Maker
 	StRoot/StHighptPool       # blacklisted in cons
 	StRoot/StJetMaker
+	StRoot/StSpinMaker        # blacklisted due to error in fortran code
 	StRoot/StSpinPool         # blacklisted in cons
 	StRoot/StTagsMaker
 	StRoot/StTofPool
