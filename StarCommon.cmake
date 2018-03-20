@@ -166,7 +166,7 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir star_lib_dir_out)
 	find_program(ROOT_DICTGEN_EXECUTABLE rootcint HINTS $ENV{ROOTSYS}/bin)
 
 	# Generate ROOT dictionary using the *_LinkDef.h and *_DictInc.h files
-	add_custom_command(OUTPUT ${star_lib_dir_out}_dict.cxx
+	add_custom_command(OUTPUT ${star_lib_dir_out}_dict.cxx ${star_lib_dir_out}_dict.h
 	                   COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f ${star_lib_dir_out}_dict.cxx
 	                   -c ${ARG_LINKDEF_OPTIONS} ${dict_include_dirs}
 	                   ${ARG_LINKDEF_HEADERS} ${star_lib_dir_out}_DictInc.h ${star_lib_dir_out}_LinkDef.h
