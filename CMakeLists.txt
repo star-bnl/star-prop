@@ -25,6 +25,9 @@ find_package(MySQL)
 # Perform some setup standard to STAR experiment environment
 include(StarCommon)
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 add_definitions( -D__ROOT__ )
 add_definitions( -D_UCMLOGGER_ ) # Required by StStarLogger
 add_definitions( -DNEW_DAQ_READER ) # Required by StTofHitMaker
