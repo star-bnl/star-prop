@@ -418,6 +418,29 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 endfunction()
 
 
+# Builds a ${star_lib_name}_Tables library from ${star_lib_dir}/idl/*.idl files
+function(STAR_ADD_LIBRARY_TABLE star_lib_dir )
+
+	star_target_paths(${star_lib_dir} star_lib_name star_lib_dir_abs star_lib_dir_out)
+
+	set(star_lib_name ${star_lib_name}_Tables)
+
+	file(GLOB_RECURSE idl_files ${star_lib_dir_abs}/idl/*.idl)
+	FILTER_LIST( idl_files EXCLUDE ${${star_lib_name}_EXCLUDE} )
+	star_process_idl("${idl_files}" "" ${star_lib_dir_out} sources_idl headers_idl)
+
+	add_library(${star_lib_name} ${sources_idl})
+	set_target_properties(${star_lib_name} PROPERTIES
+		LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out}
+		PUBLIC_HEADER "${headers_idl}")
+
+	install(TARGETS ${star_lib_name}
+		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
+		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
+		PUBLIC_HEADER DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/include/tables")
+endfunction()
+
+
 # Generate source from idl files
 function(STAR_GENERATE_SOURCES_IDL star_lib_dir sources_idl)
 
@@ -472,4 +495,143 @@ function(STAR_GENERATE_SOURCES_IDL star_lib_dir sources_idl)
 
 	set(${sources_idl} ${sources_idl_} PARENT_SCOPE)
 
+endfunction()
+
+
+
+function(STAR_PROCESS_IDL_FILE idll out_sources out_headers)
+
+	find_program(STIC_EXECUTABLE stic)
+	find_program(PERL_EXECUTABLE perl)
+	find_program(ROOT_DICTGEN_EXECUTABLE rootcint HINTS $ENV{ROOTSYS}/bin)
+
+	# For the file and variable names we closely follow the convention in mgr/Conscript-standard
+	get_filename_component(idl ${idll} NAME_WE)
+	set(idlh "${outpath_table_struct}/${idl}.h")
+	set(idli "${outpath_table_struct}/${idl}.inc")
+	set(idlH "${outpath_table_ttable}/St_${idl}_Table.h")
+	set(idlC "${star_lib_dir_out}/St_${idl}_Table.cxx")
+	set(idlLinkDef "${star_lib_dir_out}/${idl}LinkDef.h")
+	set(idlCintH "${star_lib_dir_out}/St_${idl}_TableCint.h")
+	set(idlCintC "${star_lib_dir_out}/St_${idl}_TableCint.cxx")
+
+
+	add_custom_command(
+		OUTPUT ${idlh} ${idli}
+		COMMAND ${STIC_EXECUTABLE} -q ${idll}
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${outpath_table_struct}
+		COMMAND ${CMAKE_COMMAND} -E rename ${idl}.h ${idlh}
+		COMMAND ${CMAKE_COMMAND} -E rename ${idl}.inc ${idli}
+		DEPENDS ${idll}
+		VERBATIM )
+
+	add_custom_command(
+		OUTPUT ${idlH} ${idlC} ${idlLinkDef}
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${outpath_table_ttable}
+		COMMAND ${PERL_EXECUTABLE} ${STAR_SRC}/mgr/ConstructTable.pl ${idll} ${idlH}
+		COMMAND ${PERL_EXECUTABLE} ${STAR_SRC}/mgr/ConstructTable.pl ${idll} ${idlC}
+		COMMAND ${PERL_EXECUTABLE} ${STAR_SRC}/mgr/ConstructTable.pl ${idll} ${idlLinkDef}
+		DEPENDS ${STAR_SRC}/mgr/ConstructTable.pl ${idll}
+		VERBATIM )
+
+	add_custom_command(
+		OUTPUT ${idlCintC} ${idlCintH}
+		COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f ${idlCintC} -c -p -D__ROOT__
+		-I${outpath_table_struct} -I${outpath_table_ttable} ${idlh} ${idlH} ${idlLinkDef}
+		DEPENDS ${idlh} ${idlH} ${idlLinkDef}
+		VERBATIM )
+
+	set(${out_sources} ${idlC} ${idlCintC} PARENT_SCOPE)
+	set(${out_headers} ${idlH} PARENT_SCOPE)
+endfunction()
+
+
+
+function(STAR_PROCESS_IDL_MODULE idll out_sources out_headers)
+
+	find_program(STIC_EXECUTABLE stic)
+	find_program(ROOT_DICTGEN_EXECUTABLE rootcint HINTS $ENV{ROOTSYS}/bin)
+
+	# For the file and variable names we closely follow the convention in mgr/Conscript-standard
+	get_filename_component(idl ${idll} NAME_WE)
+	set(idlh "${outpath_table_struct}/${idl}.h")
+	set(idli "${outpath_table_struct}/${idl}.inc")
+	set(modH "${outpath_table_ttable}/St_${idl}_Module.h")
+	set(modC "${star_lib_dir_out}/St_${idl}_Module.cxx")
+	set(idlLinkDef "${star_lib_dir_out}/${idl}LinkDef.h")
+	set(idlCintH "${star_lib_dir_out}/St_${idl}_TableCint.h")
+	set(idlCintC "${star_lib_dir_out}/St_${idl}_TableCint.cxx")
+
+	add_custom_command(
+		OUTPUT ${idlh} ${idli} ${modH} ${modC} ${idlLinkDef}
+		COMMAND ${STIC_EXECUTABLE} -s -r -q ${idll}
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${star_lib_dir_out}
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${outpath_table_struct}
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${outpath_table_ttable}
+		COMMAND ${CMAKE_COMMAND} -E rename St_${idl}_Module.h ${modH}
+		COMMAND ${CMAKE_COMMAND} -E rename St_${idl}_Module.cxx ${modC}
+		COMMAND ${CMAKE_COMMAND} -E rename ${idl}.h ${idlh}
+		COMMAND ${CMAKE_COMMAND} -E rename ${idl}.inc ${idli}
+		COMMAND ${CMAKE_COMMAND} -E remove ${idl}.c.template ${idl}.F.template ${idl}_i.cc
+		COMMAND ${CMAKE_COMMAND} -E echo "#pragma link C++ class St_${idl}-;" > ${idlLinkDef}
+		DEPENDS ${idll}
+		VERBATIM )
+
+	add_custom_command(
+		OUTPUT ${idlCintC} ${idlCintH}
+		COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f ${idlCintC} -c -p -D__ROOT__
+		-I${outpath_table_struct} -I${outpath_table_ttable} ${modH} ${idlLinkDef}
+		DEPENDS ${modH} ${idlLinkDef}
+		VERBATIM )
+
+	set(${out_sources} ${modC} ${idlCintC} PARENT_SCOPE)
+	set(${out_headers} ${modH} PARENT_SCOPE)
+endfunction()
+
+
+
+function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
+
+	set(out_F_files_)
+
+	foreach( f_file ${in_F_files} )
+		get_filename_component(f_file_name_we ${f_file} NAME_WE)
+		set(g_file "${star_lib_dir_out}/${f_file_name_we}.g")
+		set(out_F_file "${star_lib_dir_out}/${f_file_name_we}.F")
+
+		find_program(AGETOF_EXECUTABLE agetof)
+		add_custom_command(
+			OUTPUT ${g_file} ${out_F_file}
+			COMMAND ${CMAKE_COMMAND} -E make_directory ${star_lib_dir_out}
+			COMMAND ${CMAKE_C_COMPILER} -E -P ${STAR_Fortran_DEFINITIONS} "$(CXX_INCLUDES)" ${f_file} -o ${g_file}
+			COMMAND ${AGETOF_EXECUTABLE} -V 1 ${g_file} -o ${out_F_file}
+			DEPENDS ${f_file} VERBATIM)
+
+		list(APPEND out_F_files_ ${out_F_file})
+	endforeach()
+
+	set(${out_F_files} ${out_F_files_} PARENT_SCOPE)
+endfunction()
+
+
+
+function(STAR_PROCESS_G in_g_files star_lib_dir_out out_F_files)
+
+	set(out_F_files_)
+
+	foreach( g_file ${in_g_files} )
+		get_filename_component(g_file_name_we ${g_file} NAME_WE)
+		set(out_F_file "${star_lib_dir_out}/${g_file_name_we}.F")
+
+		find_program(AGETOF_EXECUTABLE agetof)
+		add_custom_command(
+			OUTPUT ${out_F_file}
+			COMMAND ${CMAKE_COMMAND} -E make_directory ${star_lib_dir_out}
+			COMMAND ${AGETOF_EXECUTABLE} -V 1 ${g_file} -o ${out_F_file}
+			DEPENDS ${g_file} )
+
+		list(APPEND out_F_files_ ${out_F_file})
+	endforeach()
+
+	set( ${out_F_files} ${out_F_files_} PARENT_SCOPE )
 endfunction()
