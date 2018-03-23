@@ -21,16 +21,6 @@ if( CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX )
 endif()
 
 
-message(STATUS "StarCommon: CMAKE_CXX_FLAGS = \"${CMAKE_CXX_FLAGS}\"")
-message(STATUS "StarCommon: CMAKE_C_FLAGS = \"${CMAKE_C_FLAGS}\"")
-message(STATUS "StarCommon: CMAKE_Fortran_FLAGS = \"${CMAKE_Fortran_FLAGS}\"")
-
-
-# Remove dependency of "install" target on "all" target. This allows to
-# build and install individual libraries
-set( CMAKE_SKIP_INSTALL_ALL_DEPENDENCY TRUE )
-
-
 # Make use of the $STAR_HOST_SYS evironment variable. If it is set use it as the
 # typical STAR installation prefix
 set(STAR_ADDITIONAL_INSTALL_PREFIX ".")
@@ -103,8 +93,8 @@ function(STAR_GENERATE_LINKDEF star_lib_dir)
 	add_custom_command(
 		OUTPUT ${linkdef_file} ${dictinc_file}
 		COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gen_linkdef.sh" ${gen_linkdef_args}
-		DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/gen_linkdef.sh" ${ARG_LINKDEF_HEADERS}
-		)
+		DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/gen_linkdef.sh" ${ARG_LINKDEF_HEADERS})
+
 endfunction()
 
 
@@ -157,7 +147,6 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir star_lib_dir_out)
 	                   ${ARG_LINKDEF_HEADERS} ${star_lib_dir_out}_DictInc.h ${star_lib_dir_out}_LinkDef.h
 	                   DEPENDS ${ARG_LINKDEF_HEADERS} ${star_lib_dir_out}_DictInc.h ${star_lib_dir_out}_LinkDef.h
 	                   VERBATIM)
-
 endfunction()
 
 
@@ -168,15 +157,16 @@ endfunction()
 #
 function(STAR_ADD_LIBRARY star_lib_dir)
 
-	star_target_paths( ${star_lib_dir} star_lib_name star_lib_dir_abs star_lib_dir_out )
+	star_target_paths(${star_lib_dir} star_lib_name star_lib_dir_abs star_lib_dir_out)
 
 	# Deal with sources
 	set(sources)
 
-	file(GLOB_RECURSE sources_cpp "${star_lib_dir_abs}/*.cxx"
-	                          "${star_lib_dir_abs}/*.cc"
-	                          "${star_lib_dir_abs}/*.c"
-	                          "${star_lib_dir_abs}/*.cpp")
+	file(GLOB_RECURSE sources_cpp
+		"${star_lib_dir_abs}/*.cxx"
+		"${star_lib_dir_abs}/*.cc"
+		"${star_lib_dir_abs}/*.c"
+		"${star_lib_dir_abs}/*.cpp")
 
 	list(APPEND sources ${sources_cpp})
 
@@ -187,28 +177,26 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	list(APPEND sources ${sources_idl})
 
 	GET_EXCLUDE_LIST( ${star_lib_name} star_lib_exclude )
-	FILTER_LIST( sources EXCLUDE ${star_lib_exclude}  )
+	FILTER_LIST(sources EXCLUDE ${star_lib_exclude})
 
 	# XXX The hardcoded .cxx extension below should be defined by cmake?
 	add_library(${star_lib_name} ${sources} ${star_lib_dir_out}_dict.cxx)
 
 	# Output the library to the respecitve subdirectory in the binary directory
-	set_target_properties( ${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out} )
+	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
 
-	GET_SUBDIRS( ${star_lib_dir_abs} star_lib_subdirs INCLUDE_PARENT )
-	target_include_directories( ${star_lib_name} PRIVATE "${star_lib_subdirs}" )
+	GET_SUBDIRS(${star_lib_dir_abs} star_lib_subdirs INCLUDE_PARENT)
+	target_include_directories(${star_lib_name} PRIVATE "${star_lib_subdirs}")
 
 	# Generate the _dict.cxx file for the library
 	star_generate_dictionary(${star_lib_dir_abs} ${star_lib_dir_out}
 		LINKDEF_HEADERS ${${star_lib_name}_LINKDEF_HEADERS}
 		LINKDEF_OPTIONS "-p;-D__ROOT__"
-		EXCLUDE ${star_lib_exclude}
-	)
+		EXCLUDE ${star_lib_exclude})
 
-	install( TARGETS ${star_lib_name}
+	install(TARGETS ${star_lib_name}
 		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
-		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
-	)
+		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib")
 
 endfunction()
 
@@ -318,9 +306,9 @@ function(STAR_TARGET_PATHS star_lib_dir lib_name path_abs path_out)
 		message( FATAL "StarCommon: Directory \"${path_abs_}\" not found" )
 	endif()
 
-	get_filename_component(name ${star_lib_dir} NAME)
+	get_filename_component(lib_name_ ${star_lib_dir} NAME)
 
-	set(${lib_name} ${name} PARENT_SCOPE)
+	set(${lib_name} ${lib_name_} PARENT_SCOPE)
 	set(${path_abs} ${path_abs_} PARENT_SCOPE)
 	set(${path_out} ${path_out_} PARENT_SCOPE)
 
@@ -344,8 +332,6 @@ set( StEStructPool_LINKDEF_HEADERS
 	"$ENV{ROOTSYS}/include/TVector2.h"
 	"${STAR_CMAKE_DIR}/StArray_cint.h"
 )
-
-
 set( St_base_EXCLUDE "StRoot/St_base/St_staf_dummies.c" )
 
 
@@ -356,8 +342,9 @@ set( St_base_EXCLUDE "StRoot/St_base/St_staf_dummies.c" )
 function(STAR_PREINSTALL_HEADERS parent_dir)
 
 	# Get all header files in 'parent_dir'
-	file( GLOB header_files "${STAR_SRC}/${parent_dir}/*/*.h"
-	                        "${STAR_SRC}/${parent_dir}/*/*.hh" )
+	file(GLOB header_files
+		"${STAR_SRC}/${parent_dir}/*/*.h"
+		"${STAR_SRC}/${parent_dir}/*/*.hh")
 
 	foreach( header_file ${header_files})
 		get_filename_component( header_file_name ${header_file} NAME )

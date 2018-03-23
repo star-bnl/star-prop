@@ -11,7 +11,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 find_package(ROOT COMPONENTS Table HistPainter Minuit Geom Spectrum Vc)
 
 if( ${ROOT_CXX_FLAGS} MATCHES "-m32" )
-	message( STATUS "Found -m32 option in $ROOT_CXX_FLAGS (root-config). Will add it to $CMAKE_CXX_FLAGS" )
+	message( STATUS "star-cmake: Found -m32 option in $ROOT_CXX_FLAGS (root-config). Will proceed with 32 bit build" )
 	set_property( GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS FALSE )
 	set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32" )
 	set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32" )
@@ -34,7 +34,11 @@ add_definitions( -DNEW_DAQ_READER ) # Required by StTofHitMaker
 
 # Remove dependency of "install" target on "all" target. This allows to
 # build and install individual libraries
-set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY true)
+set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY TRUE)
+
+message(STATUS "star-cmake: CMAKE_CXX_FLAGS = \"${CMAKE_CXX_FLAGS}\"")
+message(STATUS "star-cmake: CMAKE_C_FLAGS = \"${CMAKE_C_FLAGS}\"")
+message(STATUS "star-cmake: CMAKE_Fortran_FLAGS = \"${CMAKE_Fortran_FLAGS}\"")
 
 star_preinstall_headers( StarVMC )
 star_preinstall_headers( StRoot )
@@ -58,30 +62,33 @@ include_directories(
 	$ENV{STAR}/.$ENV{STAR_HOST_SYS}/include
 )
 
+# Build library with STAR geometry
+star_add_library_geometry( StarVMC/Geometry StarGeometry )
+
 set( star_lib_dir_blacklist
 	StarVMC/GeoTestMaker
 	StarVMC/minicern
 	StarVMC/StarBASE
-	StarVMC/StarGeometry
+	StarVMC/StarGeometry      # library built from StarVMC/Geometry
 	StarVMC/StarSim
 	StarVMC/StarVMCApplication
 	StarVMC/StVMCMaker
 	StarVMC/StVmcTools
-	StarVMC/xgeometry
+	StarVMC/xgeometry         # library built from StarVMC/Geometry
 	StRoot/html
 	StRoot/macros
 	StRoot/qainfo
 	StRoot/StarGenerator
-	StRoot/StEEmcPool
+	StRoot/StEEmcPool         # requires subdir processing
 	StRoot/StFgtPool          # blacklisted in cons
-	StRoot/StFlowMaker
+	StRoot/StFlowMaker        # missing from lib/
 	StRoot/St_geant_Maker
-	StRoot/St_geom_Maker
+	StRoot/St_geom_Maker      # requires qt4/include/QtGui
 	StRoot/StHighptPool       # blacklisted in cons
 	StRoot/StJetMaker
 	StRoot/StSpinMaker        # blacklisted due to error in fortran code
 	StRoot/StSpinPool         # blacklisted in cons
-	StRoot/StTofPool
+	StRoot/StTofPool          # missing from lib/
 )
 
 GET_SUBDIRS( "StarVMC;StRoot" star_lib_dirs )
@@ -91,13 +98,10 @@ foreach( star_lib_dir ${star_lib_dirs} )
 	star_add_library( ${star_lib_dir} )
 endforeach()
 
-# Set package specific properties
-set_target_properties( TPCCATracker PROPERTIES LINK_LIBRARIES "${ROOT_Vc_LIBRARY}" )
-
-# Build library with STAR geometry
-star_add_library_geometry( StarVMC/Geometry StarGeometry )
+# Manually set package specific properties
+set_target_properties(TPCCATracker PROPERTIES LINK_LIBRARIES "${ROOT_Vc_LIBRARY}")
 
 
 install(DIRECTORY ${STAR_SRC}/StarVMC ${STAR_SRC}/StRoot
-        DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/include"
-        FILES_MATCHING REGEX "\\.(h|hh)$")
+	DESTINATION ${STAR_ADDITIONAL_INSTALL_PREFIX}/include
+	FILES_MATCHING REGEX "\\.(h|hh)$")
