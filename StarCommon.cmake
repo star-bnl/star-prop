@@ -101,7 +101,7 @@ endfunction()
 #
 # Generates a ROOT dictionary for `star_lib_dir` in ${STAR_SRC}.
 #
-function(STAR_GENERATE_DICTIONARY star_lib_dir star_lib_dir_out)
+function(STAR_GENERATE_DICTIONARY star_lib_name star_lib_dir star_lib_dir_out)
 
 	cmake_parse_arguments(ARG "" "" "LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
 
@@ -131,9 +131,8 @@ function(STAR_GENERATE_DICTIONARY star_lib_dir star_lib_dir_out)
 	star_generate_linkdef( ${star_lib_dir_out} LINKDEF ${user_linkdef} LINKDEF_HEADERS ${linkdef_headers} )
 
 	# Prepare include directories to be used during ROOT dictionary generation.
-	# These directories are tied to the `star_lib_dir` traget via the
+	# These directories are tied to the `star_lib_name` target via the
 	# INCLUDE_DIRECTORIES property.
-	get_filename_component( star_lib_name ${star_lib_dir} NAME )
 	get_target_property( target_include_dirs ${star_lib_name} INCLUDE_DIRECTORIES )
 	string( REGEX REPLACE "([^;]+)" "-I\\1" dict_include_dirs "${target_include_dirs}" )
 
@@ -205,7 +204,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 		"${CMAKE_CURRENT_BINARY_DIR}/include/tables/${star_lib_name_for_tables}")
 
 	# Generate the _dict.cxx file for the library
-	star_generate_dictionary(${star_lib_dir_abs} ${star_lib_dir_out}
+	star_generate_dictionary(${star_lib_name} ${star_lib_dir_abs} ${star_lib_dir_out}
 		LINKDEF_HEADERS ${${star_lib_name}_LINKDEF_HEADERS}
 		LINKDEF_OPTIONS "-p;-D__ROOT__"
 		EXCLUDE ${star_lib_exclude})
@@ -426,7 +425,7 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 	target_include_directories(${star_lib_name} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 
 	# Generate the _dict.cxx file for the library
-	star_generate_dictionary(${star_lib_dir_out} ${star_lib_dir_out}
+	star_generate_dictionary(${star_lib_name} ${star_lib_dir_out} ${star_lib_dir_out}
 		LINKDEF_HEADERS ${star_lib_dir_out}/StarGeo.h
 		LINKDEF_OPTIONS "-p;-D__ROOT__")
 
