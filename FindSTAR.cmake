@@ -31,21 +31,21 @@ set(STAR_INCLUDE_DIRS
 	"${STAR_ROOT}/include_all"
 )
 
-set( STAR_LIBRARY_DIRS "${CMAKE_CURRENT_BINARY_DIR}/.$ENV{STAR_HOST_SYS}/lib"
-                       "${STAR_ROOT}/.$ENV{STAR_HOST_SYS}/lib"
-                       "$ENV{STAR}/.$ENV{STAR_HOST_SYS}/lib" )
+set(STAR_LIBRARY_DIRS "${CMAKE_CURRENT_BINARY_DIR}/${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
+                      "${STAR_ROOT}/lib")
 
 set( star_core_libs
 	StarClassLibrary
 	StarMagField
 	StarRoot
-	St_base
 	StBichsel
 	StBTofUtil
 	StChain
 	StDbBroker
 	StDbLib
 	StDetectorDbMaker
+	StDbUtilities
+	StTpcDb
 	St_db_Maker
 	StEEmcUtil
 	StEmcUtil
@@ -53,15 +53,37 @@ set( star_core_libs
 	StFmsUtil
 	StEvent
 	StEventMaker
+	StEventUtilities
+	StMcEvent
 	StGenericVertexMaker
 	Sti
 	StiUtilities
 	StIOMaker
 	StMuDSTMaker
 	StStrangeMuDstMaker
-	St_Tables
+	StDb_Tables
 	StTableUtilities
 	StUtilities
+	St_base
+	StiIst
+	StiTpc
+	StiPxl
+	StiSsd
+	StiSvt
+	StiMaker
+	StSsdDbMaker
+	StSsdUtil
+	StSstUtil
+	StIstDbMaker
+	StarGeometry
+	StarAgmlLib
+	StarAgmlUtil
+	StSvtClassLibrary
+	StFtpcTrackMaker
+	StFtpcClusterMaker
+	St_ctf
+	geometry_Tables
+	ftpc_Tables
 )
 
 set( STAR_LIBRARIES )
@@ -69,11 +91,7 @@ set( STAR_LIBRARIES )
 foreach( star_component ${star_core_libs} ${STAR_FIND_COMPONENTS} )
 
 	find_library( STAR_${star_component}_LIBRARY ${star_component}
-	              PATHS
-	              "./.$ENV{STAR_HOST_SYS}/lib"
-	              "${STAR_ROOT}/.$ENV{STAR_HOST_SYS}/lib"
-	              "$ENV{STAR}/.$ENV{STAR_HOST_SYS}/lib"
-	)
+	              PATHS ${STAR_LIBRARY_DIRS} )
 	
 	if( STAR_${star_component}_LIBRARY )
 		mark_as_advanced( STAR_${star_component}_LIBRARY )
