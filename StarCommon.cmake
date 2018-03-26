@@ -169,7 +169,6 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	endif()
 
 	# Deal with sources
-	set(sources)
 
 	file(GLOB_RECURSE sources_cpp
 		"${star_lib_dir_abs}/*.cxx"
@@ -177,13 +176,18 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 		"${star_lib_dir_abs}/*.c"
 		"${star_lib_dir_abs}/*.cpp")
 
-	list(APPEND sources ${sources_cpp})
 
-	file(GLOB_RECURSE sources_fortran "${star_lib_dir_abs}/*.F")
-	list(APPEND sources ${sources_fortran})
+	file(GLOB_RECURSE f_files "${star_lib_dir_abs}/*.F")
+	star_process_f(${star_lib_name} "${f_files}" ${star_lib_dir_out} sources_F)
 
-	star_generate_sources_idl(${star_lib_dir_abs} sources_idl)
-	list(APPEND sources ${sources_idl})
+	file(GLOB_RECURSE g_files "${star_lib_dir_abs}/*.g")
+	star_process_g("${g_files}" ${star_lib_dir_out} sources_gtoF)
+
+	file(GLOB_RECURSE idl_files "${star_lib_dir_abs}/*.idl")
+	FILTER_LIST( idl_files EXCLUDE "${star_lib_dir_abs}/idl/"  )
+	star_process_idl("${idl_files}" "${star_lib_name_for_tables}" ${star_lib_dir_out} sources_idl headers_idl)
+
+	set(sources ${sources_cpp} ${sources_idl} ${sources_gtoF} ${sources_F})
 
 	GET_EXCLUDE_LIST( ${star_lib_name} star_lib_exclude )
 	FILTER_LIST(sources EXCLUDE ${star_lib_exclude})
