@@ -442,59 +442,30 @@ endfunction()
 
 
 # Generate source from idl files
-function(STAR_GENERATE_SOURCES_IDL star_lib_dir sources_idl)
+function(STAR_PROCESS_IDL idl_files star_lib_name star_lib_dir_out out_sources_idl out_headers_idl)
 
-	star_target_paths(${star_lib_dir} star_lib_name star_lib_dir_abs star_lib_dir_out)
+	set(out_sources_idl_)
+	set(out_headers_idl_)
 
-	file(GLOB_RECURSE idl_files ${star_lib_dir_abs}/*.idl)
+	set(outpath_table_struct ${CMAKE_CURRENT_BINARY_DIR}/include)
+	set(outpath_table_ttable ${CMAKE_CURRENT_BINARY_DIR}/include/tables/${star_lib_name})
 
-	if( NOT idl_files )
-		return()
-	endif()
+	foreach( idll ${idl_files} )
 
-	# For the time being consider only the first file in the list
-	list(GET idl_files 0 idll)
+		file(STRINGS ${idll} idl_matches_module REGEX "interface.*:.*amiModule")
 
-	# For the file and variable names we closely follow the convention in mgr/Conscript-standard
-	get_filename_component(idl ${idll} NAME_WE)
-	set(idlh "${star_lib_dir_out}/${idl}.h")
-	set(idli "${star_lib_dir_out}/${idl}.inc")
-	set(idlH "${star_lib_dir_out}/St_${idl}_Table.h")
-	set(idlC "${star_lib_dir_out}/St_${idl}_Table.cxx")
-	set(idlLinkDef "${star_lib_dir_out}/${idl}LinkDef.h")
-	set(idlCintH "${star_lib_dir_out}/St_${idl}_TableCint.h")
-	set(idlCintC "${star_lib_dir_out}/St_${idl}_TableCint.cxx")
+		if( idl_matches_module )
+			star_process_idl_module(${idll} sources_idl_ headers_idl_)
+		else()
+			star_process_idl_file(${idll} sources_idl_ headers_idl_)
+		endif()
 
-	find_program(STIC_EXECUTABLE stic)
+		list(APPEND out_sources_idl_ ${sources_idl_})
+		list(APPEND out_headers_idl_ ${headers_idl_})
+	endforeach()
 
-	add_custom_command(
-		OUTPUT ${idlh} ${idli}
-		COMMAND ${STIC_EXECUTABLE} -q ${idll}
-		COMMAND ${CMAKE_COMMAND} -E rename ${idl}.h ${idlh}
-		COMMAND ${CMAKE_COMMAND} -E rename ${idl}.inc ${idli}
-		DEPENDS ${idll} )
-
-	find_program(PERL_EXECUTABLE perl)
-
-	add_custom_command(
-		OUTPUT ${idlH} ${idlC} ${idlLinkDef}
-		COMMAND ${PERL_EXECUTABLE} ${STAR_SRC}/mgr/ConstructTable.pl ${idll} ${idlH}
-		COMMAND ${PERL_EXECUTABLE} ${STAR_SRC}/mgr/ConstructTable.pl ${idll} ${idlC}
-		COMMAND ${PERL_EXECUTABLE} ${STAR_SRC}/mgr/ConstructTable.pl ${idll} ${idlLinkDef}
-		DEPENDS ${STAR_SRC}/mgr/ConstructTable.pl ${idll} )
-
-	find_program(ROOT_DICTGEN_EXECUTABLE rootcint HINTS $ENV{ROOTSYS}/bin)
-
-	add_custom_command(OUTPUT ${idlCintC} ${idlCintH}
-	                   COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f ${idlCintC} -c -p -D__ROOT__ ${idlh} ${idlH} ${idlLinkDef}
-	                   DEPENDS ${idlh} ${idlH} ${idlLinkDef}
-	                   VERBATIM)
-
-	set(sources_idl_)
-	list(APPEND sources_idl_ ${idlC} ${idlCintC})
-
-	set(${sources_idl} ${sources_idl_} PARENT_SCOPE)
-
+	set(${out_sources_idl} ${out_sources_idl_} PARENT_SCOPE)
+	set(${out_headers_idl} ${out_headers_idl_} PARENT_SCOPE)
 endfunction()
 
 
