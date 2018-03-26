@@ -62,8 +62,24 @@ include_directories(
 	$ENV{STAR}/.$ENV{STAR_HOST_SYS}/include
 )
 
+# Build libraries containing idl/*.idl table descriptions
+star_add_library_table( StDb )
+star_add_library_table( pams/ctf )
+star_add_library_table( pams/emc )
+star_add_library_table( pams/ftpc )
+star_add_library_table( pams/gen )
+star_add_library_table( pams/geometry )
+star_add_library_table( pams/global )
+star_add_library_table( pams/sim )
+star_add_library_table( pams/svt )
+
 # Build library with STAR geometry
 star_add_library_geometry( StarVMC/Geometry StarGeometry )
+
+star_add_library(pams/geometry)
+star_add_library(pams/ctf St_ctf)
+star_add_library(pams/sim/g2t St_g2t)
+add_dependencies(St_g2t sim_Tables gen_Tables)
 
 set( star_lib_dir_blacklist
 	StarVMC/GeoTestMaker
@@ -96,10 +112,17 @@ FILTER_LIST( star_lib_dirs EXCLUDE ${star_lib_dir_blacklist} )
 
 foreach( star_lib_dir ${star_lib_dirs} )
 	star_add_library( ${star_lib_dir} )
+	get_filename_component(star_lib_name ${star_lib_dir} NAME)
+	add_dependencies(${star_lib_name}
+		 St_g2t StDb_Tables emc_Tables gen_Tables ctf_Tables
+		 geometry_Tables global_Tables sim_Tables svt_Tables ftpc_Tables)
 endforeach()
 
 # Manually set package specific properties
 set_target_properties(TPCCATracker PROPERTIES LINK_LIBRARIES "${ROOT_Vc_LIBRARY}")
+target_include_directories(St_g2t PRIVATE
+	"${STAR_SRC}/asps/Simulation/geant321/include"
+	"${STAR_SRC}/asps/Simulation/starsim/include")
 
 
 install(DIRECTORY ${STAR_SRC}/StarVMC ${STAR_SRC}/StRoot
