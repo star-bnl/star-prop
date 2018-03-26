@@ -8,7 +8,7 @@ set(STAR_SRC "$ENV{STAR}" CACHE PATH "Path to star software source code")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 
 # STAR software depends on ROOT
-find_package(ROOT COMPONENTS Table HistPainter Minuit Geom Spectrum Vc)
+find_package(ROOT COMPONENTS Table HistPainter Minuit Geom Spectrum Vc minicern)
 
 if( ${ROOT_CXX_FLAGS} MATCHES "-m32" )
 	message( STATUS "star-cmake: Found -m32 option in $ROOT_CXX_FLAGS (root-config). Will proceed with 32 bit build" )
@@ -63,6 +63,10 @@ include_directories(
 	# created by star_preinstall_headers()
 	${CMAKE_BINARY_DIR}/include
 )
+
+
+star_add_executable_stic(asps/staf/sdd/src)
+star_add_executable_agetof(asps/Simulation/agetof)
 
 # Build libraries containing idl/*.idl table descriptions
 star_add_library_table( StDb )

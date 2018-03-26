@@ -489,7 +489,7 @@ endfunction()
 
 function(STAR_PROCESS_IDL_FILE idll out_sources out_headers)
 
-	find_program(STIC_EXECUTABLE stic)
+	find_program(STIC_EXECUTABLE stic HINTS ${CMAKE_CURRENT_BINARY_DIR})
 	find_program(PERL_EXECUTABLE perl)
 	find_program(ROOT_DICTGEN_EXECUTABLE rootcint HINTS $ENV{ROOTSYS}/bin)
 
@@ -510,7 +510,7 @@ function(STAR_PROCESS_IDL_FILE idll out_sources out_headers)
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${outpath_table_struct}
 		COMMAND ${CMAKE_COMMAND} -E rename ${idl}.h ${idlh}
 		COMMAND ${CMAKE_COMMAND} -E rename ${idl}.inc ${idli}
-		DEPENDS ${idll}
+		DEPENDS ${idll} ${STIC_EXECUTABLE}
 		VERBATIM )
 
 	add_custom_command(
@@ -537,7 +537,7 @@ endfunction()
 
 function(STAR_PROCESS_IDL_MODULE idll out_sources out_headers)
 
-	find_program(STIC_EXECUTABLE stic)
+	find_program(STIC_EXECUTABLE stic HINTS ${CMAKE_CURRENT_BINARY_DIR})
 	find_program(ROOT_DICTGEN_EXECUTABLE rootcint HINTS $ENV{ROOTSYS}/bin)
 
 	# For the file and variable names we closely follow the convention in mgr/Conscript-standard
@@ -562,7 +562,7 @@ function(STAR_PROCESS_IDL_MODULE idll out_sources out_headers)
 		COMMAND ${CMAKE_COMMAND} -E rename ${idl}.inc ${idli}
 		COMMAND ${CMAKE_COMMAND} -E remove ${idl}.c.template ${idl}.F.template ${idl}_i.cc
 		COMMAND ${CMAKE_COMMAND} -E echo "#pragma link C++ class St_${idl}-;" > ${idlLinkDef}
-		DEPENDS ${idll}
+		DEPENDS ${idll} ${STIC_EXECUTABLE}
 		VERBATIM )
 
 	add_custom_command(
@@ -587,13 +587,13 @@ function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
 		set(g_file "${star_lib_dir_out}/${f_file_name_we}.g")
 		set(out_F_file "${star_lib_dir_out}/${f_file_name_we}.F")
 
-		find_program(AGETOF_EXECUTABLE agetof)
+		find_program(AGETOF_EXECUTABLE agetof HINTS ${CMAKE_CURRENT_BINARY_DIR})
 		add_custom_command(
 			OUTPUT ${g_file} ${out_F_file}
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${star_lib_dir_out}
 			COMMAND ${CMAKE_C_COMPILER} -E -P ${STAR_Fortran_DEFINITIONS} "$(CXX_INCLUDES)" ${f_file} -o ${g_file}
 			COMMAND ${AGETOF_EXECUTABLE} -V 1 ${g_file} -o ${out_F_file}
-			DEPENDS ${f_file} VERBATIM)
+			DEPENDS ${f_file} ${AGETOF_EXECUTABLE} VERBATIM)
 
 		list(APPEND out_F_files_ ${out_F_file})
 	endforeach()
@@ -611,15 +611,88 @@ function(STAR_PROCESS_G in_g_files star_lib_dir_out out_F_files)
 		get_filename_component(g_file_name_we ${g_file} NAME_WE)
 		set(out_F_file "${star_lib_dir_out}/${g_file_name_we}.F")
 
-		find_program(AGETOF_EXECUTABLE agetof)
+		find_program(AGETOF_EXECUTABLE agetof HINTS ${CMAKE_CURRENT_BINARY_DIR})
 		add_custom_command(
 			OUTPUT ${out_F_file}
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${star_lib_dir_out}
 			COMMAND ${AGETOF_EXECUTABLE} -V 1 ${g_file} -o ${out_F_file}
-			DEPENDS ${g_file} )
+			DEPENDS ${g_file} ${AGETOF_EXECUTABLE} VERBATIM)
 
 		list(APPEND out_F_files_ ${out_F_file})
 	endforeach()
 
 	set( ${out_F_files} ${out_F_files_} PARENT_SCOPE )
+endfunction()
+
+
+
+function(STAR_ADD_EXECUTABLE_AGETOF star_exec_dir)
+
+	star_target_paths(${star_exec_dir} exec_name exec_dir_abs dummy)
+
+	add_executable( ${exec_name}
+		${exec_dir_abs}/readlink.c
+		${exec_dir_abs}/afexist.F
+		${exec_dir_abs}/afname.F
+		${exec_dir_abs}/cccard.F
+		${exec_dir_abs}/crit.F
+		${exec_dir_abs}/define.F
+		${exec_dir_abs}/doit.F
+		${exec_dir_abs}/dumdum.F
+		${exec_dir_abs}/expand.F
+		${exec_dir_abs}/filter.F
+		${exec_dir_abs}/find.F
+		${exec_dir_abs}/inital.F
+		${exec_dir_abs}/ispec.F
+		${exec_dir_abs}/kat.F
+		${exec_dir_abs}/krunc.F
+		${exec_dir_abs}/lexp.F
+		${exec_dir_abs}/linf.F
+		${exec_dir_abs}/llong.F
+		${exec_dir_abs}/mactrc.F
+		${exec_dir_abs}/main.F
+		${exec_dir_abs}/mesage.F
+		${exec_dir_abs}/muser.F
+		${exec_dir_abs}/n5.F
+		${exec_dir_abs}/nib.F
+		${exec_dir_abs}/nxtcrd.F
+		${exec_dir_abs}/raw.F
+		${exec_dir_abs}/rw.F
+		${exec_dir_abs}/user.F
+	)
+
+	target_link_libraries(agetof ${ROOT_LIBRARIES})
+endfunction()
+
+
+
+function(STAR_ADD_EXECUTABLE_STIC star_exec_dir)
+
+	star_target_paths(${star_exec_dir} orig_exec_name exec_dir_abs exec_dir_out)
+
+	set(exec_name stic)
+
+	string(REPLACE ${orig_exec_name} ${exec_name} exec_dir_out ${exec_dir_out})
+
+	add_executable(${exec_name} ${exec_dir_out}/idl-yacc.c ${exec_dir_abs}/templateStuff.c)
+	target_include_directories(${exec_name} PRIVATE ${exec_dir_abs} ${exec_dir_out})
+	target_link_libraries(${exec_name} fl)
+
+	find_program(BISON_EXECUTABLE NAMES bison yacc)
+	add_custom_command(
+		OUTPUT y.tab.c ${exec_dir_out}/idl-yacc.c
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${exec_dir_out}
+		COMMAND ${BISON_EXECUTABLE} ${exec_dir_abs}/idl.y
+		COMMAND ${CMAKE_COMMAND} -E rename y.tab.c ${exec_dir_out}/idl-yacc.c
+		DEPENDS ${exec_dir_abs}/idl.y ${exec_dir_abs}/stic.h ${exec_dir_out}/idl-lex.c
+		VERBATIM)
+
+	find_program(FLEX_EXECUTABLE flex)
+	add_custom_command(
+		OUTPUT lex.yy.c ${exec_dir_out}/idl-lex.c
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${exec_dir_out}
+		COMMAND ${FLEX_EXECUTABLE} ${exec_dir_abs}/idl.l
+		COMMAND ${CMAKE_COMMAND} -E rename lex.yy.c ${exec_dir_out}/idl-lex.c
+		DEPENDS ${exec_dir_abs}/idl.l
+		VERBATIM)
 endfunction()
