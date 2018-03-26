@@ -98,8 +98,8 @@ set( star_lib_dir_blacklist
 	StRoot/StEEmcPool         # requires subdir processing
 	StRoot/StFgtPool          # blacklisted in cons
 	StRoot/StFlowMaker        # missing from lib/
-	StRoot/St_geant_Maker
 	StRoot/St_geom_Maker      # requires qt4/include/QtGui
+	StRoot/StHbtMaker         # fortran error
 	StRoot/StHighptPool       # blacklisted in cons
 	StRoot/StJetMaker
 	StRoot/StSpinMaker        # blacklisted due to error in fortran code
