@@ -159,6 +159,15 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 
 	star_target_paths(${star_lib_dir} star_lib_name star_lib_dir_abs star_lib_dir_out)
 
+	# Get first optional unnamed parameter
+	set(user_lib_name ${ARGV1})
+	set(star_lib_name_for_tables)
+
+	if( user_lib_name )
+		set(star_lib_name_for_tables ${star_lib_name})
+		set(star_lib_name ${user_lib_name})
+	endif()
+
 	# Deal with sources
 	set(sources)
 
