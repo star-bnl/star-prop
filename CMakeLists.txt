@@ -28,13 +28,19 @@ include(StarCommon)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_definitions( -D__ROOT__ )
-add_definitions( -D_UCMLOGGER_ ) # Required by StStarLogger
-add_definitions( -DNEW_DAQ_READER ) # Required by StTofHitMaker
-
 # Remove dependency of "install" target on "all" target. This allows to
 # build and install individual libraries
 set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY TRUE)
+
+# -D_UCMLOGGER_ required by StStarLogger
+# -DNEW_DAQ_READER required by StTofHitMaker
+set(STAR_C_CXX_DEFINITIONS "-D__ROOT__ -D_UCMLOGGER_ -DNEW_DAQ_READER")
+set(STAR_Fortran_DEFINITIONS "-DCERNLIB_TYPE -DCERNLIB_DOUBLE -DCERNLIB_NOQUAD -DCERNLIB_LINUX")
+set(STAR_Fortran_FLAGS "-fd-lines-as-code -std=legacy -fno-second-underscore -fno-automatic")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STAR_C_CXX_DEFINITIONS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${STAR_C_CXX_DEFINITIONS}")
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${STAR_Fortran_FLAGS} ${STAR_Fortran_DEFINITIONS}")
 
 message(STATUS "star-cmake: CMAKE_CXX_FLAGS = \"${CMAKE_CXX_FLAGS}\"")
 message(STATUS "star-cmake: CMAKE_C_FLAGS = \"${CMAKE_C_FLAGS}\"")
