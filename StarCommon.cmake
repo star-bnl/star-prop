@@ -199,7 +199,10 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
 
 	GET_SUBDIRS(${star_lib_dir_abs} star_lib_subdirs INCLUDE_PARENT)
-	target_include_directories(${star_lib_name} PRIVATE "${star_lib_subdirs}")
+	target_include_directories(${star_lib_name} PRIVATE
+		"${star_lib_subdirs}"
+		"${CMAKE_CURRENT_BINARY_DIR}/include"
+		"${CMAKE_CURRENT_BINARY_DIR}/include/tables/${star_lib_name_for_tables}")
 
 	# Generate the _dict.cxx file for the library
 	star_generate_dictionary(${star_lib_dir_abs} ${star_lib_dir_out}
@@ -210,6 +213,9 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	install(TARGETS ${star_lib_name}
 		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
 		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib")
+
+	install(FILES ${headers_idl}
+		DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/include/tables/${star_lib_name_for_tables}")
 
 endfunction()
 
