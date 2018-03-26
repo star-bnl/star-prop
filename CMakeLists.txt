@@ -62,10 +62,6 @@ include_directories(
 	# Inlude path to header files with flatten directory hierarchy
 	# created by star_preinstall_headers()
 	${CMAKE_BINARY_DIR}/include
-	# The following directories need to be included until header files can
-	# be generated from idl
-	$ENV{STAR}/.$ENV{STAR_HOST_SYS}/include/tables
-	$ENV{STAR}/.$ENV{STAR_HOST_SYS}/include
 )
 
 # Build libraries containing idl/*.idl table descriptions
