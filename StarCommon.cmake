@@ -355,18 +355,22 @@ set( St_base_EXCLUDE "StRoot/St_base/St_staf_dummies.c" )
 
 #
 # Flattens the hierarchy of header files found in `parent_dir` at 1 level deep
-# by copying them to `${STAR_ADDITIONAL_INSTALL_PREFIX}/include/`
+# by copying them to `${CMAKE_CURRENT_BINARY_DIR}/include/`
 #
 function(STAR_PREINSTALL_HEADERS parent_dir)
 
 	# Get all header files in 'parent_dir'
 	file(GLOB header_files
 		"${STAR_SRC}/${parent_dir}/*/*.h"
-		"${STAR_SRC}/${parent_dir}/*/*.hh")
+		"${STAR_SRC}/${parent_dir}/*/*.hh"
+		"${STAR_SRC}/${parent_dir}/*/*.inc"
+		"${STAR_SRC}/asps/rexe/TGeant3/*.h"
+		"${STAR_SRC}/pams/*/inc/*.h"
+		"${STAR_SRC}/pams/*/inc/*.inc")
 
 	foreach( header_file ${header_files})
 		get_filename_component( header_file_name ${header_file} NAME )
-		configure_file( "${header_file}" "${STAR_ADDITIONAL_INSTALL_PREFIX}/include/${header_file_name}" COPYONLY )
+		configure_file( "${header_file}" "${CMAKE_CURRENT_BINARY_DIR}/include/${header_file_name}" COPYONLY )
 	endforeach()
 
 endfunction()

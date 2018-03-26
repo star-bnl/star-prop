@@ -55,7 +55,7 @@ include_directories(
 	${STAR_SRC}/StRoot/RTS/trg/include
 	# Inlude path to header files with flatten directory hierarchy
 	# created by star_preinstall_headers()
-	${CMAKE_BINARY_DIR}/${STAR_ADDITIONAL_INSTALL_PREFIX}/include
+	${CMAKE_BINARY_DIR}/include
 	# The following directories need to be included until header files can
 	# be generated from idl
 	$ENV{STAR}/.$ENV{STAR_HOST_SYS}/include/tables
