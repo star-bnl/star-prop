@@ -351,6 +351,7 @@ set( StEStructPool_LINKDEF_HEADERS
 	"${STAR_CMAKE_DIR}/StArray_cint.h"
 )
 set( St_base_EXCLUDE "StRoot/St_base/St_staf_dummies.c" )
+set( StDb_Tables_EXCLUDE "StDb/idl/tpcDedxPidAmplDb.idl" )
 
 
 #
