@@ -629,9 +629,9 @@ endfunction()
 
 function(STAR_ADD_EXECUTABLE_AGETOF star_exec_dir)
 
-	star_target_paths(${star_exec_dir} exec_name exec_dir_abs dummy)
+	star_target_paths(${star_exec_dir} dummy exec_dir_abs dummy)
 
-	add_executable( ${exec_name}
+	add_executable( agetof
 		${exec_dir_abs}/readlink.c
 		${exec_dir_abs}/afexist.F
 		${exec_dir_abs}/afname.F
@@ -671,13 +671,11 @@ function(STAR_ADD_EXECUTABLE_STIC star_exec_dir)
 
 	star_target_paths(${star_exec_dir} orig_exec_name exec_dir_abs exec_dir_out)
 
-	set(exec_name stic)
+	string(REPLACE ${orig_exec_name} stic exec_dir_out ${exec_dir_out})
 
-	string(REPLACE ${orig_exec_name} ${exec_name} exec_dir_out ${exec_dir_out})
-
-	add_executable(${exec_name} ${exec_dir_out}/idl-yacc.c ${exec_dir_abs}/templateStuff.c)
-	target_include_directories(${exec_name} PRIVATE ${exec_dir_abs} ${exec_dir_out})
-	target_link_libraries(${exec_name} fl)
+	add_executable(stic ${exec_dir_out}/idl-yacc.c ${exec_dir_abs}/templateStuff.c)
+	target_include_directories(stic PRIVATE ${exec_dir_abs} ${exec_dir_out})
+	target_link_libraries(stic fl)
 
 	find_program(BISON_EXECUTABLE NAMES bison yacc)
 	add_custom_command(
