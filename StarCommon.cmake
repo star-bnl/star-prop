@@ -548,8 +548,8 @@ function(STAR_PROCESS_IDL_MODULE idll out_sources out_headers)
 	set(modH "${outpath_table_ttable}/St_${idl}_Module.h")
 	set(modC "${star_lib_dir_out}/St_${idl}_Module.cxx")
 	set(idlLinkDef "${star_lib_dir_out}/${idl}LinkDef.h")
-	set(idlCintH "${star_lib_dir_out}/St_${idl}_TableCint.h")
-	set(idlCintC "${star_lib_dir_out}/St_${idl}_TableCint.cxx")
+	set(idlCintH "${star_lib_dir_out}/St_${idl}_ModuleCint.h")
+	set(idlCintC "${star_lib_dir_out}/St_${idl}_ModuleCint.cxx")
 
 	add_custom_command(
 		OUTPUT ${idlh} ${idli} ${modH} ${modC} ${idlLinkDef}
