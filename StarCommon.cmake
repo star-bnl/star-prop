@@ -330,6 +330,8 @@ endfunction()
 
 # special cases
 set( St_base_LINKDEF_HEADERS "${STAR_SRC}/StRoot/St_base/Stypes.h" )
+set( StAnalysisUtilities_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TFile.h" )
+set( StBFChain_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TFile.h" )
 set( StEvent_LINKDEF_HEADERS
 	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures.h"
 	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2000.h"
@@ -340,11 +342,14 @@ set( StEvent_LINKDEF_HEADERS
 	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2007.h"
 	"${STAR_CMAKE_DIR}/StArray_cint.h"
 )
-set( StiMaker_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TH1K.h" )
 set( StEStructPool_LINKDEF_HEADERS
 	"$ENV{ROOTSYS}/include/TVector2.h"
 	"${STAR_CMAKE_DIR}/StArray_cint.h"
 )
+set( StGammaMaker_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TVector3.h" )
+set( StTriggerUtilities_LINKDEF_HEADERS "${STAR_SRC}/StRoot/StChain/StMaker.h" )
+set( StiMaker_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TH1K.h" )
+set( Stv_LINKDEF_HEADERS "${STAR_SRC}/StRoot/StarRoot/THelixTrack.h" )
 set( St_base_EXCLUDE "StRoot/St_base/St_staf_dummies.c" )
 set( StDb_Tables_EXCLUDE "StDb/idl/tpcDedxPidAmplDb.idl" )
 set( St_g2t_INCLUDE_DIRECTORIES
