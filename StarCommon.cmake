@@ -347,6 +347,9 @@ set( StEStructPool_LINKDEF_HEADERS
 )
 set( St_base_EXCLUDE "StRoot/St_base/St_staf_dummies.c" )
 set( StDb_Tables_EXCLUDE "StDb/idl/tpcDedxPidAmplDb.idl" )
+set( St_g2t_INCLUDE_DIRECTORIES
+	"${STAR_SRC}/asps/Simulation/geant321/include"
+	"${STAR_SRC}/asps/Simulation/starsim/include")
 
 
 #
@@ -583,6 +586,10 @@ function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
 
 	set(out_F_files_)
 
+	get_property(currdir_include_dir DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
+	set(target_include_dirs ${currdir_include_dir} ${${star_lib_name}_INCLUDE_DIRECTORIES})
+	string( REGEX REPLACE "([^;]+)" "-I\\1" target_include_dirs "${target_include_dirs}" )
+
 	foreach( f_file ${in_F_files} )
 		get_filename_component(f_file_name_we ${f_file} NAME_WE)
 		set(g_file "${star_lib_dir_out}/${f_file_name_we}.g")
@@ -592,7 +599,7 @@ function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
 		add_custom_command(
 			OUTPUT ${g_file} ${out_F_file}
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${star_lib_dir_out}
-			COMMAND ${CMAKE_C_COMPILER} -E -P ${STAR_Fortran_DEFINITIONS} "$(CXX_INCLUDES)" ${f_file} -o ${g_file}
+			COMMAND ${CMAKE_C_COMPILER} -E -P ${STAR_Fortran_DEFINITIONS} ${target_include_dirs} ${f_file} -o ${g_file}
 			COMMAND ${AGETOF_EXECUTABLE} -V 1 ${g_file} -o ${out_F_file}
 			DEPENDS ${f_file} ${AGETOF_EXECUTABLE} VERBATIM)
 
