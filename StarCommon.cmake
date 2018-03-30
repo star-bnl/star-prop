@@ -493,7 +493,6 @@ endfunction()
 
 function(STAR_PROCESS_IDL_FILE idll out_sources out_headers)
 
-	find_program(STIC_EXECUTABLE stic HINTS ${CMAKE_CURRENT_BINARY_DIR})
 	find_program(PERL_EXECUTABLE perl)
 	find_program(ROOT_DICTGEN_EXECUTABLE rootcint HINTS $ENV{ROOTSYS}/bin)
 
@@ -510,11 +509,11 @@ function(STAR_PROCESS_IDL_FILE idll out_sources out_headers)
 
 	add_custom_command(
 		OUTPUT ${idlh} ${idli}
-		COMMAND ${STIC_EXECUTABLE} -q ${idll}
+		COMMAND ${CMAKE_CURRENT_BINARY_DIR}/stic -q ${idll}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${outpath_table_struct}
 		COMMAND ${CMAKE_COMMAND} -E rename ${idl}.h ${idlh}
 		COMMAND ${CMAKE_COMMAND} -E rename ${idl}.inc ${idli}
-		DEPENDS ${idll} ${STIC_EXECUTABLE}
+		DEPENDS ${idll} stic
 		VERBATIM )
 
 	add_custom_command(
@@ -541,7 +540,6 @@ endfunction()
 
 function(STAR_PROCESS_IDL_MODULE idll out_sources out_headers)
 
-	find_program(STIC_EXECUTABLE stic HINTS ${CMAKE_CURRENT_BINARY_DIR})
 	find_program(ROOT_DICTGEN_EXECUTABLE rootcint HINTS $ENV{ROOTSYS}/bin)
 
 	# For the file and variable names we closely follow the convention in mgr/Conscript-standard
@@ -556,7 +554,7 @@ function(STAR_PROCESS_IDL_MODULE idll out_sources out_headers)
 
 	add_custom_command(
 		OUTPUT ${idlh} ${idli} ${modH} ${modC} ${idlLinkDef}
-		COMMAND ${STIC_EXECUTABLE} -s -r -q ${idll}
+		COMMAND ${CMAKE_CURRENT_BINARY_DIR}/stic -s -r -q ${idll}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${star_lib_dir_out}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${outpath_table_struct}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${outpath_table_ttable}
@@ -566,7 +564,7 @@ function(STAR_PROCESS_IDL_MODULE idll out_sources out_headers)
 		COMMAND ${CMAKE_COMMAND} -E rename ${idl}.inc ${idli}
 		COMMAND ${CMAKE_COMMAND} -E remove ${idl}.c.template ${idl}.F.template ${idl}_i.cc
 		COMMAND ${CMAKE_COMMAND} -E echo "#pragma link C++ class St_${idl}-;" > ${idlLinkDef}
-		DEPENDS ${idll} ${STIC_EXECUTABLE}
+		DEPENDS ${idll} stic
 		VERBATIM )
 
 	add_custom_command(
@@ -595,13 +593,12 @@ function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
 		set(g_file "${star_lib_dir_out}/${f_file_name_we}.g")
 		set(out_F_file "${star_lib_dir_out}/${f_file_name_we}.F")
 
-		find_program(AGETOF_EXECUTABLE agetof HINTS ${CMAKE_CURRENT_BINARY_DIR})
 		add_custom_command(
 			OUTPUT ${g_file} ${out_F_file}
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${star_lib_dir_out}
 			COMMAND ${CMAKE_C_COMPILER} -E -P ${STAR_Fortran_DEFINITIONS} ${target_include_dirs} ${f_file} -o ${g_file}
-			COMMAND ${AGETOF_EXECUTABLE} -V 1 ${g_file} -o ${out_F_file}
-			DEPENDS ${f_file} ${AGETOF_EXECUTABLE} VERBATIM)
+			COMMAND ${CMAKE_CURRENT_BINARY_DIR}/agetof -V 1 ${g_file} -o ${out_F_file}
+			DEPENDS ${f_file} agetof VERBATIM)
 
 		list(APPEND out_F_files_ ${out_F_file})
 	endforeach()
@@ -619,12 +616,11 @@ function(STAR_PROCESS_G in_g_files star_lib_dir_out out_F_files)
 		get_filename_component(g_file_name_we ${g_file} NAME_WE)
 		set(out_F_file "${star_lib_dir_out}/${g_file_name_we}.F")
 
-		find_program(AGETOF_EXECUTABLE agetof HINTS ${CMAKE_CURRENT_BINARY_DIR})
 		add_custom_command(
 			OUTPUT ${out_F_file}
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${star_lib_dir_out}
-			COMMAND ${AGETOF_EXECUTABLE} -V 1 ${g_file} -o ${out_F_file}
-			DEPENDS ${g_file} ${AGETOF_EXECUTABLE} VERBATIM)
+			COMMAND ${CMAKE_CURRENT_BINARY_DIR}/agetof -V 1 ${g_file} -o ${out_F_file}
+			DEPENDS ${g_file} agetof VERBATIM)
 
 		list(APPEND out_F_files_ ${out_F_file})
 	endforeach()
