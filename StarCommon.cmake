@@ -177,7 +177,8 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	star_process_g("${g_files}" ${star_lib_dir_out} sources_gtoF)
 
 	file(GLOB_RECURSE idl_files "${star_lib_dir_abs}/*.idl")
-	FILTER_LIST( idl_files EXCLUDE "${star_lib_dir_abs}/idl/"  )
+	string(REPLACE "+" "\\\\+" idl_path_exclude_regex "${star_lib_dir_abs}/idl")
+	FILTER_LIST(idl_files EXCLUDE ${idl_path_exclude_regex})
 	star_process_idl("${idl_files}" "${star_lib_name_for_tables}" ${star_lib_dir_out} sources_idl headers_idl)
 
 	set(sources ${sources_cpp} ${sources_idl} ${sources_gtoF} ${sources_F})
