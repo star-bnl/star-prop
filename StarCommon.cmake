@@ -682,19 +682,17 @@ function(STAR_ADD_EXECUTABLE_STIC star_exec_dir)
 
 	find_program(BISON_EXECUTABLE NAMES bison yacc)
 	add_custom_command(
-		OUTPUT y.tab.c ${exec_dir_out}/idl-yacc.c
+		OUTPUT ${exec_dir_out}/idl-yacc.c
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${exec_dir_out}
-		COMMAND ${BISON_EXECUTABLE} ${exec_dir_abs}/idl.y
-		COMMAND ${CMAKE_COMMAND} -E rename y.tab.c ${exec_dir_out}/idl-yacc.c
+		COMMAND ${BISON_EXECUTABLE} -o ${exec_dir_out}/idl-yacc.c ${exec_dir_abs}/idl.y
 		DEPENDS ${exec_dir_abs}/idl.y ${exec_dir_abs}/stic.h ${exec_dir_out}/idl-lex.c
 		VERBATIM)
 
 	find_program(FLEX_EXECUTABLE flex)
 	add_custom_command(
-		OUTPUT lex.yy.c ${exec_dir_out}/idl-lex.c
+		OUTPUT ${exec_dir_out}/idl-lex.c
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${exec_dir_out}
-		COMMAND ${FLEX_EXECUTABLE} ${exec_dir_abs}/idl.l
-		COMMAND ${CMAKE_COMMAND} -E rename lex.yy.c ${exec_dir_out}/idl-lex.c
+		COMMAND ${FLEX_EXECUTABLE} -o ${exec_dir_out}/idl-lex.c ${exec_dir_abs}/idl.l
 		DEPENDS ${exec_dir_abs}/idl.l
 		VERBATIM)
 endfunction()
