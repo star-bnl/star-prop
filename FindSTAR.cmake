@@ -96,7 +96,7 @@ foreach( star_component ${star_core_libs} ${STAR_FIND_COMPONENTS} )
 	if( STAR_${star_component}_LIBRARY )
 		mark_as_advanced( STAR_${star_component}_LIBRARY )
 		list( APPEND STAR_LIBRARIES ${STAR_${star_component}_LIBRARY} )
- 		if( STAR_FIND_COMPONENTS )
+		if( STAR_FIND_COMPONENTS )
 			list( REMOVE_ITEM STAR_FIND_COMPONENTS ${star_component} )
 		endif()
 	else()
@@ -110,17 +110,17 @@ if( STAR_LIBRARIES )
 endif()
 
 
-message( STATUS "Found the following STAR libraries:" )
+message( STATUS "Found STAR libraries:" )
 foreach( star_lib ${STAR_LIBRARIES} )
 	message(STATUS "  ${star_lib}")
 endforeach()
 
 
-mark_as_advanced( STAR_INCLUDE_DIRS STAR_LIBRARIES STAR_LIBRARY_DIRS )
+mark_as_advanced(STAR_INCLUDE_DIRS STAR_LIBRARIES STAR_LIBRARY_DIRS)
 
 
 # Set STAR_FOUND to TRUE if all listed variables are TRUE
 include( FindPackageHandleStandardArgs )
 
-find_package_handle_standard_args( STAR DEFAULT_MSG
-	STAR_INCLUDE_DIRS STAR_LIBRARIES STAR_LIBRARY_DIRS )
+find_package_handle_standard_args(STAR DEFAULT_MSG
+	STAR_INCLUDE_DIRS STAR_LIBRARIES STAR_LIBRARY_DIRS)

@@ -214,7 +214,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 endfunction()
 
 
-macro( FILTER_LIST arg_list )
+macro(FILTER_LIST arg_list)
 
 	# Starting cmake 3.6 one can simply use list( FILTER ... )
 	#list( FILTER sources EXCLUDE REGEX "${ARG_EXCLUDE}" )
@@ -253,7 +253,7 @@ endmacro()
 
 # Builds a list of subdirectories with complete path found in the
 # 'directories'
-macro( GET_SUBDIRS directories subdirectories  )
+macro(GET_SUBDIRS directories subdirectories)
 
 	cmake_parse_arguments(ARG "INCLUDE_PARENT" "" "" ${ARGN})
 
@@ -290,8 +290,10 @@ endmacro()
 
 
 #
-# From `star_lib_dir` extract the library target name and form an absolute and
-# a corresponding output paths. The input path `star_lib_dir` can be either
+# From the path provided by the user (`star_lib_dir`) extracts the library
+# target name (`lib_name`), an absolute path to the library source code
+# (`path_abs`), and the corresponding output path where the generated or built
+# code can be placed (`path_out`). The input path `star_lib_dir` can be either
 # absolute or relative to ${STAR_SRC}
 #
 function(STAR_TARGET_PATHS star_lib_dir lib_name path_abs path_out)
@@ -388,10 +390,11 @@ endfunction()
 #
 function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 
-	# Get first optional unnamed parameter
-	set(user_lib_name ${ARGV1})
-
 	star_target_paths(${star_lib_dir} star_lib_name star_lib_dir_abs star_lib_dir_out)
+
+	# Change the name of the library/target and output directory if an
+	# optional unnamed parameter is provided by the user
+	set(user_lib_name ${ARGV1})
 
 	if( user_lib_name )
 		string(REPLACE ${star_lib_name} ${user_lib_name} star_lib_dir_out ${star_lib_dir_out})
@@ -428,7 +431,7 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 	# Create a string by replacing ; with gcc compiler options
 	string(REGEX REPLACE "([^;]+);" "-include \\1 " geo_config_headers_include "${geo_config_headers};")
 
-	# Special treatment requireed for the aggregate geometry file
+	# Special treatment required for the aggregate geometry file
 	set_source_files_properties(${star_lib_dir_out}/StarGeo.cxx
 		PROPERTIES COMPILE_FLAGS "${geo_config_headers_include}")
 
@@ -451,7 +454,6 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
 		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
 		PUBLIC_HEADER DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/include/${geo_headers_rel_path}" OPTIONAL)
-
 endfunction()
 
 
@@ -650,8 +652,8 @@ function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
 
 	set(out_F_files_)
 
-	get_property(currdir_include_dir DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
-	set(target_include_dirs ${currdir_include_dir} ${${star_lib_name}_INCLUDE_DIRECTORIES})
+	get_property(currdir_include_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
+	set(target_include_dirs ${currdir_include_dirs} ${${star_lib_name}_INCLUDE_DIRECTORIES})
 	string( REGEX REPLACE "([^;]+)" "-I\\1" target_include_dirs "${target_include_dirs}" )
 
 	foreach( f_file ${in_F_files} )

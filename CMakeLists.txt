@@ -120,8 +120,8 @@ foreach( star_lib_dir ${star_lib_dirs} )
 	star_add_library( ${star_lib_dir} )
 	get_filename_component(star_lib_name ${star_lib_dir} NAME)
 	add_dependencies(${star_lib_name}
-		 St_g2t StDb_Tables emc_Tables gen_Tables ctf_Tables
-		 geometry_Tables global_Tables sim_Tables svt_Tables ftpc_Tables)
+		St_g2t StDb_Tables emc_Tables gen_Tables ctf_Tables
+		geometry_Tables global_Tables sim_Tables svt_Tables ftpc_Tables)
 endforeach()
 
 # Manually set package specific properties
