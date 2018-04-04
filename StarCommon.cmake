@@ -598,10 +598,11 @@ function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
 		set(g_file "${star_lib_dir_out}/${f_file_name_we}.g")
 		set(out_F_file "${star_lib_dir_out}/${f_file_name_we}.F")
 
+		find_program(CPP_EXECUTABLE cpp)
 		add_custom_command(
 			OUTPUT ${g_file} ${out_F_file}
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${star_lib_dir_out}
-			COMMAND ${CMAKE_C_COMPILER} -E -P ${STAR_Fortran_DEFINITIONS} ${target_include_dirs} ${f_file} -o ${g_file}
+			COMMAND ${CPP_EXECUTABLE} -P ${STAR_Fortran_DEFINITIONS} ${target_include_dirs} ${f_file} -o ${g_file}
 			COMMAND ${CMAKE_CURRENT_BINARY_DIR}/agetof -V 1 ${g_file} -o ${out_F_file}
 			DEPENDS ${f_file} agetof VERBATIM)
 
