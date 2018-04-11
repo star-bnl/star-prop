@@ -340,11 +340,11 @@ set( StEvent_LINKDEF_HEADERS
 	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2004.h"
 	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2005.h"
 	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2007.h"
-	"${STAR_CMAKE_DIR}/StArray_cint.h"
+	"${STAR_CMAKE_DIR}/star-aux/StArray_cint.h"
 )
 set( StEStructPool_LINKDEF_HEADERS
 	"$ENV{ROOTSYS}/include/TVector2.h"
-	"${STAR_CMAKE_DIR}/StArray_cint.h"
+	"${STAR_CMAKE_DIR}/star-aux/StArray_cint.h"
 )
 set( StGammaMaker_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TVector3.h" )
 set( StTriggerUtilities_LINKDEF_HEADERS "${STAR_SRC}/StRoot/StChain/StMaker.h" )
