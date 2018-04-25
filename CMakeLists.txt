@@ -108,6 +108,7 @@ set( star_lib_dir_blacklist
 	StRoot/StHbtMaker         # fortran error
 	StRoot/StHighptPool       # blacklisted in cons
 	StRoot/StJetMaker
+	StRoot/StJetFinder        # needs FindFastJet.cmake
 	StRoot/StSpinMaker        # blacklisted due to error in fortran code
 	StRoot/StSpinPool         # blacklisted in cons
 	StRoot/StTofPool          # missing from lib/
