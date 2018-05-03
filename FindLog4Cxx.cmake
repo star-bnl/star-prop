@@ -5,8 +5,8 @@
 # LOG4CXX_INCLUDE_DIR - the liblog4cxx include directory
 # LOG4CXX_LIBRARIES - liblog4cxx library
 
-FIND_PATH(LOG4CXX_INCLUDE_DIR logger.h PATH_SUFFIXES log4cxx PATHS /opt/local/include $ENV{OPTSTAR}/include)
-FIND_LIBRARY(LOG4CXX_LIBRARIES NAMES log4cxx log4cxxd PATHS /opt/local/lib $ENV{OPTSTAR}/lib)
+FIND_PATH(LOG4CXX_INCLUDE_DIR logger.h PATH_SUFFIXES log4cxx PATHS /opt/local/include ${LOG4CXX_ROOT}/include)
+FIND_LIBRARY(LOG4CXX_LIBRARIES NAMES log4cxx log4cxxd PATHS /opt/local/lib ${LOG4CXX_ROOT}/lib)
 
 IF(LOG4CXX_INCLUDE_DIR AND LOG4CXX_LIBRARIES)
   SET(Log4cxx_FOUND 1)
