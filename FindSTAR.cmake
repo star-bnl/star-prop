@@ -23,14 +23,13 @@ if( DEFINED ENV{STAR_HOST_SYS} )
 	set(STAR_ROOT "${STAR_ROOT}/${STAR_ADDITIONAL_INSTALL_PREFIX}")
 endif()
 
-set( STAR_INCLUDE_DIRS )
 
-find_path( STAR_INCLUDE_DIR_ONE "StChain/StChain.h" PATHS "$ENV{STAR}/StRoot" )
-list( APPEND STAR_INCLUDE_DIRS ${STAR_INCLUDE_DIR_ONE})
-
-find_path( STAR_INCLUDE_DIR_TWO "StChain.h" PATHS "$ENV{STAR}/.$ENV{STAR_HOST_SYS}/include" )
-list( APPEND STAR_INCLUDE_DIRS ${STAR_INCLUDE_DIR_TWO})
-
+set(STAR_INCLUDE_DIRS
+	"${STAR_ROOT}/include"
+	"${STAR_ROOT}/include/StRoot"
+	"${STAR_ROOT}/include/StarVMC"
+	"${STAR_ROOT}/include_all"
+)
 
 set( STAR_LIBRARY_DIRS "${CMAKE_CURRENT_BINARY_DIR}/.$ENV{STAR_HOST_SYS}/lib"
                        "${STAR_ROOT}/.$ENV{STAR_HOST_SYS}/lib"
