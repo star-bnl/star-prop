@@ -134,6 +134,14 @@ target_include_directories(St_g2t PRIVATE
 
 star_add_library_vertexnosti( StRoot/StGenericVertexMaker )
 add_dependencies(StGenericVertexMakerNoSti StDb_Tables)
+add_dependencies(StEmcCalibrationMaker StEmcADCtoEMaker)
+add_dependencies(StEmcPool StEmcADCtoEMaker)
+add_dependencies(StEmcRawMaker StEmcADCtoEMaker)
+add_dependencies(StGammaMaker StEmcADCtoEMaker)
+add_dependencies(StPeCMaker StEmcADCtoEMaker)
+add_dependencies(StPreEclMaker StEmcADCtoEMaker)
+add_dependencies(StTriggerUtilities StEmcADCtoEMaker)
+add_dependencies(St_ctf_Maker St_ctf)
 
 
 install(DIRECTORY ${STAR_SRC}/StarVMC ${STAR_SRC}/StRoot
