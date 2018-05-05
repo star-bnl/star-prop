@@ -205,11 +205,11 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 		EXCLUDE ${star_lib_exclude})
 
 	install(TARGETS ${star_lib_name}
-		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
-		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib")
+		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
+		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL)
 
 	install(FILES ${headers_idl}
-		DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/include/tables/${star_lib_name_for_tables}")
+		DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/include/tables/${star_lib_name_for_tables}" OPTIONAL)
 
 endfunction()
 
@@ -358,23 +358,26 @@ set( St_g2t_INCLUDE_DIRECTORIES
 
 
 #
-# Flattens the hierarchy of header files found in `parent_dir` at 1 level deep
-# by copying them to `${CMAKE_CURRENT_BINARY_DIR}/include/`
+# Flattens the hierarchy of header files found in select subdirectories in
+# `${STAR_SRC}` by copying them to `destination_dir` at the same level
 #
-function(STAR_PREINSTALL_HEADERS parent_dir)
+function(STAR_PREINSTALL_HEADERS destination_dir)
 
-	# Get all header files in 'parent_dir'
+	# Collect files from some subdirectiries
 	file(GLOB header_files
-		"${STAR_SRC}/${parent_dir}/*/*.h"
-		"${STAR_SRC}/${parent_dir}/*/*.hh"
-		"${STAR_SRC}/${parent_dir}/*/*.inc"
+		"${STAR_SRC}/StRoot/*/*.h"
+		"${STAR_SRC}/StRoot/*/*.hh"
+		"${STAR_SRC}/StRoot/*/*.inc"
+		"${STAR_SRC}/StarVMC/*/*.h"
+		"${STAR_SRC}/StarVMC/*/*.hh"
+		"${STAR_SRC}/StarVMC/*/*.inc"
 		"${STAR_SRC}/asps/rexe/TGeant3/*.h"
 		"${STAR_SRC}/pams/*/inc/*.h"
 		"${STAR_SRC}/pams/*/inc/*.inc")
 
-	foreach( header_file ${header_files})
+	foreach( header_file ${header_files} )
 		get_filename_component( header_file_name ${header_file} NAME )
-		configure_file( "${header_file}" "${CMAKE_CURRENT_BINARY_DIR}/include/${header_file_name}" COPYONLY )
+		configure_file( "${header_file}" "${destination_dir}/${header_file_name}" COPYONLY )
 	endforeach()
 
 endfunction()
@@ -438,8 +441,8 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 		LINKDEF_OPTIONS "-p;-D__ROOT__")
 
 	install(TARGETS ${star_lib_name}
-		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
-		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib")
+		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
+		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL)
 
 endfunction()
 
@@ -461,9 +464,9 @@ function(STAR_ADD_LIBRARY_TABLE star_lib_dir )
 		PUBLIC_HEADER "${headers_idl}")
 
 	install(TARGETS ${star_lib_name}
-		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
-		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
-		PUBLIC_HEADER DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/include/tables")
+		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
+		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
+		PUBLIC_HEADER DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/include/tables" OPTIONAL)
 endfunction()
 
 
@@ -512,8 +515,8 @@ function(STAR_ADD_LIBRARY_VERTEXNOSTI star_lib_dir )
 		VERBATIM )
 
 	install(TARGETS StGenericVertexMakerNoSti
-		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
-		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib")
+		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
+		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL)
 endfunction()
 
 

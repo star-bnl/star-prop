@@ -46,8 +46,7 @@ message(STATUS "star-cmake: CMAKE_CXX_FLAGS = \"${CMAKE_CXX_FLAGS}\"")
 message(STATUS "star-cmake: CMAKE_C_FLAGS = \"${CMAKE_C_FLAGS}\"")
 message(STATUS "star-cmake: CMAKE_Fortran_FLAGS = \"${CMAKE_Fortran_FLAGS}\"")
 
-star_preinstall_headers( StarVMC )
-star_preinstall_headers( StRoot )
+star_preinstall_headers(${CMAKE_BINARY_DIR}/include)
 
 include_directories(
 	${ROOT_INCLUDE_DIR}
@@ -150,3 +149,8 @@ install(DIRECTORY ${STAR_SRC}/StarVMC ${STAR_SRC}/StRoot
 
 install(DIRECTORY ${STAR_SRC}/StRoot/StBFChain
 	DESTINATION StRoot)
+
+# Copy generated headers (and the flatten hierarchy of headers files) from the
+# build directory
+install(DIRECTORY ${CMAKE_BINARY_DIR}/include/
+	DESTINATION ${STAR_ADDITIONAL_INSTALL_PREFIX}/include_all)
