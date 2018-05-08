@@ -421,6 +421,7 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 			list(APPEND geo_config_headers ${geo_header})
 		endif()
 		list(APPEND geo_sources ${geo_source})
+		list(APPEND geo_headers ${geo_header})
 
 	endforeach()
 
@@ -432,7 +433,10 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 		PROPERTIES COMPILE_FLAGS "${geo_config_headers_include}")
 
 	add_library(${star_lib_name} ${geo_sources} ${star_lib_dir_out}_dict.cxx)
-	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
+	set_target_properties(${star_lib_name} PROPERTIES
+		LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out}
+		PUBLIC_HEADER "${geo_headers}")
+
 	target_include_directories(${star_lib_name} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 
 	# Generate the _dict.cxx file for the library
@@ -440,9 +444,13 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 		LINKDEF_HEADERS ${star_lib_dir_out}/StarGeo.h
 		LINKDEF_OPTIONS "-p;-D__ROOT__")
 
+	# Get relative path for the generated headers to be used at installation
+	# stage
+	file(RELATIVE_PATH geo_headers_rel_path ${CMAKE_CURRENT_BINARY_DIR} ${star_lib_dir_out})
 	install(TARGETS ${star_lib_name}
 		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
-		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL)
+		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
+		PUBLIC_HEADER DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/include/${geo_headers_rel_path}" OPTIONAL)
 
 endfunction()
 
