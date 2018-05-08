@@ -7,6 +7,22 @@
 #
 
 
+set(STAR_ROOT "$ENV{STAR}" CACHE STRING "Path to directory with STAR soft installed")
+
+if( NOT STAR_ROOT )
+	message(FATAL_ERROR "STAR_ROOT must be set, i.e. \"cmake -D STAR_ROOT=<path to STAR dir>\" "
+	                    "Alternatively, one can specify environment variable \"STAR\"")
+endif()
+
+# Make use of the $STAR_HOST_SYS evironment variable. If it is set use it as the
+# typical STAR installation prefix
+set(STAR_ADDITIONAL_INSTALL_PREFIX ".")
+
+if( DEFINED ENV{STAR_HOST_SYS} )
+	set(STAR_ADDITIONAL_INSTALL_PREFIX ".$ENV{STAR_HOST_SYS}")
+	set(STAR_ROOT "${STAR_ROOT}/${STAR_ADDITIONAL_INSTALL_PREFIX}")
+endif()
+
 set( STAR_INCLUDE_DIRS )
 
 find_path( STAR_INCLUDE_DIR_ONE "StChain/StChain.h" PATHS "$ENV{STAR}/StRoot" )
