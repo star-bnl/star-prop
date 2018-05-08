@@ -1,2 +1,2 @@
 language: nix
-script: nix-build .travis/default.nix -I star-nix=https://github.com/veprbl/star-nix/archive/6d2be9f816c26fd770b31942a08baa89271f9bfb.tar.gz
+script: true
