@@ -25,16 +25,17 @@ endif()
 
 
 set(STAR_INCLUDE_DIRS
+	# These paths should point to where the STAR soft is installed
 	"${STAR_ROOT}/include"
 	"${STAR_ROOT}/include/StRoot"
 	"${STAR_ROOT}/include/StarVMC"
-	"${STAR_ROOT}/include_all"
-)
+	"${STAR_ROOT}/include_all")
 
-set(STAR_LIBRARY_DIRS "${CMAKE_CURRENT_BINARY_DIR}/${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
-                      "${STAR_ROOT}/lib")
+set(STAR_LIBRARY_DIRS
+	"${CMAKE_CURRENT_BINARY_DIR}/${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
+	"${STAR_ROOT}/lib")
 
-set( star_core_libs
+set(star_libs
 	StarClassLibrary
 	StarMagField
 	StarRoot
@@ -86,21 +87,19 @@ set( star_core_libs
 	ftpc_Tables
 )
 
-set( STAR_LIBRARIES )
+set(STAR_LIBRARIES)
 
-foreach( star_component ${star_core_libs} ${STAR_FIND_COMPONENTS} )
+foreach(star_lib ${star_libs} ${STAR_FIND_COMPONENTS})
 
-	find_library( STAR_${star_component}_LIBRARY ${star_component}
+	find_library( STAR_LIBRARY_${star_lib} ${star_lib}
 	              PATHS ${STAR_LIBRARY_DIRS} )
 	
-	if( STAR_${star_component}_LIBRARY )
-		mark_as_advanced( STAR_${star_component}_LIBRARY )
-		list( APPEND STAR_LIBRARIES ${STAR_${star_component}_LIBRARY} )
+	if( STAR_LIBRARY_${star_lib} )
+		mark_as_advanced( STAR_LIBRARY_${star_lib} )
+		list( APPEND STAR_LIBRARIES ${STAR_LIBRARY_${star_lib}} )
 		if( STAR_FIND_COMPONENTS )
-			list( REMOVE_ITEM STAR_FIND_COMPONENTS ${star_component} )
+			list( REMOVE_ITEM STAR_FIND_COMPONENTS ${star_lib} )
 		endif()
-	else()
-		message( WARNING "Cannot find STAR component: ${star_component}" )
 	endif()
 
 endforeach()
@@ -109,10 +108,20 @@ if( STAR_LIBRARIES )
 	list( REMOVE_DUPLICATES STAR_LIBRARIES )
 endif()
 
+if(NOT WIN32)
+        string(ASCII 27 Esc)
+        set(ColorReset "${Esc}[m")
+        set(ColorGreen "${Esc}[32m")
+        set(ColorRed   "${Esc}[31m")
+endif()
 
-message( STATUS "Found STAR libraries:" )
-foreach( star_lib ${STAR_LIBRARIES} )
-	message(STATUS "  ${star_lib}")
+message(STATUS "Found STAR libraries:")
+foreach(star_lib ${star_libs})
+	if(STAR_LIBRARY_${star_lib})
+	        message(STATUS "  ${ColorGreen}${star_lib}${ColorReset}:\t${STAR_LIBRARY_${star_lib}}")
+	else()
+	        message(STATUS "  ${ColorRed}${star_lib}${ColorReset}:\t${STAR_LIBRARY_${star_lib}}")
+	endif()
 endforeach()
 
 
