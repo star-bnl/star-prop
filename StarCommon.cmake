@@ -15,6 +15,9 @@ if(APPLE)
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -undefined dynamic_lookup")
 endif()
 
+
+find_program(ROOT_DICTGEN_EXECUTABLE NAMES rootcling rootcint HINTS $ENV{ROOTSYS}/bin)
+
 # Make use of the $STAR_HOST_SYS evironment variable. If it is set use it as the
 # typical STAR installation prefix
 set(STAR_ADDITIONAL_INSTALL_PREFIX ".")
@@ -129,9 +132,6 @@ function(STAR_GENERATE_DICTIONARY star_lib_name star_lib_dir star_lib_dir_out)
 	# INCLUDE_DIRECTORIES property.
 	get_target_property( target_include_dirs ${star_lib_name} INCLUDE_DIRECTORIES )
 	string( REGEX REPLACE "([^;]+)" "-I\\1" dict_include_dirs "${target_include_dirs}" )
-
-	# May need to look for rootcling first
-	find_program(ROOT_DICTGEN_EXECUTABLE rootcint HINTS $ENV{ROOTSYS}/bin)
 
 	# Generate ROOT dictionary using the *_LinkDef.h and *_DictInc.h files
 	add_custom_command(OUTPUT ${star_lib_dir_out}_dict.cxx ${star_lib_dir_out}_dict.h
@@ -558,8 +558,6 @@ function(STAR_ADD_LIBRARY_VERTEXNOSTI star_lib_dir )
 	get_property(global_include_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
 	string( REGEX REPLACE "([^;]+)" "-I\\1" global_include_dirs "${global_include_dirs}" )
 
-	find_program(ROOT_DICTGEN_EXECUTABLE rootcint HINTS $ENV{ROOTSYS}/bin)
-
 	# Generate ROOT dictionary using the *_LinkDef.h and *_DictInc.h files
 	add_custom_command(
 		OUTPUT ${star_lib_dir_out}_dict.cxx
@@ -607,7 +605,6 @@ endfunction()
 function(STAR_PROCESS_IDL_FILE idll out_sources out_headers)
 
 	find_program(PERL_EXECUTABLE perl)
-	find_program(ROOT_DICTGEN_EXECUTABLE rootcint HINTS $ENV{ROOTSYS}/bin)
 
 	# For the file and variable names we closely follow the convention in mgr/Conscript-standard
 	get_filename_component(idl ${idll} NAME_WE)
@@ -652,8 +649,6 @@ endfunction()
 
 
 function(STAR_PROCESS_IDL_MODULE idll out_sources out_headers)
-
-	find_program(ROOT_DICTGEN_EXECUTABLE rootcint HINTS $ENV{ROOTSYS}/bin)
 
 	# For the file and variable names we closely follow the convention in mgr/Conscript-standard
 	get_filename_component(idl ${idll} NAME_WE)
