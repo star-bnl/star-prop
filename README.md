@@ -26,7 +26,7 @@ Build with cmake and make
     git clone https://github.com/star-bnl/star-cvs.git
     git clone https://github.com/star-bnl/star-cmake.git
     mkdir star-build && cd star-build
-    cmake ../star-cmake -D STAR_SRC=../star-cvs/ -D CMAKE_INSTALL_PREFIX=../star-install
+    cmake ../star-cmake -DSTAR_SRC=../star-cvs/ -DCMAKE_INSTALL_PREFIX=../star-install -DLOG4CXX_ROOT=$OPTSTAR
     make -j [N]
     make install
 
