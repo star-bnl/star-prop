@@ -204,7 +204,7 @@ def scan_star(src_root):
         "St_g2t" : "pams/sim/g2t",
         })
 
-    # Mapping from library name to list of its header/source file paths
+    # Mapping from library name to list of its source file paths
     lib_to_sources = {}
     # Mapping from generated header name to list of libraries that provide it
     gen_header_to_lib = {}
