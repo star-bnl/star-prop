@@ -1,4 +1,5 @@
 # This list is generated automatically. Do not edit!
+add_dependencies(RTS StDb_Tables)
 add_dependencies(StAnalysisMaker StDb_Tables)
 add_dependencies(StAssociationMaker geometry_Tables sim_Tables)
 add_dependencies(StBFChain StDb_Tables)

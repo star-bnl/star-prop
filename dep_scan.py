@@ -204,6 +204,8 @@ def scan_star(src_root):
         "St_g2t" : "pams/sim/g2t",
         })
 
+    # Mapping from library name to list of its header/source file paths
+    lib_to_sources = {}
     # Mapping from generated header name to list of libraries that provide it
     gen_header_to_lib = {}
     # Mapping from source filename to its includes (that are also sources)
@@ -216,9 +218,12 @@ def scan_star(src_root):
         """
         filename = os.path.basename(filepath)
         if is_source_ext(filename):
+            lib_to_sources.setdefault(libname, []).append(filename)
             with open(filepath, errors='replace') as fp:
                 lines = fp.readlines()
             for include_filepath in find_all_includes(lines):
+                # We discard path to include and only look at the include filename.
+                # This produces some false positives for dependencies.
                 _, include_filename = os.path.split(include_filepath)
                 source_to_source.setdefault(filename, set()).add(include_filename)
         elif is_idl_ext(filename):
@@ -238,21 +243,12 @@ def scan_star(src_root):
     # A map of inter-library dependencies
     lib_dependencies = {}
 
-    def scan_callback(libname, filepath):
-        if is_source_ext(filepath):
-            with open(filepath, errors='replace') as fp:
-                lines = fp.readlines()
-            for include_path in find_all_includes(lines):
-                # We discard path to include and only look at the include filename.
-                # This produces some false positives for dependencies.
-                _, include_filename = os.path.split(include_path)
-                res = recursive_find_dependencies(include_filename, source_to_source, gen_header_to_lib)
-                for other_libname in res:
-                    if other_libname != libname:
-                        lib_dependencies.setdefault(libname, set()).add(other_libname)
-
-    for libname, librelpath in lib_to_librelpath.items():
-        res = scan_sources(src_root, libname, librelpath, scan_callback)
+    for libname, sources in lib_to_sources.items():
+        for source_filename in sources:
+            res = recursive_find_dependencies(source_filename, source_to_source, gen_header_to_lib)
+            for other_libname in res:
+                if other_libname != libname:
+                    lib_dependencies.setdefault(libname, set()).add(other_libname)
 
     # Compiled for the same source code, not a dependency
     lib_dependencies["St_ctf"].remove("ctf_Tables")
