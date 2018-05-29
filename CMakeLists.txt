@@ -120,7 +120,9 @@ foreach( star_lib_dir ${star_lib_dirs} )
 	star_add_library( ${star_lib_dir} )
 endforeach()
 
+# Common build rules cannot be applied to StGenericVertexMakerNoSti library
 star_add_library_vertexnosti( StRoot/StGenericVertexMaker )
+add_dependencies(StGenericVertexMakerNoSti StDb_Tables geometry_Tables sim_Tables)
 
 include("deps.cmake")
 
