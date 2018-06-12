@@ -133,14 +133,33 @@ target_include_directories(St_g2t PRIVATE
 	"${STAR_SRC}/asps/Simulation/geant321/include"
 	"${STAR_SRC}/asps/Simulation/starsim/include")
 
-install(DIRECTORY ${STAR_SRC}/StarVMC ${STAR_SRC}/StRoot
-	DESTINATION ${STAR_ADDITIONAL_INSTALL_PREFIX}/include
+
+# Copy all header files preserving the subdirectory tree hierarchy
+install(DIRECTORY
+	${STAR_SRC}/StarVMC
+	${STAR_SRC}/StRoot
+	DESTINATION ${STAR_ADDITIONAL_INSTALL_PREFIX}/include/)
+
+# Copy all generated headers (and the flatten hierarchy of the headers files)
+# from the build directory. This is done for backward compatibility when the
+# dependent code does not specify the prefix relative to $STAR_SRC in #include
+# directives
+install(DIRECTORY
+	${CMAKE_BINARY_DIR}/include/
+	DESTINATION ${STAR_ADDITIONAL_INSTALL_PREFIX}/include_all/
 	FILES_MATCHING REGEX "\\.(h|hh)$")
 
-install(DIRECTORY ${STAR_SRC}/StRoot/StBFChain
-	DESTINATION StRoot)
+install(DIRECTORY
+	${STAR_SRC}/StRoot/StBFChain
+	DESTINATION StRoot/)
 
-# Copy generated headers (and the flatten hierarchy of headers files) from the
-# build directory
-install(DIRECTORY ${CMAKE_BINARY_DIR}/include/
-	DESTINATION ${STAR_ADDITIONAL_INSTALL_PREFIX}/include_all)
+# Some modules depend on DB entries available on disk
+install(DIRECTORY
+	${STAR_SRC}/StarDb/Calibrations
+	${STAR_SRC}/StarDb/Geometry
+	${STAR_SRC}/StarDb/StMagF
+	DESTINATION StarDb/)
+
+install(DIRECTORY
+	${STAR_SRC}/StDb/servers
+	DESTINATION StDb/)
