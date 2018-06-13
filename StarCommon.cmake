@@ -163,28 +163,30 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 
 	# Deal with sources
 
+	GET_EXCLUDE_LIST( ${star_lib_name} star_lib_exclude )
+
 	file(GLOB_RECURSE sources_cpp
 		"${star_lib_dir_abs}/*.cxx"
 		"${star_lib_dir_abs}/*.cc"
 		"${star_lib_dir_abs}/*.c"
 		"${star_lib_dir_abs}/*.cpp")
-
+	FILTER_LIST(sources_cpp EXCLUDE ${star_lib_exclude})
 
 	file(GLOB_RECURSE f_files "${star_lib_dir_abs}/*.F")
+	FILTER_LIST(f_files EXCLUDE ${star_lib_exclude})
 	star_process_f(${star_lib_name} "${f_files}" ${star_lib_dir_out} sources_F)
 
 	file(GLOB_RECURSE g_files "${star_lib_dir_abs}/*.g")
+	FILTER_LIST(g_files EXCLUDE ${star_lib_exclude})
 	star_process_g("${g_files}" ${star_lib_dir_out} sources_gtoF)
 
 	file(GLOB_RECURSE idl_files "${star_lib_dir_abs}/*.idl")
+	FILTER_LIST(idl_files EXCLUDE ${star_lib_exclude})
 	string(REPLACE "+" "\\\\+" idl_path_exclude_regex "${star_lib_dir_abs}/idl")
 	FILTER_LIST(idl_files EXCLUDE ${idl_path_exclude_regex})
 	star_process_idl("${idl_files}" "${star_lib_name_for_tables}" ${star_lib_dir_out} sources_idl headers_idl)
 
 	set(sources ${sources_cpp} ${sources_idl} ${sources_gtoF} ${sources_F})
-
-	GET_EXCLUDE_LIST( ${star_lib_name} star_lib_exclude )
-	FILTER_LIST(sources EXCLUDE ${star_lib_exclude})
 
 	# XXX The hardcoded .cxx extension below should be defined by cmake?
 	add_library(${star_lib_name} ${sources} ${star_lib_dir_out}_dict.cxx)
