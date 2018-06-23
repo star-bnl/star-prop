@@ -457,6 +457,40 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 endfunction()
 
 
+#
+# Creates a library from fortran sources without doing any preprocessing
+#
+function(STAR_ADD_LIBRARY_MINICERN star_lib_dir)
+
+	star_target_paths(${star_lib_dir} star_lib_name star_lib_dir_abs star_lib_dir_out)
+
+	# Change the name of the library/target and output directory if an
+	# optional unnamed parameter is provided by the user
+	set(user_lib_name ${ARGV1})
+
+	if( user_lib_name )
+		string(REPLACE ${star_lib_name} ${user_lib_name} star_lib_dir_out ${star_lib_dir_out})
+		set(star_lib_name ${user_lib_name})
+	endif()
+
+	file(GLOB_RECURSE cxx_files "${star_lib_dir_abs}/*.cxx")
+	file(GLOB_RECURSE c_files "${star_lib_dir_abs}/*.c")
+	FILTER_LIST( c_files EXCLUDE ${${star_lib_name}_EXCLUDE} )
+	file(GLOB_RECURSE f_files "${star_lib_dir_abs}/*.F")
+	FILTER_LIST( f_files EXCLUDE ${${star_lib_name}_EXCLUDE} )
+
+	add_library(${star_lib_name} ${f_files} ${cxx_files} ${c_files})
+	GET_SUBDIRS(${star_lib_dir_abs} star_lib_subdirs INCLUDE_PARENT)
+	target_include_directories(${star_lib_name} PRIVATE "${star_lib_subdirs}")
+	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
+
+	install(TARGETS ${star_lib_name}
+		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
+		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL)
+
+endfunction()
+
+
 # Builds a ${star_lib_name}_Tables library from ${star_lib_dir}/idl/*.idl files
 function(STAR_ADD_LIBRARY_TABLE star_lib_dir )
 
