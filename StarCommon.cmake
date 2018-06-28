@@ -359,6 +359,15 @@ set( StDb_Tables_EXCLUDE "StDb/idl/tpcDedxPidAmplDb.idl" )
 set( St_g2t_INCLUDE_DIRECTORIES
 	"${STAR_SRC}/asps/Simulation/geant321/include"
 	"${STAR_SRC}/asps/Simulation/starsim/include")
+set( StarMiniCern_EXCLUDE
+	"StarVMC/minicern/allgs"
+	"StarVMC/minicern/hpxgs"
+	"StarVMC/minicern/lnxgs"
+	"StarVMC/minicern/lnxppcgs"
+	"StarVMC/minicern/kerngen"
+	"StarVMC/minicern/qutyinv"
+	"StarVMC/minicern/qutyz32"
+	"StarVMC/minicern/sungs")
 
 
 #
