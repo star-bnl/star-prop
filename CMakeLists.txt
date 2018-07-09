@@ -85,7 +85,6 @@ star_add_library_minicern( StarVMC/minicern StarMiniCern )
 star_add_library(pams/geometry)
 star_add_library(pams/ctf St_ctf)
 star_add_library(pams/sim/g2t St_g2t)
-add_dependencies(St_g2t sim_Tables gen_Tables)
 
 set( star_lib_dir_blacklist
 	StarVMC/GeoTestMaker
