@@ -18,6 +18,26 @@ endif()
 
 find_program(ROOT_DICTGEN_EXECUTABLE NAMES rootcling rootcint HINTS $ENV{ROOTSYS}/bin)
 
+
+# Define common STAR_ and CMAKE_ variables used to build the STAR code
+
+# -D_UCMLOGGER_ required by StStarLogger
+# -DNEW_DAQ_READER required by StTofHitMaker
+set(STAR_C_CXX_DEFINITIONS "-D__ROOT__ -D_UCMLOGGER_ -DNEW_DAQ_READER")
+set(STAR_Fortran_DEFINITIONS "-DCERNLIB_TYPE -DCERNLIB_DOUBLE -DCERNLIB_NOQUAD -DCERNLIB_LINUX")
+set(STAR_Fortran_FLAGS "-fd-lines-as-code -std=legacy -fno-second-underscore -fno-automatic")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STAR_C_CXX_DEFINITIONS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${STAR_C_CXX_DEFINITIONS}")
+set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${STAR_Fortran_FLAGS} ${STAR_Fortran_DEFINITIONS}")
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Remove dependency of "install" target on "all" target. This allows to
+# build and install individual libraries
+set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY TRUE)
+
 # Make use of the $STAR_HOST_SYS evironment variable. If it is set use it as the
 # typical STAR installation prefix
 set(STAR_ADDITIONAL_INSTALL_PREFIX ".")
@@ -27,6 +47,33 @@ if(DEFINED ENV{STAR_HOST_SYS})
 endif()
 
 set( STAR_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}" )
+
+set(STAR_LIB_DIR_BLACKLIST
+	StarVMC/GeoTestMaker
+	StarVMC/minicern
+	StarVMC/StarBASE
+	StarVMC/StarGeometry      # library built from StarVMC/Geometry
+	StarVMC/StarSim
+	StarVMC/StarVMCApplication
+	StarVMC/StVMCMaker
+	StarVMC/StVmcTools
+	StarVMC/xgeometry         # library built from StarVMC/Geometry
+	StRoot/html
+	StRoot/macros
+	StRoot/qainfo
+	StRoot/StarGenerator
+	StRoot/StEEmcPool         # requires subdir processing
+	StRoot/StFgtPool          # blacklisted in cons
+	StRoot/StFlowMaker        # missing from lib/
+	StRoot/St_geom_Maker      # requires qt4/include/QtGui
+	StRoot/StHbtMaker         # fortran error
+	StRoot/StHighptPool       # blacklisted in cons
+	StRoot/StJetMaker
+	StRoot/StJetFinder        # needs FindFastJet.cmake
+	StRoot/StSpinMaker        # blacklisted due to error in fortran code
+	StRoot/StSpinPool         # blacklisted in cons
+	StRoot/StTofPool          # missing from lib/
+)
 
 
 #

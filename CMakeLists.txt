@@ -25,23 +25,6 @@ find_package(MySQL)
 # Perform some setup standard to STAR experiment environment
 include(StarCommon)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-# Remove dependency of "install" target on "all" target. This allows to
-# build and install individual libraries
-set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY TRUE)
-
-# -D_UCMLOGGER_ required by StStarLogger
-# -DNEW_DAQ_READER required by StTofHitMaker
-set(STAR_C_CXX_DEFINITIONS "-D__ROOT__ -D_UCMLOGGER_ -DNEW_DAQ_READER")
-set(STAR_Fortran_DEFINITIONS "-DCERNLIB_TYPE -DCERNLIB_DOUBLE -DCERNLIB_NOQUAD -DCERNLIB_LINUX")
-set(STAR_Fortran_FLAGS "-fd-lines-as-code -std=legacy -fno-second-underscore -fno-automatic")
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STAR_C_CXX_DEFINITIONS}")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${STAR_C_CXX_DEFINITIONS}")
-set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${STAR_Fortran_FLAGS} ${STAR_Fortran_DEFINITIONS}")
-
 message(STATUS "star-cmake: CMAKE_CXX_FLAGS = \"${CMAKE_CXX_FLAGS}\"")
 message(STATUS "star-cmake: CMAKE_C_FLAGS = \"${CMAKE_C_FLAGS}\"")
 message(STATUS "star-cmake: CMAKE_Fortran_FLAGS = \"${CMAKE_Fortran_FLAGS}\"")
@@ -86,35 +69,8 @@ star_add_library(pams/geometry)
 star_add_library(pams/ctf St_ctf)
 star_add_library(pams/sim/g2t St_g2t)
 
-set( star_lib_dir_blacklist
-	StarVMC/GeoTestMaker
-	StarVMC/minicern
-	StarVMC/StarBASE
-	StarVMC/StarGeometry      # library built from StarVMC/Geometry
-	StarVMC/StarSim
-	StarVMC/StarVMCApplication
-	StarVMC/StVMCMaker
-	StarVMC/StVmcTools
-	StarVMC/xgeometry         # library built from StarVMC/Geometry
-	StRoot/html
-	StRoot/macros
-	StRoot/qainfo
-	StRoot/StarGenerator
-	StRoot/StEEmcPool         # requires subdir processing
-	StRoot/StFgtPool          # blacklisted in cons
-	StRoot/StFlowMaker        # missing from lib/
-	StRoot/St_geom_Maker      # requires qt4/include/QtGui
-	StRoot/StHbtMaker         # fortran error
-	StRoot/StHighptPool       # blacklisted in cons
-	StRoot/StJetMaker
-	StRoot/StJetFinder        # needs FindFastJet.cmake
-	StRoot/StSpinMaker        # blacklisted due to error in fortran code
-	StRoot/StSpinPool         # blacklisted in cons
-	StRoot/StTofPool          # missing from lib/
-)
-
 GET_SUBDIRS( "StarVMC;StRoot" star_lib_dirs )
-FILTER_LIST( star_lib_dirs EXCLUDE ${star_lib_dir_blacklist} )
+FILTER_LIST( star_lib_dirs EXCLUDE ${STAR_LIB_DIR_BLACKLIST} )
 
 foreach( star_lib_dir ${star_lib_dirs} )
 	star_add_library( ${star_lib_dir} )
