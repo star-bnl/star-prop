@@ -76,15 +76,8 @@ foreach( star_lib_dir ${star_lib_dirs} )
 	star_add_library( ${star_lib_dir} )
 endforeach()
 
-# Common build rules cannot be applied to StGenericVertexMakerNoSti library
-star_add_library_vertexnosti( StRoot/StGenericVertexMaker )
-add_dependencies(StGenericVertexMakerNoSti StDb_Tables geometry_Tables sim_Tables)
-
 include("deps.cmake")
-
-# Manually set package specific properties
-set_target_properties(TPCCATracker PROPERTIES LINK_LIBRARIES "${ROOT_Vc_LIBRARY}")
-target_include_directories(Stv PRIVATE "${STAR_CMAKE_DIR}/star-aux/StarVMC/geant3/TGeant3")
+include("target_properties.cmake")
 
 
 # Copy all header files preserving the subdirectory tree hierarchy
