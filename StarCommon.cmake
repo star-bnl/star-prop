@@ -379,44 +379,6 @@ function(STAR_TARGET_PATHS star_lib_dir lib_name path_abs path_out)
 endfunction()
 
 
-# special cases
-set( St_base_LINKDEF_HEADERS "${STAR_SRC}/StRoot/St_base/Stypes.h" )
-set( StAnalysisUtilities_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TFile.h" )
-set( StBFChain_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TFile.h" )
-set( StEvent_LINKDEF_HEADERS
-	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures.h"
-	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2000.h"
-	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2002.h"
-	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2003.h"
-	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2004.h"
-	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2005.h"
-	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2007.h"
-	"${STAR_CMAKE_DIR}/star-aux/StArray_cint.h"
-)
-set( StEStructPool_LINKDEF_HEADERS
-	"$ENV{ROOTSYS}/include/TVector2.h"
-	"${STAR_CMAKE_DIR}/star-aux/StArray_cint.h"
-)
-set( StGammaMaker_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TVector3.h" )
-set( StTriggerUtilities_LINKDEF_HEADERS "${STAR_SRC}/StRoot/StChain/StMaker.h" )
-set( StiMaker_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TH1K.h" )
-set( Stv_LINKDEF_HEADERS "${STAR_SRC}/StRoot/StarRoot/THelixTrack.h" )
-set( St_base_EXCLUDE "StRoot/St_base/St_staf_dummies.c" )
-set( StDb_Tables_EXCLUDE "StDb/idl/tpcDedxPidAmplDb.idl" )
-set( St_g2t_INCLUDE_DIRECTORIES
-	"${STAR_SRC}/asps/Simulation/geant321/include"
-	"${STAR_SRC}/asps/Simulation/starsim/include")
-set( StarMiniCern_EXCLUDE
-	"StarVMC/minicern/allgs"
-	"StarVMC/minicern/hpxgs"
-	"StarVMC/minicern/lnxgs"
-	"StarVMC/minicern/lnxppcgs"
-	"StarVMC/minicern/kerngen"
-	"StarVMC/minicern/qutyinv"
-	"StarVMC/minicern/qutyz32"
-	"StarVMC/minicern/sungs")
-
-
 #
 # Flattens the hierarchy of header files found in select subdirectories in
 # `${STAR_SRC}` by copying them to `destination_dir` at the same level
@@ -855,3 +817,44 @@ function(STAR_ADD_EXECUTABLE_STIC star_exec_dir)
 		DEPENDS ${exec_dir_abs}/idl.l
 		VERBATIM)
 endfunction()
+
+
+#
+# Some targets require specific treatment due to missing functionality
+# originally available in cons
+#
+set(St_base_LINKDEF_HEADERS "${STAR_SRC}/StRoot/St_base/Stypes.h")
+set(StAnalysisUtilities_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TFile.h")
+set(StBFChain_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TFile.h")
+set(StEvent_LINKDEF_HEADERS
+	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures.h"
+	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2000.h"
+	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2002.h"
+	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2003.h"
+	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2004.h"
+	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2005.h"
+	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2007.h"
+	"${STAR_CMAKE_DIR}/star-aux/StArray_cint.h")
+set(StEStructPool_LINKDEF_HEADERS
+	"$ENV{ROOTSYS}/include/TVector2.h"
+	"${STAR_CMAKE_DIR}/star-aux/StArray_cint.h")
+set(StGammaMaker_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TVector3.h")
+set(StTriggerUtilities_LINKDEF_HEADERS "${STAR_SRC}/StRoot/StChain/StMaker.h")
+set(StiMaker_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TH1K.h")
+set(Stv_LINKDEF_HEADERS "${STAR_SRC}/StRoot/StarRoot/THelixTrack.h")
+
+set(St_g2t_INCLUDE_DIRECTORIES
+	"${STAR_SRC}/asps/Simulation/geant321/include"
+	"${STAR_SRC}/asps/Simulation/starsim/include")
+
+set(St_base_EXCLUDE "StRoot/St_base/St_staf_dummies.c")
+set(StDb_Tables_EXCLUDE "StDb/idl/tpcDedxPidAmplDb.idl")
+set(StarMiniCern_EXCLUDE
+	"StarVMC/minicern/allgs"
+	"StarVMC/minicern/hpxgs"
+	"StarVMC/minicern/lnxgs"
+	"StarVMC/minicern/lnxppcgs"
+	"StarVMC/minicern/kerngen"
+	"StarVMC/minicern/qutyinv"
+	"StarVMC/minicern/qutyz32"
+	"StarVMC/minicern/sungs")
