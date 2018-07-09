@@ -85,9 +85,6 @@ include("deps.cmake")
 # Manually set package specific properties
 set_target_properties(TPCCATracker PROPERTIES LINK_LIBRARIES "${ROOT_Vc_LIBRARY}")
 target_include_directories(Stv PRIVATE "${STAR_CMAKE_DIR}/star-aux/StarVMC/geant3/TGeant3")
-target_include_directories(St_g2t PRIVATE
-	"${STAR_SRC}/asps/Simulation/geant321/include"
-	"${STAR_SRC}/asps/Simulation/starsim/include")
 
 
 # Copy all header files preserving the subdirectory tree hierarchy
