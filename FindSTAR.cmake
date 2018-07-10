@@ -85,11 +85,23 @@ set(star_libs
 	St_ctf
 	geometry_Tables
 	ftpc_Tables
+	StDAQMaker
+	StDaqLib
+	RTS
+	StFtpcSlowSimMaker
+	StAssociationMaker
+	StMcEventMaker
+	StarMiniCern
+        ${STAR_FIND_COMPONENTS}
 )
+
+if( star_libs )
+	list( REMOVE_DUPLICATES star_libs )
+endif()
 
 set(STAR_LIBRARIES)
 
-foreach(star_lib ${star_libs} ${STAR_FIND_COMPONENTS})
+foreach(star_lib ${star_libs})
 
 	find_library( STAR_LIBRARY_${star_lib} ${star_lib}
 	              PATHS ${STAR_LIBRARY_DIRS} )
@@ -97,16 +109,10 @@ foreach(star_lib ${star_libs} ${STAR_FIND_COMPONENTS})
 	if( STAR_LIBRARY_${star_lib} )
 		mark_as_advanced( STAR_LIBRARY_${star_lib} )
 		list( APPEND STAR_LIBRARIES ${STAR_LIBRARY_${star_lib}} )
-		if( STAR_FIND_COMPONENTS )
-			list( REMOVE_ITEM STAR_FIND_COMPONENTS ${star_lib} )
-		endif()
 	endif()
 
 endforeach()
 
-if( STAR_LIBRARIES )
-	list( REMOVE_DUPLICATES STAR_LIBRARIES )
-endif()
 
 if(NOT WIN32)
         string(ASCII 27 Esc)
