@@ -29,7 +29,12 @@ set(STAR_INCLUDE_DIRS
 	"${STAR_ROOT}/include"
 	"${STAR_ROOT}/include/StRoot"
 	"${STAR_ROOT}/include/StarVMC"
-	"${STAR_ROOT}/include_all")
+	"${STAR_ROOT}/include_all"
+	# The following is just a workaround for the STAR code design
+	# disrespecting the file hierarchy in the installed directory
+	"$ENV{STAR}"
+	"$ENV{STAR}/StRoot"
+	"$ENV{STAR}/StarVMC")
 
 set(STAR_LIBRARY_DIRS "${STAR_ROOT}/lib")
 
