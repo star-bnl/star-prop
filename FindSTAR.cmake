@@ -31,9 +31,7 @@ set(STAR_INCLUDE_DIRS
 	"${STAR_ROOT}/include/StarVMC"
 	"${STAR_ROOT}/include_all")
 
-set(STAR_LIBRARY_DIRS
-	"${CMAKE_CURRENT_BINARY_DIR}/${STAR_ADDITIONAL_INSTALL_PREFIX}/lib"
-	"${STAR_ROOT}/lib")
+set(STAR_LIBRARY_DIRS "${STAR_ROOT}/lib")
 
 set(star_libs
 	StarClassLibrary
