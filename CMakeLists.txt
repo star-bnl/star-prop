@@ -94,7 +94,8 @@ target_include_directories(St_g2t PRIVATE
 install(DIRECTORY
 	${STAR_SRC}/StarVMC
 	${STAR_SRC}/StRoot
-	DESTINATION ${STAR_ADDITIONAL_INSTALL_PREFIX}/include/)
+	DESTINATION ${STAR_ADDITIONAL_INSTALL_PREFIX}/include/
+	FILES_MATCHING REGEX "\\.(h|hh)$")
 
 # Copy all generated headers (and the flatten hierarchy of the headers files)
 # from the build directory. This is done for backward compatibility when the
