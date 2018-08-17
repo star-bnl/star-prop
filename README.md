@@ -12,6 +12,8 @@ along with their minimal version numbers:
 - Fortran compiler (e.g. gfortran 4.8.5)
 - bison 2.7 or yacc 1.9
 - flex 2.5
+- perl 5.16.3
+- python v2/v3?
 
 The STAR software also depends on the following external packages/libraries:
 

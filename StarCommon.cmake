@@ -1,5 +1,5 @@
 # Load this cmake file only once
-if( StarCommonLoaded )
+if(StarCommonLoaded)
 	message(STATUS "StarCommon: Should be included only once")
 	return()
 else()
@@ -21,8 +21,9 @@ find_program(ROOT_DICTGEN_EXECUTABLE NAMES rootcling rootcint HINTS $ENV{ROOTSYS
 
 # Define common STAR_ and CMAKE_ variables used to build the STAR code
 
-# -D_UCMLOGGER_ required by StStarLogger
-# -DNEW_DAQ_READER required by StTofHitMaker
+# -D__ROOT__ is used by classes in StarClassLibrary guarding calls to ClassDef() macro
+# -D_UCMLOGGER_ is used in StStarLogger
+# -DNEW_DAQ_READER is used in StTofHitMaker
 set(STAR_C_CXX_DEFINITIONS "-D__ROOT__ -D_UCMLOGGER_ -DNEW_DAQ_READER")
 set(STAR_Fortran_DEFINITIONS "-DCERNLIB_TYPE -DCERNLIB_DOUBLE -DCERNLIB_NOQUAD -DCERNLIB_LINUX")
 set(STAR_Fortran_FLAGS "-fd-lines-as-code -std=legacy -fno-second-underscore -fno-automatic")
@@ -41,12 +42,11 @@ set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY TRUE)
 # Make use of the $STAR_HOST_SYS evironment variable. If it is set use it as the
 # typical STAR installation prefix
 set(STAR_ADDITIONAL_INSTALL_PREFIX ".")
-
 if(DEFINED ENV{STAR_HOST_SYS})
 	set(STAR_ADDITIONAL_INSTALL_PREFIX ".$ENV{STAR_HOST_SYS}")
 endif()
 
-set( STAR_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}" )
+set(STAR_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 set(STAR_LIB_DIR_BLACKLIST
 	StarVMC/GeoTestMaker
@@ -87,7 +87,6 @@ function(STAR_HEADERS_FOR_ROOT_DICTIONARY star_lib_dir headers_for_dict)
 	# Get all header files in 'star_lib_dir'
 	file(GLOB_RECURSE star_lib_dir_headers "${star_lib_dir}/*.h"
 	                                       "${star_lib_dir}/*.hh")
-
 	# Create an empty list
 	set(valid_headers)
 
@@ -95,7 +94,6 @@ function(STAR_HEADERS_FOR_ROOT_DICTIONARY star_lib_dir headers_for_dict)
 	foreach( full_path_header ${star_lib_dir_headers} )
 
 		get_filename_component( header_file_name ${full_path_header} NAME )
-
 		string( TOLOWER ${header_file_name} header_file_name )
 
 		# Skip LinkDef files from globbing result
@@ -104,7 +102,6 @@ function(STAR_HEADERS_FOR_ROOT_DICTIONARY star_lib_dir headers_for_dict)
 		endif()
 
 		list( APPEND valid_headers ${full_path_header} )
-
 	endforeach()
 
 	set( ${headers_for_dict} ${valid_headers} PARENT_SCOPE )
@@ -137,8 +134,8 @@ function(STAR_GENERATE_LINKDEF star_lib_dir)
 	add_custom_command(
 		OUTPUT ${linkdef_file} ${dictinc_file}
 		COMMAND "${STAR_CMAKE_DIR}/gen_linkdef.sh" ${gen_linkdef_args}
-		DEPENDS "${STAR_CMAKE_DIR}/gen_linkdef.sh" ${ARG_LINKDEF_HEADERS})
-
+		DEPENDS "${STAR_CMAKE_DIR}/gen_linkdef.sh" ${ARG_LINKDEF_HEADERS}
+		VERBATIM)
 endfunction()
 
 
@@ -182,11 +179,11 @@ function(STAR_GENERATE_DICTIONARY star_lib_name star_lib_dir star_lib_dir_out)
 
 	# Generate ROOT dictionary using the *_LinkDef.h and *_DictInc.h files
 	add_custom_command(OUTPUT ${star_lib_dir_out}_dict.cxx ${star_lib_dir_out}_dict.h
-	                   COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f ${star_lib_dir_out}_dict.cxx
-	                   -c ${ARG_LINKDEF_OPTIONS} ${dict_include_dirs}
-	                   ${ARG_LINKDEF_HEADERS} ${star_lib_dir_out}_DictInc.h ${star_lib_dir_out}_LinkDef.h
-	                   DEPENDS ${ARG_LINKDEF_HEADERS} ${star_lib_dir_out}_DictInc.h ${star_lib_dir_out}_LinkDef.h
-	                   VERBATIM)
+		COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f ${star_lib_dir_out}_dict.cxx
+		-c ${ARG_LINKDEF_OPTIONS} ${dict_include_dirs}
+		${ARG_LINKDEF_HEADERS} ${star_lib_dir_out}_DictInc.h ${star_lib_dir_out}_LinkDef.h
+		DEPENDS ${ARG_LINKDEF_HEADERS} ${star_lib_dir_out}_DictInc.h ${star_lib_dir_out}_LinkDef.h
+		VERBATIM)
 endfunction()
 
 
@@ -261,6 +258,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 		DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/include/tables/${star_lib_name_for_tables}" OPTIONAL)
 
 endfunction()
+
 
 
 macro(FILTER_LIST arg_list)
@@ -701,8 +699,8 @@ function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
 
 	set(out_F_files_)
 
-	get_property(currdir_include_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
-	set(target_include_dirs ${currdir_include_dirs} ${${star_lib_name}_INCLUDE_DIRECTORIES})
+	get_property(global_include_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
+	set(target_include_dirs ${global_include_dirs} ${${star_lib_name}_INCLUDE_DIRECTORIES})
 	string( REGEX REPLACE "([^;]+)" "-I\\1" target_include_dirs "${target_include_dirs}" )
 
 	foreach( f_file ${in_F_files} )
