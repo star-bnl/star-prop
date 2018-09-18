@@ -77,16 +77,17 @@ set(STAR_LIB_DIR_BLACKLIST
 
 
 #
-# Generates a list of header files from which a ROOT dictionary can be created for
-# a given subdirectory `star_lib_dir`. The list is put into the `headers_for_dict`
-# variable that is returned to the parent scope. Only *.h and *.hh files
-# are selected while any LinkDef files are ignored.
+# Preselects all header files found in a `star_lib_dir` directory to be used by
+# rootcint/rootcling during ROOT dictionary creation. The list is put into the
+# `headers_for_dict` variable which is returned to the parent scope. Only files
+# with extensions *.h, *.hh, and *.hpp are considered while files containing
+# a 'LinkDef' substring are ignored.
 #
 function(STAR_HEADERS_FOR_ROOT_DICTIONARY star_lib_dir headers_for_dict)
-
 	# Get all header files in 'star_lib_dir'
 	file(GLOB_RECURSE star_lib_dir_headers "${star_lib_dir}/*.h"
-	                                       "${star_lib_dir}/*.hh")
+	                                       "${star_lib_dir}/*.hh"
+	                                       "${star_lib_dir}/*.hpp")
 	# Create an empty list
 	set(valid_headers)
 
@@ -105,7 +106,6 @@ function(STAR_HEADERS_FOR_ROOT_DICTIONARY star_lib_dir headers_for_dict)
 	endforeach()
 
 	set( ${headers_for_dict} ${valid_headers} PARENT_SCOPE )
-
 endfunction()
 
 
@@ -155,14 +155,14 @@ function(STAR_GENERATE_DICTIONARY star_lib_name star_lib_dir star_lib_dir_out)
 		list( GET user_linkdefs 0 user_linkdef )
 	endif()
 
-	# If the user provided header files use them in addition to automatically
-	# collected ones.
+	# Preselect header files from `star_lib_dir`
 	star_headers_for_root_dictionary( ${star_lib_dir} linkdef_headers )
 
 	FILTER_LIST( linkdef_headers EXCLUDE ${ARG_EXCLUDE} )
 
 	# This is a hack for the call to this function from STAR_ADD_LIBRARY_GEOMETRY() where the
-	# headers are generated at runtime and cannot be globbed. So, we can specify them by hand.
+	# headers are generated at runtime and cannot be globbed when cmake is invoked. So, we need
+	# to pass the necessary headers in the LINKDEF_HEADERS argument.
 	if( NOT linkdef_headers )
 		set(linkdef_headers ${ARG_LINKDEF_HEADERS})
 	endif()
@@ -423,9 +423,12 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 
 	find_program(EXEC_PYTHON NAMES python2.7 python2)
 
+	# Exclude some xml files
 	file(GLOB_RECURSE geo_xml_paths "${star_lib_dir_abs}/*.xml")
 	FILTER_LIST( geo_xml_paths EXCLUDE "Compat" )
 
+	# For each .xml file found in `star_lib_dir` (e.g. $STAR_SRC/StarVMC/Geometry) generate the
+	# source and header files
 	foreach( geo_xml_path ${geo_xml_paths} )
 
 		get_filename_component(geo_name ${geo_xml_path} NAME_WE)
