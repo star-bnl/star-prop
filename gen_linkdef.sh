@@ -49,7 +49,7 @@ stcontainer_classes=()
 
 for INFILE in "$@"; do
 	file_classes=( $(awk 'match($0,"^[[:space:]]*ClassDef[[:space:]]*\\(([^#]+),.*\\)", a) { print a[1] }' "$INFILE") )
-	namespace="$(awk 'match($0,"namespace[[:space:]]+(\\w+).*\\$NMSPC", a) { print a[1] }' "$INFILE")"
+	namespace="$(awk -v p=1 'match($0, "namespace[[:space:]]+(\\w+).*\\$NMSPC", a) { if(p){ print a[1] }; p=0 }' "$INFILE")"
 	if [ -n "$namespace" ]; then
 		for i in "${!file_classes[@]}"
 		do
