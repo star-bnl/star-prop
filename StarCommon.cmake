@@ -55,6 +55,7 @@ endif()
 set(STAR_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 set(STAR_LIB_DIR_BLACKLIST
+	StarVMC/geant3            # how is it used?
 	StarVMC/GeoTestMaker      # blacklisted in cons
 	StarVMC/minicern
 	StarVMC/StarBASE
