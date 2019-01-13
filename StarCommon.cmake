@@ -73,6 +73,7 @@ set(STAR_LIB_DIR_BLACKLIST
 	StRoot/StSpinMaker        # blacklisted due to error in fortran code
 	StRoot/StSpinPool         # blacklisted in cons
 	StRoot/StTofPool          # missing from lib/
+	StRoot/StShadowMaker      # crypted code
 )
 
 
