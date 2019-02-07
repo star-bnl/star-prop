@@ -848,6 +848,8 @@ set(Stv_LINKDEF_HEADERS "${STAR_SRC}/StRoot/StarRoot/THelixTrack.h")
 set(St_g2t_INCLUDE_DIRECTORIES
 	"${STAR_SRC}/asps/Simulation/geant321/include"
 	"${STAR_SRC}/asps/Simulation/starsim/include")
+set(geant321_INCLUDE_DIRECTORIES
+	"${STAR_SRC}/asps/Simulation/starsim/include")
 
 set(St_base_EXCLUDE "StRoot/St_base/St_staf_dummies.c")
 set(StDb_Tables_EXCLUDE "StDb/idl/tpcDedxPidAmplDb.idl")
@@ -860,3 +862,6 @@ set(StarMiniCern_EXCLUDE
 	"StarVMC/minicern/qutyinv"
 	"StarVMC/minicern/qutyz32"
 	"StarVMC/minicern/sungs")
+set(geant321_EXCLUDE
+	"geant321/doc"
+	"geant321/gxuser")
