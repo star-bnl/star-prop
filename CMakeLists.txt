@@ -63,7 +63,7 @@ star_add_library_table( pams/svt )
 
 # Build library with STAR geometry
 star_add_library_geometry( StarVMC/Geometry StarGeometry )
-star_add_library_minicern( StarVMC/minicern StarMiniCern )
+star_add_library_basic( StarVMC/minicern StarMiniCern )
 
 star_add_library(pams/geometry)
 star_add_library(pams/ctf St_ctf)

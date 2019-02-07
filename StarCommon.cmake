@@ -482,7 +482,7 @@ endfunction()
 #
 # Creates a library from fortran sources without doing any preprocessing
 #
-function(STAR_ADD_LIBRARY_MINICERN star_lib_dir)
+function(STAR_ADD_LIBRARY_BASIC star_lib_dir)
 
 	star_target_paths(${star_lib_dir} star_lib_name star_lib_dir_abs star_lib_dir_out)
 
