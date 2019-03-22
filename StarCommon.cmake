@@ -25,9 +25,10 @@ find_program(ROOT_DICTGEN_EXECUTABLE NAMES rootcling rootcint HINTS $ENV{ROOTSYS
 # -D_UCMLOGGER_ is used in StStarLogger
 # -DNEW_DAQ_READER is used in StTofHitMaker
 set(STAR_C_CXX_DEFINITIONS "-D__ROOT__ -D_UCMLOGGER_ -DNEW_DAQ_READER")
+# CPP_VERS are used by gcalor
 # CERNLIB_CG is used by asps/Simulation/geant321/gdraw/gdcota.F
 # CERNLIB_COMIS is used by asps/Simulation/geant321/gxint/gxcs.F
-set(STAR_Fortran_DEFINITIONS "-DCERNLIB_TYPE -DCERNLIB_DOUBLE -DCERNLIB_NOQUAD -DCERNLIB_LINUX -DCERNLIB_CG -DCERNLIB_COMIS")
+set(STAR_Fortran_DEFINITIONS "-DCERNLIB_TYPE -DCERNLIB_DOUBLE -DCERNLIB_NOQUAD -DCERNLIB_LINUX -DCPP_VERS=\"'dummy'\" -DCERNLIB_CG -DCERNLIB_COMIS")
 set(STAR_Fortran_FLAGS "-fd-lines-as-code -std=legacy -fno-second-underscore -fno-automatic")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STAR_C_CXX_DEFINITIONS}")
@@ -857,6 +858,9 @@ set(St_g2t_INCLUDE_DIRECTORIES
 	"${STAR_SRC}/asps/Simulation/geant321/include"
 	"${STAR_SRC}/asps/Simulation/starsim/include")
 set(geant321_INCLUDE_DIRECTORIES
+	"${STAR_SRC}/asps/Simulation/starsim/include")
+set(gcalor_INCLUDE_DIRECTORIES
+	"${STAR_SRC}/asps/Simulation/geant321/include"
 	"${STAR_SRC}/asps/Simulation/starsim/include")
 
 set(St_base_EXCLUDE "StRoot/St_base/St_staf_dummies.c")
