@@ -95,7 +95,7 @@ set(star_libs
 	StAssociationMaker
 	StMcEventMaker
 	StarMiniCern
-        ${STAR_FIND_COMPONENTS}
+	${STAR_FIND_COMPONENTS}
 )
 
 if( star_libs )
@@ -118,10 +118,10 @@ endforeach()
 
 
 if(NOT WIN32)
-        string(ASCII 27 Esc)
-        set(ColorReset "${Esc}[m")
-        set(ColorGreen "${Esc}[32m")
-        set(ColorRed   "${Esc}[31m")
+	string(ASCII 27 Esc)
+	set(ColorReset "${Esc}[m")
+	set(ColorGreen "${Esc}[32m")
+	set(ColorRed   "${Esc}[31m")
 endif()
 
 message(STATUS "Found STAR libraries:")

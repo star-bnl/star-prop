@@ -9,7 +9,7 @@ endif()
 # By default build shared libraries but allow the user to change if desired
 OPTION( BUILD_SHARED_LIBS "Global flag to cause add_library to create shared libraries if on" ON )
 
-# Special treatment of linker options for MacOS X to get a linux-like behavior for gcc
+# Special treatment for gcc linker options to get a linux-like behavior on MacOS X
 if(APPLE)
 	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -undefined dynamic_lookup")
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -undefined dynamic_lookup")
@@ -107,20 +107,19 @@ function(STAR_HEADERS_FOR_ROOT_DICTIONARY star_lib_dir headers_for_dict)
 	set(valid_headers)
 
 	# star_lib_dir_headers should containd absolute paths to globed headers
-	foreach( full_path_header ${star_lib_dir_headers} )
+	foreach(full_path_header ${star_lib_dir_headers})
 
-		get_filename_component( header_file_name ${full_path_header} NAME )
-		string( TOLOWER ${header_file_name} header_file_name )
-
+		get_filename_component(header_file_name ${full_path_header} NAME)
+		string(TOLOWER ${header_file_name} header_file_name)
 		# Skip LinkDef files from globbing result
-		if( ${header_file_name} MATCHES "linkdef" )
+		if(${header_file_name} MATCHES "linkdef")
 			continue()
 		endif()
 
-		list( APPEND valid_headers ${full_path_header} )
+		list(APPEND valid_headers ${full_path_header})
 	endforeach()
 
-	set( ${headers_for_dict} ${valid_headers} PARENT_SCOPE )
+	set(${headers_for_dict} ${valid_headers} PARENT_SCOPE)
 endfunction()
 
 
@@ -171,14 +170,14 @@ function(STAR_GENERATE_DICTIONARY star_lib_name star_lib_dir star_lib_dir_out)
 	endif()
 
 	# Preselect header files from `star_lib_dir`
-	star_headers_for_root_dictionary( ${star_lib_dir} linkdef_headers )
+	star_headers_for_root_dictionary(${star_lib_dir} linkdef_headers)
 
-	FILTER_LIST( linkdef_headers EXCLUDE ${ARG_EXCLUDE} )
+	FILTER_LIST(linkdef_headers EXCLUDE ${ARG_EXCLUDE})
 
 	# This is a hack for the call to this function from STAR_ADD_LIBRARY_GEOMETRY() where the
 	# headers are generated at runtime and cannot be globbed when cmake is invoked. So, we need
 	# to pass the necessary headers in the LINKDEF_HEADERS argument.
-	if( NOT linkdef_headers )
+	if(NOT linkdef_headers)
 		set(linkdef_headers ${ARG_LINKDEF_HEADERS})
 	endif()
 
@@ -214,8 +213,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	# Get first optional unnamed parameter
 	set(user_lib_name ${ARGV1})
 	set(star_lib_name_for_tables)
-
-	if( user_lib_name )
+	if(user_lib_name)
 		set(star_lib_name_for_tables ${star_lib_name})
 		set(star_lib_name ${user_lib_name})
 	endif()
@@ -428,8 +426,7 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 	# Change the name of the library/target and output directory if an
 	# optional unnamed parameter is provided by the user
 	set(user_lib_name ${ARGV1})
-
-	if( user_lib_name )
+	if(user_lib_name)
 		string(REPLACE ${star_lib_name} ${user_lib_name} star_lib_dir_out ${star_lib_dir_out})
 		set(star_lib_name ${user_lib_name})
 	endif()
@@ -439,12 +436,12 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 	find_program(EXEC_PYTHON NAMES python2.7 python2)
 
 	# Exclude some xml files
-	file(GLOB_RECURSE geo_xml_paths "${star_lib_dir_abs}/*.xml")
-	FILTER_LIST( geo_xml_paths EXCLUDE "Compat" )
+	file(GLOB_RECURSE geo_xml_files "${star_lib_dir_abs}/*.xml")
+	FILTER_LIST( geo_xml_files EXCLUDE "Compat" )
 
 	# For each .xml file found in `star_lib_dir` (e.g. $STAR_SRC/StarVMC/Geometry) generate the
 	# source and header files
-	foreach( geo_xml_path ${geo_xml_paths} )
+	foreach(geo_xml_file ${geo_xml_files})
 
 		get_filename_component(geo_name ${geo_xml_path} NAME_WE)
 
@@ -464,7 +461,7 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 
 	endforeach()
 
-	# Create a string by replacing ; with gcc compiler options
+    # Create a string by replacing ; (i.e. semicolon) with gcc compiler options
 	string(REGEX REPLACE "([^;]+);" "-include \\1 " geo_config_headers_include "${geo_config_headers};")
 
 	# Special treatment required for the aggregate geometry file
@@ -553,8 +550,7 @@ function(STAR_ADD_LIBRARY_BASIC star_lib_dir)
 	# Change the name of the library/target and output directory if an
 	# optional unnamed parameter is provided by the user
 	set(user_lib_name ${ARGV1})
-
-	if( user_lib_name )
+	if(user_lib_name)
 		string(REPLACE ${star_lib_name} ${user_lib_name} star_lib_dir_out ${star_lib_dir_out})
 		set(star_lib_name ${user_lib_name})
 	endif()
