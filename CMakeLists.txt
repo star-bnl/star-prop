@@ -99,6 +99,7 @@ install(DIRECTORY
 
 install(DIRECTORY
 	${STAR_SRC}/StRoot/StBFChain
+	${STAR_SRC}/StRoot/macros
 	DESTINATION StRoot/)
 
 # Some modules depend on DB entries available on disk
