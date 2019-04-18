@@ -24,11 +24,14 @@ find_program(ROOT_DICTGEN_EXECUTABLE NAMES rootcling rootcint HINTS $ENV{ROOTSYS
 # -D__ROOT__ is used by classes in StarClassLibrary guarding calls to ClassDef() macro
 # -D_UCMLOGGER_ is used in StStarLogger
 # -DNEW_DAQ_READER is used in StTofHitMaker
-set(STAR_C_CXX_DEFINITIONS "-D__ROOT__ -D_UCMLOGGER_ -DNEW_DAQ_READER")
-# CPP_VERS are used by gcalor
+# -Df2cFortran required by starsim and cern/pro/include/cfortran/cfortran.h
+set(STAR_C_CXX_DEFINITIONS "-D__ROOT__ -D_UCMLOGGER_ -DNEW_DAQ_READER -Df2cFortran")
+# CPP_DATE, CPP_TIME, CPP_TITLE_CH, and CPP_VERS are used by gcalor and by asps/Simulation/starsim/aversion.F
 # CERNLIB_CG is used by asps/Simulation/geant321/gdraw/gdcota.F
 # CERNLIB_COMIS is used by asps/Simulation/geant321/gxint/gxcs.F
-set(STAR_Fortran_DEFINITIONS "-DCERNLIB_TYPE -DCERNLIB_DOUBLE -DCERNLIB_NOQUAD -DCERNLIB_LINUX -DCPP_VERS=\"'dummy'\" -DCERNLIB_CG -DCERNLIB_COMIS")
+# GFORTRAN is used by asps/Simulation/starsim/atmain/etime.F
+set(STAR_Fortran_DEFINITIONS "-DCERNLIB_TYPE -DCERNLIB_DOUBLE -DCERNLIB_NOQUAD -DCERNLIB_LINUX \
+-DCPP_DATE=0 -DCPP_TIME=0 -DCPP_TITLE_CH=\"'dummy'\" -DCPP_VERS=\"'dummy'\" -DCERNLIB_CG -DCERNLIB_COMIS -DGFORTRAN")
 set(STAR_Fortran_FLAGS "-fd-lines-as-code -std=legacy -fno-second-underscore -fno-automatic")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STAR_C_CXX_DEFINITIONS}")
@@ -479,6 +482,56 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
 		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
 		PUBLIC_HEADER DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/include/${geo_headers_rel_path}" OPTIONAL)
+endfunction()
+
+
+
+function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
+
+	star_target_paths(${starsim_dir} dummy starsim_dir_abs star_lib_dir_out)
+
+	file(GLOB_RECURSE cxx_files "${starsim_dir_abs}/*.cxx")
+	file(GLOB_RECURSE c_files "${starsim_dir_abs}/*.c")
+	file(GLOB_RECURSE f_files "${starsim_dir_abs}/*.F")
+	# Also find all *.g and *.age files. They need to be pre-processed with agetof
+	file(GLOB_RECURSE g_files "${starsim_dir_abs}/*.g")
+	star_process_g("${g_files}" ${star_lib_dir_out} f_g_files)
+	file(GLOB_RECURSE age_files "${starsim_dir_abs}/*.age")
+	star_process_g("${age_files}" ${star_lib_dir_out} f_age_files)
+
+	set(starsim_sources ${cxx_files} ${c_files} ${f_files} ${f_g_files} ${f_age_files})
+	set(starsimlib_EXCLUDE
+		"${starsim_dir_abs}/acmain.cxx"
+		"${starsim_dir_abs}/dzdoc/dzddiv.F"
+		"${starsim_dir_abs}/atlroot/atlrootDict.cxx"
+		"${starsim_dir_abs}/deccc/cschar.c")
+	FILTER_LIST(starsim_sources EXCLUDE ${starsimlib_EXCLUDE})
+
+	set(starsim_dict ${star_lib_dir_out}/atlroot/atlroot_DictInc.cxx)
+	add_custom_command(
+		OUTPUT ${starsim_dict}
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${star_lib_dir_out}/atlroot
+		COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f  ${starsim_dict} -c -p -D__ROOT__
+		-I${starsim_dir_abs}/atlroot/ agconvert.h aroot.h ${starsim_dir_abs}/atlroot/LinkDef.h
+		DEPENDS ${starsim_dir_abs}/atlroot/agconvert.h
+		        ${starsim_dir_abs}/atlroot/aroot.h
+		        ${starsim_dir_abs}/atlroot/LinkDef.h
+		VERBATIM )
+
+	set(starsim_INCLUDE_DIRECTORIES
+		"${starsim_dir_abs}/include"
+		"${STAR_SRC}/asps/Simulation/geant321/include"
+		"${CERNLIB_INCLUDE_DIR}")
+
+	add_library(starsimlib STATIC ${starsim_sources} ${starsim_dict})
+	GET_SUBDIRS(${starsim_dir_abs} starsim_subdirs INCLUDE_PARENT)
+	target_include_directories(starsimlib PRIVATE ${starsim_subdirs} ${starsim_INCLUDE_DIRECTORIES})
+	set_target_properties(starsimlib PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
+
+	install(TARGETS starsimlib
+		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
+		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL)
+
 endfunction()
 
 
