@@ -47,6 +47,7 @@ include_directories(
 )
 
 
+star_add_executable_root4star(asps/rexe)
 star_add_executable_stic(asps/staf/sdd/src)
 star_add_executable_agetof(asps/Simulation/agetof)
 

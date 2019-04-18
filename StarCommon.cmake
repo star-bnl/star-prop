@@ -811,6 +811,41 @@ endfunction()
 
 
 
+function(STAR_ADD_EXECUTABLE_ROOT4STAR star_exec_dir)
+
+	star_target_paths(${star_exec_dir} dummy exec_dir_abs exec_dir_out)
+
+	add_executable(root4star
+		${exec_dir_abs}/MAIN_rmain.cxx
+		${exec_dir_abs}/df.F
+		${exec_dir_abs}/TGeant3/StarMC.cxx
+		${exec_dir_abs}/TGeant3/TGiant3.cxx
+		${exec_dir_abs}/TGeant3/gcadd.cxx
+		${exec_dir_abs}/TGeant3/galicef.F
+		${exec_dir_abs}/TGeant3/gcomad.F
+		${exec_dir_out}/rexe_DictInc.cxx
+	)
+
+	target_include_directories(root4star PRIVATE
+		"${STAR_SRC}/asps/Simulation/geant321/include")
+
+	add_custom_command(
+		OUTPUT ${exec_dir_out}/rexe_DictInc.cxx
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${exec_dir_out}
+		COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f  ${exec_dir_out}/rexe_DictInc.cxx -c -p -D__ROOT__
+		-I${exec_dir_abs}/TGeant3/ StarMC.h TGiant3.h ${exec_dir_abs}/rexeLinkDef.h
+		DEPENDS  ${exec_dir_abs}/TGeant3/StarMC.h ${exec_dir_abs}/TGeant3/TGiant3.h ${exec_dir_abs}/rexeLinkDef.h
+		VERBATIM )
+
+	target_link_libraries(root4star starsimlib geant321 starsimlib gcalor
+		${ROOT_LIBRARIES} ${CERNLIB_LIBRARIES} gfortran Xt Xpm X11 Xm dl crypt)
+
+	install(TARGETS root4star
+        RUNTIME DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/bin" OPTIONAL)
+endfunction()
+
+
+
 function(STAR_ADD_EXECUTABLE_AGETOF star_exec_dir)
 
 	star_target_paths(${star_exec_dir} dummy exec_dir_abs dummy)
