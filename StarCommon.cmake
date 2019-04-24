@@ -507,7 +507,7 @@ function(STAR_ADD_LIBRARY_BASIC star_lib_dir)
 	file(GLOB_RECURSE age_files "${star_lib_dir_abs}/*.age")
 	star_process_g("${age_files}" ${star_lib_dir_out} f_age_files)
 
-	add_library(${star_lib_name} ${f_files} ${f_g_files} ${f_age_files} ${cxx_files} ${c_files})
+	add_library(${star_lib_name} STATIC ${f_files} ${f_g_files} ${f_age_files} ${cxx_files} ${c_files})
 	GET_SUBDIRS(${star_lib_dir_abs} star_lib_subdirs INCLUDE_PARENT)
 	target_include_directories(${star_lib_name} PRIVATE "${star_lib_subdirs}")
 	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
