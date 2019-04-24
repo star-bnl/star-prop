@@ -107,6 +107,7 @@ install(DIRECTORY
 	${STAR_SRC}/StarDb/Calibrations
 	${STAR_SRC}/StarDb/Geometry
 	${STAR_SRC}/StarDb/StMagF
+	${STAR_SRC}/StarDb/dEdxModel
 	DESTINATION StarDb/)
 
 install(DIRECTORY
