@@ -55,7 +55,7 @@ endif()
 set(STAR_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 set(STAR_LIB_DIR_BLACKLIST
-	StarVMC/GeoTestMaker
+	StarVMC/GeoTestMaker      # blacklisted in cons
 	StarVMC/minicern
 	StarVMC/StarBASE
 	StarVMC/StarGeometry      # library built from StarVMC/Geometry
@@ -67,19 +67,26 @@ set(STAR_LIB_DIR_BLACKLIST
 	StRoot/html
 	StRoot/macros
 	StRoot/qainfo
+	StRoot/StAngleCorrMaker   # blacklisted in cons
 	StRoot/StarGenerator
+	StRoot/StDaqClfMaker      # blacklisted in cons
+	StRoot/StEbye2ptMaker     # blacklisted in cons
+	StRoot/StEbyePool         # blacklisted in cons
+	StRoot/StEbyeScaTagsMaker # blacklisted in cons
 	StRoot/StEEmcPool         # requires subdir processing
 	StRoot/StFgtPool          # blacklisted in cons
 	StRoot/StFlowMaker        # missing from lib/
+	StRoot/StFtpcV0Maker      # blacklisted in cons
 	StRoot/St_geom_Maker      # requires qt4/include/QtGui
 	StRoot/StHbtMaker         # fortran error
 	StRoot/StHighptPool       # blacklisted in cons
-	StRoot/StJetMaker
 	StRoot/StJetFinder        # needs FindFastJet.cmake
-	StRoot/StSpinMaker        # blacklisted due to error in fortran code
+	StRoot/StJetMaker
+	StRoot/StShadowMaker      # blacklisted in cons, crypted code
+	StRoot/StSpinMaker        # blacklisted in cons, error in fortran code
 	StRoot/StSpinPool         # blacklisted in cons
+	StRoot/StStrangePool      # blacklisted in cons
 	StRoot/StTofPool          # missing from lib/
-	StRoot/StShadowMaker      # crypted code
 )
 
 
