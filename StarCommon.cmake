@@ -565,7 +565,7 @@ function(STAR_ADD_LIBRARY_BASIC star_lib_dir)
 
 	add_library(${star_lib_name} STATIC ${f_files} ${f_g_files} ${f_age_files} ${cxx_files} ${c_files})
 	GET_SUBDIRS(${star_lib_dir_abs} star_lib_subdirs INCLUDE_PARENT)
-	target_include_directories(${star_lib_name} PRIVATE "${star_lib_subdirs}")
+	target_include_directories(${star_lib_name} PRIVATE ${star_lib_subdirs} ${${star_lib_name}_INCLUDE_DIRECTORIES})
 	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
 
 	install(TARGETS ${star_lib_name}
