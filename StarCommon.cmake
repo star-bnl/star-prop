@@ -512,6 +512,40 @@ function(STAR_PARSE_GEOXML_GeantGeo geo_xml_files out_dir out_sources)
 endfunction()
 
 
+function(STAR_PARSE_GEOXML_RootTGeo geo_xml_files out_dir out_sources out_headers)
+	# For each .xml file found in `star_lib_dir` (e.g. $STAR_SRC/StarVMC/Geometry) generate the
+	# source and header files
+	foreach(geo_xml_file ${geo_xml_files})
+		get_filename_component(geo_name ${geo_xml_file} NAME_WE)
+		set(geo_header ${out_dir}/${geo_name}.h)
+		set(geo_source ${out_dir}/${geo_name}.cxx)
+
+		add_custom_command(
+			OUTPUT ${geo_source} ${geo_header}
+			COMMAND ${EXEC_PYTHON} ${geo_py_parser} --file=${geo_xml_file} --module=${geo_name} --export=AgROOT --path=${out_dir}
+			DEPENDS ${geo_py_parser} ${geo_xml_file})
+
+		if(${geo_name} MATCHES "Config")
+			list(APPEND geo_config_headers ${geo_header})
+		endif()
+		list(APPEND geo_sources_generated ${geo_source})
+		list(APPEND geo_headers_generated ${geo_header})
+	endforeach()
+
+	# Create a string by replacing ; (i.e. semicolon) with gcc compiler options
+	string(REGEX REPLACE "([^;]+);" "-include \\1 " geo_config_headers_include "${geo_config_headers};")
+	# Special treatment required for the aggregate geometry file because the generated files do
+	# not include proper header files! Including that many files is likely to slow down the
+	# compilation
+	set_source_files_properties(${out_dir}/StarGeo.cxx
+		PROPERTIES COMPILE_FLAGS "${geo_config_headers_include}")
+
+	# Return generated lists
+	set(${out_sources} ${geo_sources_generated} PARENT_SCOPE)
+	set(${out_headers} ${geo_headers_generated} PARENT_SCOPE)
+endfunction()
+
+
 function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 
 	star_target_paths(${starsim_dir} dummy starsim_dir_abs star_lib_dir_out)
