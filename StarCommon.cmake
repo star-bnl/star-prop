@@ -490,6 +490,27 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 endfunction()
 
 
+function(STAR_PARSE_GEOXML_GeantGeo geo_xml_files out_dir out_sources)
+	# For each .xml file found in `star_lib_dir` (e.g. $STAR_SRC/StarVMC/Geometry) generate the
+	# source and header files
+	foreach(geo_xml_file ${geo_xml_files})
+		get_filename_component(geo_name ${geo_xml_file} NAME_WE)
+		set(geo_agesrc ${out_dir}/${geo_name}.age)
+
+		add_custom_command(
+			OUTPUT ${geo_agesrc}
+			COMMAND ${EXEC_PYTHON} ${geo_py_parser} --file=${geo_xml_file} --module=${geo_name} --export=Mortran > ${geo_agesrc}
+			DEPENDS ${geo_py_parser} ${geo_xml_file})
+
+		list(APPEND geo_sources_generated ${geo_agesrc})
+	endforeach()
+
+	star_process_g("${geo_sources_generated};${STAR_SRC}/StarVMC/xgeometry/xgeometry.age" ${out_dir} out_sources_)
+
+	# Return generated list
+	set(${out_sources} ${out_sources_} PARENT_SCOPE)
+endfunction()
+
 
 function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 
