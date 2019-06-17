@@ -107,6 +107,7 @@ install(DIRECTORY
 
 # Some modules depend on DB entries available on disk
 install(DIRECTORY
+	${STAR_SRC}/StarDb/AgMLGeometry
 	${STAR_SRC}/StarDb/Calibrations
 	${STAR_SRC}/StarDb/Geometry
 	${STAR_SRC}/StarDb/StMagF
