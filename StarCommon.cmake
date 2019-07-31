@@ -7,7 +7,7 @@ else()
 endif()
 
 # By default build shared libraries but allow the user to change if desired
-OPTION( BUILD_SHARED_LIBS "Global flag to cause add_library to create shared libraries if on" ON )
+OPTION(BUILD_SHARED_LIBS "Global flag to cause add_library to create shared libraries if on" ON)
 
 # Special treatment for gcc linker options to get a linux-like behavior on MacOS X
 if(APPLE)
@@ -134,14 +134,14 @@ function(STAR_GENERATE_LINKDEF star_lib_dir)
 	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS" ${ARGN})
 
 	# Set default name for LinkDef file
-	set( linkdef_file "${star_lib_dir}_LinkDef.h" )
-	set( dictinc_file "${star_lib_dir}_DictInc.h" )
+	set(linkdef_file "${star_lib_dir}_LinkDef.h")
+	set(dictinc_file "${star_lib_dir}_DictInc.h")
 
 	# Pass both files to get_likdef.sh as -o arguments
-	set( gen_linkdef_args "-l;${linkdef_file};-d;${dictinc_file};${ARG_LINKDEF_HEADERS}" )
+	set(gen_linkdef_args "-l;${linkdef_file};-d;${dictinc_file};${ARG_LINKDEF_HEADERS}")
 
-	if( ARG_LINKDEF )
-		list( APPEND gen_linkdef_args "-i;${ARG_LINKDEF}" )
+	if(ARG_LINKDEF)
+		list(APPEND gen_linkdef_args "-i;${ARG_LINKDEF}")
 	endif()
 
 	# Generate the above files to be used in dictionary generation by ROOT
@@ -157,7 +157,6 @@ endfunction()
 # Generates a ROOT dictionary for `star_lib_dir` in ${STAR_SRC}.
 #
 function(STAR_GENERATE_DICTIONARY star_lib_name star_lib_dir star_lib_dir_out)
-
 	cmake_parse_arguments(ARG "" "" "LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
 
 	# Search for default LinkDef if not specified
@@ -183,7 +182,7 @@ function(STAR_GENERATE_DICTIONARY star_lib_name star_lib_dir star_lib_dir_out)
 
 	# Generate a basic LinkDef file and, if available, merge with the one
 	# provided by the user
-	star_generate_linkdef( ${star_lib_dir_out} LINKDEF ${user_linkdef} LINKDEF_HEADERS ${linkdef_headers} )
+	star_generate_linkdef(${star_lib_dir_out} LINKDEF ${user_linkdef} LINKDEF_HEADERS ${linkdef_headers})
 
 	# Prepare include directories to be used during ROOT dictionary generation.
 	# These directories are tied to the `star_lib_name` target via the
@@ -219,8 +218,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	endif()
 
 	# Deal with sources
-
-	GET_EXCLUDE_LIST( ${star_lib_name} star_lib_exclude )
+	GET_EXCLUDE_LIST(${star_lib_name} star_lib_exclude)
 
 	file(GLOB_RECURSE sources_cpp
 		"${star_lib_dir_abs}/*.cxx"
@@ -275,7 +273,6 @@ endfunction()
 
 
 macro(FILTER_LIST arg_list)
-
 	# Starting cmake 3.6 one can simply use list( FILTER ... )
 	#list( FILTER sources EXCLUDE REGEX "${ARG_EXCLUDE}" )
 
@@ -297,7 +294,6 @@ macro(FILTER_LIST arg_list)
 		set( ${arg_list} ${${arg_list}} )
 
 	endif()
-
 endmacro()
 
 
@@ -418,6 +414,9 @@ endfunction()
 
 #
 # Creates ROOT TGeo geometries from xml files
+#
+# ARGV1 = [StarGeometry|xgeometry|<arbitrary_user_lib_name>]
+# ARGV2 = [RootTGeo|GeantGeo]
 #
 function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 
@@ -621,7 +620,7 @@ endfunction()
 
 
 # Builds a ${star_lib_name}_Tables library from ${star_lib_dir}/idl/*.idl files
-function(STAR_ADD_LIBRARY_TABLE star_lib_dir )
+function(STAR_ADD_LIBRARY_TABLE star_lib_dir)
 
 	star_target_paths(${star_lib_dir} star_lib_name star_lib_dir_abs star_lib_dir_out)
 
@@ -697,6 +696,8 @@ function(STAR_PROCESS_IDL idl_files star_lib_name star_lib_dir_out out_sources_i
 	set(_out_sources_idl)
 	set(_out_headers_idl)
 
+	# Define common output directories for files generated from the input idl files
+	# in addition to star_lib_dir_out
 	set(outpath_table_struct ${CMAKE_CURRENT_BINARY_DIR}/include)
 	set(outpath_table_ttable ${CMAKE_CURRENT_BINARY_DIR}/include/tables/${star_lib_name})
 

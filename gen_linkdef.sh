@@ -3,8 +3,8 @@
 set -e
 
 function print_usage() {
-    echo "Usage: $0 [-i input_Linkdef.h] -l output_linkdef -d output_dictinc [inputs...]" 1>&2;
-    exit 1;
+	echo "Usage: $0 [-i input_Linkdef.h] -l output_linkdef -d output_dictinc [inputs...]" 1>&2;
+	exit 1;
 }
 
 eval set -- "$(getopt -o "l:d:i:" -n "$0" -- "$@")"
