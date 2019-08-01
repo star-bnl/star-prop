@@ -449,7 +449,9 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 	endif()
 
 	add_library(${star_lib_name} ${geo_sources})
-	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
+	set_target_properties(${star_lib_name} PROPERTIES
+		LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out}
+		PUBLIC_HEADER "${geo_headers}")
 
 	if(${ARGV2} STREQUAL "GeantGeo")
 		# The geometry library is built from ${STAR_SRC}/pams/geometry. Not to be confused with
