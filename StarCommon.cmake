@@ -484,6 +484,7 @@ function(_STAR_PARSE_GEOXML_GeantGeo geo_xml_files out_dir out_sources)
 
 		add_custom_command(
 			OUTPUT ${geo_agesrc}
+			COMMAND ${CMAKE_COMMAND} -E make_directory ${out_dir}
 			COMMAND ${EXEC_PYTHON} ${geo_py_parser} --file=${geo_xml_file} --module=${geo_name} --export=Mortran > ${geo_agesrc}
 			DEPENDS ${geo_py_parser} ${geo_xml_file})
 
@@ -745,6 +746,7 @@ function(_STAR_PROCESS_IDL_FILE idll out_sources out_headers)
 
 	add_custom_command(
 		OUTPUT ${idlH} ${idlC} ${idlLinkDef}
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${star_lib_dir_out}
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${outpath_table_ttable}
 		COMMAND ${PERL_EXECUTABLE} ${STAR_SRC}/mgr/ConstructTable.pl ${idll} ${idlH}
 		COMMAND ${PERL_EXECUTABLE} ${STAR_SRC}/mgr/ConstructTable.pl ${idll} ${idlC}
