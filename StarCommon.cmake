@@ -569,7 +569,7 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 		"${STAR_SRC}/asps/Simulation/geant321/include"
 		"${CERNLIB_INCLUDE_DIR}")
 
-	add_library(starsimlib STATIC ${starsim_sources} ${starsim_dict})
+	add_library(starsimlib ${starsim_sources} ${starsim_dict})
 	GET_SUBDIRS(${starsim_dir_abs} starsim_subdirs INCLUDE_PARENT)
 	target_include_directories(starsimlib PRIVATE ${starsim_subdirs} ${starsim_INCLUDE_DIRECTORIES})
 	set_target_properties(starsimlib PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
@@ -608,7 +608,7 @@ function(STAR_ADD_LIBRARY_BASIC star_lib_dir)
 	file(GLOB_RECURSE age_files "${star_lib_dir_abs}/*.age")
 	star_process_g("${age_files}" ${star_lib_dir_out} f_age_files)
 
-	add_library(${star_lib_name} STATIC ${f_files} ${f_g_files} ${f_age_files} ${cxx_files} ${c_files})
+	add_library(${star_lib_name} ${f_files} ${f_g_files} ${f_age_files} ${cxx_files} ${c_files})
 	GET_SUBDIRS(${star_lib_dir_abs} star_lib_subdirs INCLUDE_PARENT)
 	target_include_directories(${star_lib_name} PRIVATE ${star_lib_subdirs} ${${star_lib_name}_INCLUDE_DIRECTORIES})
 	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
@@ -655,7 +655,7 @@ function(STAR_ADD_LIBRARY_VERTEXNOSTI star_lib_dir )
 	set(linkdef_file "${star_lib_dir_out}_LinkDef.h")
 	set(dictinc_file "${star_lib_dir_out}_DictInc.h")
 
-	add_library(StGenericVertexMakerNoSti SHARED
+	add_library(StGenericVertexMakerNoSti
 		${star_lib_dir_abs}/StCtbUtility.cxx
 		${star_lib_dir_abs}/StFixedVertexFinder.cxx
 		${star_lib_dir_abs}/StGenericVertexFinder.cxx
