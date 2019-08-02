@@ -47,7 +47,11 @@ echo "// Automatically collected header files for ROOT dictionary" > "$output_di
 classes=()
 stcontainer_classes=()
 
-for INFILE in "$@"; do
+# Sort input list of header files so they appear in fixed order in the $output_dictinc_path file
+hfiles=("$@")
+IFS=$'\n' hfiles_sorted=($(sort <<<"${hfiles[*]}")); unset IFS
+
+for INFILE in "${hfiles_sorted[@]}"; do
 	file_classes=( $(awk 'match($0,"^[[:space:]]*ClassDef[[:space:]]*\\(([^#]+),.*\\)", a) { print a[1] }' "$INFILE") )
 	namespace="$(awk -v p=1 'match($0, "namespace[[:space:]]+(\\w+).*\\$NMSPC", a) { if(p){ print a[1] }; p=0 }' "$INFILE")"
 	if [ -n "$namespace" ]; then
