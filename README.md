@@ -25,10 +25,10 @@ The STAR software also depends on the following external packages/libraries:
 Build with cmake and make
 -------------------------
 
-    git clone https://github.com/star-bnl/star-cvs.git
-    git clone https://github.com/star-bnl/star-cmake.git
+    git clone https://gitlab.com/star-bnl/star-sw.git
+    git clone https://gitlab.com/star-bnl/star-cvs.git
     mkdir star-build && cd star-build
-    cmake ../star-cmake -DSTAR_SRC=../star-cvs/ -DCMAKE_INSTALL_PREFIX=../star-install
+    cmake ../star-sw -DSTAR_SRC=../star-cvs/ -DCMAKE_INSTALL_PREFIX=../star-install
     make -j[N]
     make install
 

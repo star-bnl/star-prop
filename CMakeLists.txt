@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
-project(star-cvs LANGUAGES C CXX Fortran)
+project(star-sw LANGUAGES C CXX Fortran)
 
 set(STAR_SRC "$ENV{STAR}" CACHE PATH "Path to star software source code")
 
@@ -11,7 +11,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
 find_package(ROOT COMPONENTS Table HistPainter Minuit Geom Spectrum Vc minicern)
 
 if(${ROOT_CXX_FLAGS} MATCHES "-m32")
-	message(STATUS "star-cmake: Found -m32 option in $ROOT_CXX_FLAGS (root-config). Will proceed with 32 bit build")
+	message(STATUS "star-sw: Found -m32 option in $ROOT_CXX_FLAGS (root-config). Will proceed with 32 bit build")
 	set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS FALSE)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
@@ -26,9 +26,9 @@ find_package(CERNLIB COMPONENTS pawlib graflib packlib grafX11 mathlib kernlib j
 # Perform some setup standard to STAR experiment environment
 include(StarCommon)
 
-message(STATUS "star-cmake: CMAKE_CXX_FLAGS = \"${CMAKE_CXX_FLAGS}\"")
-message(STATUS "star-cmake: CMAKE_C_FLAGS = \"${CMAKE_C_FLAGS}\"")
-message(STATUS "star-cmake: CMAKE_Fortran_FLAGS = \"${CMAKE_Fortran_FLAGS}\"")
+message(STATUS "star-sw: CMAKE_CXX_FLAGS = \"${CMAKE_CXX_FLAGS}\"")
+message(STATUS "star-sw: CMAKE_C_FLAGS = \"${CMAKE_C_FLAGS}\"")
+message(STATUS "star-sw: CMAKE_Fortran_FLAGS = \"${CMAKE_Fortran_FLAGS}\"")
 
 star_preinstall_headers(${CMAKE_BINARY_DIR}/include)
 
