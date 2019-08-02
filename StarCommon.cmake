@@ -404,6 +404,8 @@ function(STAR_PREINSTALL_HEADERS destination_dir)
 		"${STAR_SRC}/pams/*/inc/*.h"
 		"${STAR_SRC}/pams/*/inc/*.inc")
 
+	FILTER_LIST(header_files EXCLUDE "StPicoEvent/SystemOfUnits.h;StPicoEvent/PhysicalConstants.h")
+
 	foreach( header_file ${header_files} )
 		get_filename_component( header_file_name ${header_file} NAME )
 		configure_file( "${header_file}" "${destination_dir}/${header_file_name}" COPYONLY )
