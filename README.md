@@ -1,8 +1,6 @@
-How to build and install STAR libraries
-=======================================
+# How to build and install STAR libraries
 
-Prerequisites
--------------
+## Prerequisites
 
 Several external tools required to build the STAR libraries are listed below
 along with their minimal version numbers:
@@ -22,8 +20,7 @@ The STAR software also depends on the following external packages/libraries:
 - MySQL
 
 
-Build with cmake and make
--------------------------
+## Build with cmake and make
 
     git clone https://gitlab.com/star-bnl/star-sw.git
     git clone https://gitlab.com/star-bnl/star-cvs.git
