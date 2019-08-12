@@ -147,8 +147,8 @@ function(STAR_GENERATE_LINKDEF star_lib_dir)
 	# Generate the above files to be used in dictionary generation by ROOT
 	add_custom_command(
 		OUTPUT ${linkdef_file} ${dictinc_file}
-		COMMAND "${STAR_CMAKE_DIR}/gen_linkdef.sh" ${gen_linkdef_args}
-		DEPENDS "${STAR_CMAKE_DIR}/gen_linkdef.sh" ${ARG_LINKDEF_HEADERS}
+		COMMAND "${PROJECT_SOURCE_DIR}/scripts/gen_linkdef.sh" ${gen_linkdef_args}
+		DEPENDS "${PROJECT_SOURCE_DIR}/scripts/gen_linkdef.sh" ${ARG_LINKDEF_HEADERS}
 		VERBATIM)
 endfunction()
 
@@ -671,8 +671,8 @@ function(STAR_ADD_LIBRARY_VERTEXNOSTI star_lib_dir )
 
 	add_custom_command(
 		OUTPUT ${dictinc_file} ${linkdef_file}
-		COMMAND ${STAR_CMAKE_DIR}/gen_linkdef.sh -l ${linkdef_file} -d ${dictinc_file} ${vtxnosti_headers}
-		DEPENDS ${STAR_CMAKE_DIR}/gen_linkdef.sh ${vtxnosti_headers} )
+		COMMAND ${PROJECT_SOURCE_DIR}/scripts/gen_linkdef.sh -l ${linkdef_file} -d ${dictinc_file} ${vtxnosti_headers}
+		DEPENDS ${PROJECT_SOURCE_DIR}/scripts/gen_linkdef.sh ${vtxnosti_headers} )
 
 	get_property(global_include_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
 	string( REGEX REPLACE "([^;]+)" "-I\\1" global_include_dirs "${global_include_dirs}" )
