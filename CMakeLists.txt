@@ -5,7 +5,7 @@ project(star-sw LANGUAGES C CXX Fortran)
 set(STAR_SRC "$ENV{STAR}" CACHE PATH "Path to star software source code")
 
 # Add to path in order to pick up the FindXXX.cmake files included in this project
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # STAR software depends on ROOT
 find_package(ROOT COMPONENTS Table HistPainter Minuit Geom Spectrum Vc minicern)
