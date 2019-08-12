@@ -16,5 +16,5 @@ endif()
 
 
 if(TARGET Stv)
-	target_include_directories(Stv PRIVATE "${STAR_CMAKE_DIR}/star-aux/StarVMC/geant3/TGeant3")
+	target_include_directories(Stv PRIVATE "${STAR_SRC}/StarVMC/geant3/TGeant3")
 endif()

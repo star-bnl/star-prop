@@ -52,7 +52,6 @@ if(DEFINED ENV{STAR_HOST_SYS})
 	set(STAR_ADDITIONAL_INSTALL_PREFIX ".$ENV{STAR_HOST_SYS}")
 endif()
 
-set(STAR_CMAKE_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
 set(STAR_LIB_DIR_BLACKLIST
 	StarVMC/geant3            # how is it used?
@@ -982,10 +981,10 @@ set(StEvent_LINKDEF_HEADERS
 	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2004.h"
 	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2005.h"
 	"${STAR_SRC}/StRoot/StDaqLib/TRG/trgStructures2007.h"
-	"${STAR_CMAKE_DIR}/star-aux/StArray_cint.h")
+	"${PROJECT_SOURCE_DIR}/star-aux/StArray_cint.h")
 set(StEStructPool_LINKDEF_HEADERS
 	"$ENV{ROOTSYS}/include/TVector2.h"
-	"${STAR_CMAKE_DIR}/star-aux/StArray_cint.h")
+	"${PROJECT_SOURCE_DIR}/star-aux/StArray_cint.h")
 set(StGammaMaker_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TVector3.h")
 set(StTriggerUtilities_LINKDEF_HEADERS "${STAR_SRC}/StRoot/StChain/StMaker.h")
 set(StiMaker_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TH1K.h")
