@@ -610,7 +610,7 @@ function(STAR_ADD_LIBRARY_BASIC star_lib_dir)
 
 	add_library(${star_lib_name} ${f_files} ${f_g_files} ${f_age_files} ${cxx_files} ${c_files})
 	GET_SUBDIRS(${star_lib_dir_abs} star_lib_subdirs INCLUDE_PARENT)
-	target_include_directories(${star_lib_name} PRIVATE ${star_lib_subdirs} ${${star_lib_name}_INCLUDE_DIRECTORIES})
+	target_include_directories(${star_lib_name} PRIVATE ${star_lib_subdirs})
 	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
 
 	install(TARGETS ${star_lib_name}
@@ -814,7 +814,7 @@ function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
 	set(out_F_files_)
 
 	get_property(global_include_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
-	set(target_include_dirs ${global_include_dirs} ${${star_lib_name}_INCLUDE_DIRECTORIES})
+	set(target_include_dirs ${global_include_dirs})
 	string( REGEX REPLACE "([^;]+)" "-I\\1" target_include_dirs "${target_include_dirs}" )
 
 	foreach( f_file ${in_F_files} )
@@ -989,15 +989,6 @@ set(StGammaMaker_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TVector3.h")
 set(StTriggerUtilities_LINKDEF_HEADERS "${STAR_SRC}/StRoot/StChain/StMaker.h")
 set(StiMaker_LINKDEF_HEADERS "$ENV{ROOTSYS}/include/TH1K.h")
 set(Stv_LINKDEF_HEADERS "${STAR_SRC}/StRoot/StarRoot/THelixTrack.h")
-
-set(St_g2t_INCLUDE_DIRECTORIES
-	"${STAR_SRC}/asps/Simulation/geant321/include"
-	"${STAR_SRC}/asps/Simulation/starsim/include")
-set(geant321_INCLUDE_DIRECTORIES
-	"${STAR_SRC}/asps/Simulation/starsim/include")
-set(gcalor_INCLUDE_DIRECTORIES
-	"${STAR_SRC}/asps/Simulation/geant321/include"
-	"${STAR_SRC}/asps/Simulation/starsim/include")
 
 set(St_base_EXCLUDE "StRoot/St_base/St_staf_dummies.c")
 set(StDb_Tables_EXCLUDE "StDb/idl/tpcDedxPidAmplDb.idl")
