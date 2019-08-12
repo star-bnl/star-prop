@@ -1,7 +1,5 @@
 # Manually set package specific properties
 
-include(StarCommon)
-
 
 if(TARGET StGenericVertexMaker)
 	# Common build rules cannot be applied to StGenericVertexMakerNoSti library
