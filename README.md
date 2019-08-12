@@ -5,7 +5,7 @@
 Several external tools required to build the STAR libraries are listed below
 along with their minimal version numbers:
 
-- cmake 3.2
+- cmake 3.6
 - C++ compiler with C++11 support (e.g. g++ 4.8.5)
 - Fortran compiler (e.g. gfortran 4.8.5)
 - bison 2.7 or yacc 1.9

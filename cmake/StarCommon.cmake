@@ -271,27 +271,13 @@ endfunction()
 
 
 
-macro(FILTER_LIST arg_list)
-	# Starting cmake 3.6 one can simply use list( FILTER ... )
-	#list( FILTER sources EXCLUDE REGEX "${ARG_EXCLUDE}" )
-
+macro(FILTER_LIST list_to_filter)
 	cmake_parse_arguments(ARG "" "" "EXCLUDE" ${ARGN})
 
-	if( ${arg_list} AND ARG_EXCLUDE )
-
-		foreach( item ${${arg_list}} )
-			foreach( regex ${ARG_EXCLUDE} )
-
-				if( ${item} MATCHES "${regex}" )
-					list(REMOVE_ITEM ${arg_list} ${item})
-					break()
-				endif()
-
-			endforeach()
+	if(${list_to_filter} AND ARG_EXCLUDE)
+		foreach(regex ${ARG_EXCLUDE})
+			list(FILTER ${list_to_filter} EXCLUDE REGEX ${regex})
 		endforeach()
-
-		set( ${arg_list} ${${arg_list}} )
-
 	endif()
 endmacro()
 
