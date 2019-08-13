@@ -81,8 +81,8 @@ foreach(star_lib_dir ${star_lib_dirs})
 	star_add_library(${star_lib_dir})
 endforeach()
 
-include("deps.cmake")
-include("target_properties.cmake")
+include("cmake/target_dependencies.cmake")
+include("cmake/target_properties.cmake")
 
 
 # Copy all header files preserving the subdirectory tree hierarchy
