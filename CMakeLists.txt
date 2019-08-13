@@ -24,7 +24,7 @@ find_package(MySQL)
 find_package(CERNLIB COMPONENTS pawlib graflib packlib grafX11 mathlib kernlib jetset74 lapack3 blas)
 
 # Perform some setup standard to STAR experiment environment
-include(StarCommon)
+include(cmake/StarCommon.cmake)
 
 message(STATUS "star-sw: CMAKE_CXX_FLAGS = \"${CMAKE_CXX_FLAGS}\"")
 message(STATUS "star-sw: CMAKE_C_FLAGS = \"${CMAKE_C_FLAGS}\"")
@@ -48,6 +48,7 @@ include_directories(
 )
 
 
+# Build executables
 star_add_executable_root4star(asps/rexe)
 star_add_executable_stic(asps/staf/sdd/src)
 star_add_executable_agetof(asps/Simulation/agetof)

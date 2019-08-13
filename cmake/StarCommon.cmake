@@ -56,7 +56,7 @@ endif()
 set(STAR_LIB_DIR_BLACKLIST
 	StarVMC/geant3            # how is it used?
 	StarVMC/GeoTestMaker      # blacklisted in cons
-	StarVMC/minicern
+	StarVMC/minicern          # provided by ROOT
 	StarVMC/StarBASE
 	StarVMC/StarGeometry      # library built from StarVMC/Geometry
 	StarVMC/StarSim
@@ -293,12 +293,12 @@ endmacro()
 
 
 # Builds a list of subdirectories with complete path found in the
-# 'directories'
+# 'directories' list
 macro(GET_SUBDIRS directories subdirectories)
 
 	cmake_parse_arguments(ARG "INCLUDE_PARENT" "" "" ${ARGN})
 
-	set( sub_dirs "" )
+	set( _sub_dirs "" )
 
 	foreach( dir ${directories} )
 		if( NOT IS_ABSOLUTE ${dir})
@@ -314,18 +314,18 @@ macro(GET_SUBDIRS directories subdirectories)
 
 		# Include the parent directory in the list
 		if( ${ARG_INCLUDE_PARENT} )
-			list( APPEND sub_dirs ${dir} )
+			list( APPEND _sub_dirs ${dir} )
 		endif()
 
 		foreach( sub_dir ${all_files} )
 			if( IS_DIRECTORY ${dir}/${sub_dir} )
-				list( APPEND sub_dirs ${dir}/${sub_dir} )
+				list( APPEND _sub_dirs ${dir}/${sub_dir} )
 			endif()
 		endforeach()
 
 	endforeach()
 	
-	set( ${subdirectories} ${sub_dirs} )
+	set( ${subdirectories} ${_sub_dirs} )
 
 endmacro()
 
@@ -800,8 +800,8 @@ function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
 	set(out_F_files_)
 
 	get_property(global_include_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
-	set(target_include_dirs ${global_include_dirs})
-	string( REGEX REPLACE "([^;]+)" "-I\\1" target_include_dirs "${target_include_dirs}" )
+	set(_target_include_dirs ${global_include_dirs})
+	string( REGEX REPLACE "([^;]+)" "-I\\1" _target_include_dirs "${_target_include_dirs}" )
 
 	foreach( f_file ${in_F_files} )
 		get_filename_component(f_file_name_we ${f_file} NAME_WE)
@@ -811,7 +811,7 @@ function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
 		add_custom_command(
 			OUTPUT ${g_file} ${out_F_file}
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${star_lib_dir_out}
-			COMMAND ${CMAKE_C_COMPILER} -E -P ${STAR_Fortran_DEFINITIONS} ${target_include_dirs} ${f_file} -o ${g_file}
+			COMMAND ${CMAKE_C_COMPILER} -E -P ${STAR_Fortran_DEFINITIONS} ${_target_include_dirs} ${f_file} -o ${g_file}
 			COMMAND ${CMAKE_CURRENT_BINARY_DIR}/agetof -V 1 ${g_file} -o ${out_F_file}
 			DEPENDS ${f_file} agetof VERBATIM)
 
