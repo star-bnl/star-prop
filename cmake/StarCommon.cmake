@@ -978,15 +978,6 @@ set(Stv_LINKDEF_HEADERS "${STAR_SRC}/StRoot/StarRoot/THelixTrack.h")
 
 set(St_base_EXCLUDE "StRoot/St_base/St_staf_dummies.c")
 set(StDb_Tables_EXCLUDE "StDb/idl/tpcDedxPidAmplDb.idl")
-set(StarMiniCern_EXCLUDE
-	"StarVMC/minicern/allgs"
-	"StarVMC/minicern/hpxgs"
-	"StarVMC/minicern/lnxgs"
-	"StarVMC/minicern/lnxppcgs"
-	"StarVMC/minicern/kerngen"
-	"StarVMC/minicern/qutyinv"
-	"StarVMC/minicern/qutyz32"
-	"StarVMC/minicern/sungs")
 set(geant321_EXCLUDE
 	"asps/Simulation/geant321/doc"
 	"asps/Simulation/geant321/gxuser")
