@@ -248,7 +248,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	# Output the library to the respecitve subdirectory in the binary directory
 	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
 
-	GET_SUBDIRS(${star_lib_dir_abs} star_lib_subdirs INCLUDE_PARENT)
+	GET_SUBDIRS(star_lib_subdirs ${star_lib_dir_abs} INCLUDE_PARENT)
 	target_include_directories(${star_lib_name} PRIVATE
 		"${star_lib_subdirs}"
 		"${CMAKE_CURRENT_BINARY_DIR}/include"
@@ -294,7 +294,7 @@ endmacro()
 
 # Builds a list of subdirectories with complete path found in the
 # 'directories' list
-macro(GET_SUBDIRS directories subdirectories)
+macro(GET_SUBDIRS subdirectories directories)
 
 	cmake_parse_arguments(ARG "INCLUDE_PARENT" "" "" ${ARGN})
 
@@ -556,7 +556,7 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 		"${CERNLIB_INCLUDE_DIR}")
 
 	add_library(starsimlib ${starsim_sources} ${starsim_dict})
-	GET_SUBDIRS(${starsim_dir_abs} starsim_subdirs INCLUDE_PARENT)
+	GET_SUBDIRS(starsim_subdirs ${starsim_dir_abs} INCLUDE_PARENT)
 	target_include_directories(starsimlib PRIVATE ${starsim_subdirs} ${starsim_INCLUDE_DIRECTORIES})
 	set_target_properties(starsimlib PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
 
@@ -595,7 +595,7 @@ function(STAR_ADD_LIBRARY_BASIC star_lib_dir)
 	star_process_g("${age_files}" ${star_lib_dir_out} f_age_files)
 
 	add_library(${star_lib_name} ${f_files} ${f_g_files} ${f_age_files} ${cxx_files} ${c_files})
-	GET_SUBDIRS(${star_lib_dir_abs} star_lib_subdirs INCLUDE_PARENT)
+	GET_SUBDIRS(star_lib_subdirs ${star_lib_dir_abs} INCLUDE_PARENT)
 	target_include_directories(${star_lib_name} PRIVATE ${star_lib_subdirs})
 	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
 
