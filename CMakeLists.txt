@@ -47,6 +47,7 @@ include_directories(
 	${CMAKE_BINARY_DIR}/include
 )
 
+include("cmake/source_properties.cmake")
 
 # Build executables
 star_add_executable_root4star(asps/rexe)
