@@ -1,28 +1,20 @@
 # - Find cernlib include directories and libraries
 #
 #  CERNLIB_FOUND
-#  CERNLIB_INCLUDE_DIR
+#  CERNLIB_INCLUDE_DIRS
 #  CERNLIB_LIBRARIES
-#  CERNLIB_LIBRARY_DIR
 
-get_property(USE_LIB64 GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS)
+set(CERNLIB_ROOT "${CERNLIB_ROOT}" CACHE PATH "CERNLIB root directory to look in")
 
-if(${USE_LIB64})
-	set(CERNLIB_LIBRARY_DIR "/cern64/pro/lib/")
-	set(CERNLIB_INCLUDE_DIR "/cern64/pro/include/")
-else()
-	set(CERNLIB_LIBRARY_DIR "/cern/pro/lib/")
-	set(CERNLIB_INCLUDE_DIR "/cern/pro/include/")
+if(DEFINED ENV{CERN_ROOT})
+	set(CERNLIB_ROOT "$ENV{CERN_ROOT}" CACHE PATH "CERNLIB root directory to look in" FORCE)
 endif()
 
-set(cernlibs ${CERNLIB_FIND_COMPONENTS})
+message(STATUS "Searching for CERNLIB components in ${CERNLIB_ROOT}")
 
-set(CERNLIB_LIBRARIES )
-foreach(cernlib ${cernlibs})
-	find_library(CERNLIB_LIBRARY_${cernlib} ${cernlib} PATHS ${CERNLIB_LIBRARY_DIR} NO_DEFAULT_PATH)
-	list(APPEND CERNLIB_LIBRARIES ${CERNLIB_LIBRARY_${cernlib}})
-endforeach()
+set(_cernlibs ${CERNLIB_FIND_COMPONENTS})
 
+# Define colors for nicer output to the terminal
 if(NOT WIN32)
 	string(ASCII 27 Esc)
 	set(ColorReset "${Esc}[m")
@@ -30,19 +22,33 @@ if(NOT WIN32)
 	set(ColorRed   "${Esc}[31m")
 endif()
 
-message(STATUS "Found CERNLIB libraries:")
-foreach(cernlib ${cernlibs})
-	if(CERNLIB_LIBRARY_${cernlib})
-		message(STATUS "  ${ColorGreen}${cernlib}${ColorReset}:\t${CERNLIB_LIBRARY_${cernlib}}")
+set(CERNLIB_LIBRARIES)
+foreach(_cernlib ${_cernlibs})
+	find_library(CERNLIB_${_cernlib}_LIBRARY
+		NAMES ${_cernlib}
+		PATHS "${CERNLIB_ROOT}"
+		PATH_SUFFIXES lib)
+
+	if(CERNLIB_${_cernlib}_LIBRARY)
+		set(CERNLIB_${_cernlib}_FOUND TRUE)
+		message(STATUS "  ${ColorGreen}${_cernlib}${ColorReset}:\t${CERNLIB_${_cernlib}_LIBRARY}")
 	else()
-		message(STATUS "  ${ColorRed}${cernlib}${ColorReset}:\t${CERNLIB_LIBRARY_${cernlib}}")
+		set(CERNLIB_${_cernlib}_FOUND FALSE)
+		message(STATUS "  ${ColorRed}${_cernlib}${ColorReset}:\t${CERNLIB_${_cernlib}_LIBRARY}")
 	endif()
+
+	list(APPEND CERNLIB_LIBRARIES ${CERNLIB_${_cernlib}_LIBRARY})
 endforeach()
 
-mark_as_advanced(CERNLIB_INCLUDE_DIR CERNLIB_LIBRARIES CERNLIB_LIBRARY_DIR)
+# Although not checked explicitly the hope is that the other header files (e.g.
+# paw/paw.h) are in the same parent directory
+find_path(CERNLIB_INCLUDE_DIRS
+	NAMES "cfortran/cfortran.h"
+	PATHS "${CERNLIB_ROOT}"
+	PATH_SUFFIXES include)
 
 # Set CERNLIB_FOUND to TRUE if all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(CERNLIB REQUIRED_VARS CERNLIB_INCLUDE_DIRS HANDLE_COMPONENTS)
 
-find_package_handle_standard_args(CERNLIB DEFAULT_MSG
-	CERNLIB_INCLUDE_DIR CERNLIB_LIBRARIES CERNLIB_LIBRARY_DIR)
+mark_as_advanced(CERNLIB_ROOT CERNLIB_LIBRARIES CERNLIB_INCLUDE_DIRS)
