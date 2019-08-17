@@ -24,7 +24,7 @@ endif()
 find_package(LibXml2)
 find_package(Log4Cxx)
 find_package(MySQL)
-find_package(CERNLIB COMPONENTS pawlib graflib packlib grafX11 mathlib kernlib jetset74 lapack3 blas)
+find_package(CERNLIB COMPONENTS pawlib graflib packlib grafX11 mathlib kernlib jetset74 lapack blas)
 
 # Perform some setup standard to STAR experiment environment
 include(cmake/StarCommon.cmake)
