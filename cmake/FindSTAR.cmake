@@ -7,7 +7,7 @@
 #
 
 
-set(STAR_ROOT "$ENV{STAR}" CACHE STRING "Path to directory with STAR soft installed")
+set(STAR_ROOT "$ENV{STAR}" CACHE PATH "Path to directory with STAR soft installed")
 
 if( NOT STAR_ROOT )
 	message(WARNING "STAR_ROOT must be set, i.e. \"cmake -D STAR_ROOT=<path to STAR dir>\" "
