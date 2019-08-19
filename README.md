@@ -11,22 +11,26 @@ along with their minimal version numbers:
 - bison 2.7 or yacc 1.9
 - flex 2.5
 - perl 5.16.3
-- python2
+- python2, pip, pyparsing
+- awk, grep
 
 The STAR software also depends on the following external packages/libraries:
 
 - ROOT (>= 5.34.30), http://root.cern.ch
 - XML2
 - MySQL
-
+- log4cxx, curl
+- cernlib, lapack, blas
 
 ## Build with cmake and make
 
     git clone https://gitlab.com/star-bnl/star-sw.git
     git clone https://gitlab.com/star-bnl/star-cvs.git
-    mkdir star-build && cd star-build
+    mkdir star-build
+    cd star-build
     cmake ../star-sw -DSTAR_SRC=../star-cvs/ -DCMAKE_INSTALL_PREFIX=../star-install
     make -j[N]
     make install
 
-where [N] is the number of jobs to run simultaneously
+where `[N]` is the number of compile jobs to run simultaneously, e.g. set it to
+`$(nproc)`.
