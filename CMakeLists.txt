@@ -14,7 +14,7 @@ set(STAR_SRC "$ENV{STAR}" CACHE PATH "Path to star software source code")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # STAR software depends on ROOT
-find_package(ROOT COMPONENTS Table HistPainter Minuit Geom Spectrum Vc minicern)
+find_package(ROOT COMPONENTS Table HistPainter Minuit Geom Spectrum Vc)
 
 if(${ROOT_CXX_FLAGS} MATCHES "-m32")
 	message(STATUS "star-sw: Found -m32 option in $ROOT_CXX_FLAGS (root-config). Will proceed with 32 bit build")

@@ -920,7 +920,7 @@ function(STAR_ADD_EXECUTABLE_AGETOF star_exec_dir)
 		COMMAND ${CMAKE_COMMAND} -E copy ${exec_dir_abs}/agetof.def ${CMAKE_CURRENT_BINARY_DIR}
 		VERBATIM)
 
-	target_link_libraries(agetof ${ROOT_LIBRARIES})
+	target_link_libraries(agetof ${ROOT_LIBRARIES} ${CERNLIB_LIBRARIES})
 endfunction()
 
 
