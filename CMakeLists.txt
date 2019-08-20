@@ -14,7 +14,7 @@ set(STAR_SRC "$ENV{STAR}" CACHE PATH "Path to star software source code")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # STAR software depends on ROOT
-find_package(ROOT COMPONENTS Table HistPainter Minuit Geom Spectrum Vc)
+find_package(ROOT REQUIRED COMPONENTS Table HistPainter Minuit Geom Spectrum Vc)
 
 if(${ROOT_CXX_FLAGS} MATCHES "-m32")
 	message(STATUS "star-sw: Found -m32 option in $ROOT_CXX_FLAGS (root-config). Will proceed with 32 bit build")
@@ -24,10 +24,10 @@ if(${ROOT_CXX_FLAGS} MATCHES "-m32")
 	set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -m32")
 endif()
 
-find_package(LibXml2)
-find_package(Log4Cxx)
-find_package(MySQL)
-find_package(CERNLIB COMPONENTS pawlib graflib packlib grafX11 mathlib kernlib jetset74 lapack blas)
+find_package(LibXml2 REQUIRED)
+find_package(Log4Cxx REQUIRED)
+find_package(MySQL REQUIRED)
+find_package(CERNLIB REQUIRED COMPONENTS pawlib graflib packlib grafX11 mathlib kernlib jetset74 lapack blas)
 
 # Perform some setup standard to STAR experiment environment
 include(cmake/StarCommon.cmake)
