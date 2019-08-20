@@ -47,10 +47,10 @@ endif()
 
 
 set(STAR_LIB_DIR_BLACKLIST
-	StarVMC/geant3            # how is it used?
+	StarVMC/geant3            # official geant3 is in asps/Simulation/geant321
 	StarVMC/GeoTestMaker      # blacklisted in cons
-	StarVMC/minicern          # provided by ROOT
-	StarVMC/StarAgmlUtil
+	StarVMC/minicern          # outdated build as StarMiniCern. Also provided by ROOT
+	StarVMC/StarAgmlUtil      # built as basic library without ROOT dictionaries
 	StarVMC/StarBASE
 	StarVMC/StarGeometry      # library built from StarVMC/Geometry
 	StarVMC/StarSim
@@ -58,11 +58,11 @@ set(STAR_LIB_DIR_BLACKLIST
 	StarVMC/StVMCMaker
 	StarVMC/StVmcTools
 	StarVMC/xgeometry         # library built from StarVMC/Geometry
-	StRoot/html
-	StRoot/macros
-	StRoot/qainfo
+	StRoot/html               # not a library
+	StRoot/macros             # not a library
+	StRoot/qainfo             # not a library
 	StRoot/StAngleCorrMaker   # blacklisted in cons
-	StRoot/StarGenerator
+	StRoot/StarGenerator      # mostly external MC generators
 	StRoot/StDaqClfMaker      # blacklisted in cons
 	StRoot/StEbye2ptMaker     # blacklisted in cons
 	StRoot/StEbyePool         # blacklisted in cons
@@ -194,9 +194,10 @@ endfunction()
 
 
 #
-# Adds a target to build a library from all source files (*.cxx, *.cc, and *.cpp)
-# recursively found in the specified subdirectory `star_lib_dir`. It is possible
-# to EXCLUDE some files matching an optional pattern.
+# Adds a target to build a library from all source files (*.cxx, *.cc, *.c,
+# *.cpp, *.g, *.idl) recursively found in the specified subdirectory
+# `star_lib_dir`. It is possible to EXCLUDE some files matching an optional
+# regex pattern.
 #
 function(STAR_ADD_LIBRARY star_lib_dir)
 
@@ -232,7 +233,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	FILTER_LIST(idl_files EXCLUDE ${star_lib_exclude})
 	string(REPLACE "+" "\\\\+" idl_path_exclude_regex "${star_lib_dir_abs}/idl")
 	FILTER_LIST(idl_files EXCLUDE ${idl_path_exclude_regex})
-	star_process_idl("${idl_files}" "${star_lib_name_for_tables}" ${star_lib_dir_out} sources_idl headers_idl)
+	star_process_idl("${idl_files}" "${star_lib_name_for_tables}" "${star_lib_dir_out}" sources_idl headers_idl)
 
 	set(sources ${sources_cpp} ${sources_idl} ${sources_gtoF} ${sources_F})
 
@@ -260,7 +261,6 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 
 	install(FILES ${headers_idl}
 		DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/include/tables/${star_lib_name_for_tables}" OPTIONAL)
-
 endfunction()
 
 
@@ -278,49 +278,50 @@ endmacro()
 
 # Return list of regex'es to exclude from globbed paths for target `star_lib_name`
 macro(GET_EXCLUDE_LIST star_lib_name exclude_list)
-	set( ${exclude_list}
-	     ${star_lib_name}.*macros
-	     ${star_lib_name}.*doc
-	     ${star_lib_name}.*examples
-	     ${${star_lib_name}_EXCLUDE} )
+	set(${exclude_list}
+		${star_lib_name}.*macros
+		${star_lib_name}.*doc
+		${star_lib_name}.*examples
+		${${star_lib_name}_EXCLUDE})
 endmacro()
 
 
+#
 # Builds a list of subdirectories with complete path found in the
 # 'directories' list
+#
 macro(GET_SUBDIRS subdirectories directories)
-
+	# Check wether the parent directory should be included in the output
+	# list of directories
 	cmake_parse_arguments(ARG "INCLUDE_PARENT" "" "" ${ARGN})
 
-	set( _sub_dirs "" )
+	set(_sub_dirs "")
 
-	foreach( dir ${directories} )
-		if( NOT IS_ABSOLUTE ${dir})
-			set( dir ${STAR_SRC}/${dir})
+	foreach(dir ${directories})
+		if(NOT IS_ABSOLUTE ${dir})
+			set(dir ${STAR_SRC}/${dir})
 		endif()
 
-		if( NOT IS_DIRECTORY ${dir} )
-			message( WARNING "StarCommon: Directory ${dir} not found" )
+		if(NOT IS_DIRECTORY ${dir})
+			message(WARNING "StarCommon: Directory ${dir} not found")
 			continue()
 		endif()
 
-		file( GLOB all_files RELATIVE ${dir} ${dir}/* )
+		file(GLOB all_files RELATIVE ${dir} ${dir}/*)
 
 		# Include the parent directory in the list
-		if( ${ARG_INCLUDE_PARENT} )
-			list( APPEND _sub_dirs ${dir} )
+		if(${ARG_INCLUDE_PARENT})
+			list(APPEND _sub_dirs ${dir})
 		endif()
 
-		foreach( sub_dir ${all_files} )
-			if( IS_DIRECTORY ${dir}/${sub_dir} )
-				list( APPEND _sub_dirs ${dir}/${sub_dir} )
+		foreach(sub_dir ${all_files})
+			if(IS_DIRECTORY ${dir}/${sub_dir})
+				list(APPEND _sub_dirs ${dir}/${sub_dir})
 			endif()
 		endforeach()
-
 	endforeach()
 	
-	set( ${subdirectories} ${_sub_dirs} )
-
+	set(${subdirectories} ${_sub_dirs})
 endmacro()
 
 
@@ -393,7 +394,11 @@ function(STAR_PREINSTALL_HEADERS destination_dir)
 endfunction()
 
 
-
+#
+# Install some older Geant3 geometry files into `destination_dir` where they can
+# be found by xgeometry library while building Geant3 sources from *.xml files in
+# StarVMC/Geometry/Compat/.
+#
 function(STAR_PREINSTALL_GEO_PAMS destination_dir)
 
 	set(geo_pams_files
@@ -437,8 +442,7 @@ endfunction()
 #
 # Creates ROOT TGeo geometries from xml files
 #
-# ARGV1 = [StarGeometry|xgeometry|<arbitrary_user_lib_name>]
-# ARGV2 = [RootTGeo|GeantGeo]
+# [ARGV1, ARGV2] = [StarGeometry, RootTGeo] OR [xgeometry, GeantGeo]
 #
 function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 
@@ -461,12 +465,12 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 	# The geometry library can be generated by choosing either of the two
 	# available options "RootTGeo" and "GeantGeo". Default is "RootTGeo"
 	if(${ARGV2} STREQUAL "GeantGeo")
-		_star_parse_geoxml_GeantGeo("${geo_xml_files}" ${star_lib_dir_out} geo_sources)
+		_star_parse_geoxml_GeantGeo("${geo_xml_files}" "${star_lib_dir_out}" geo_sources)
 		list(APPEND geo_sources ${STAR_SRC}/StarVMC/Geometry/Helpers.h)
 	else()
 		# Exclude some xml files
 		FILTER_LIST(geo_xml_files EXCLUDE "Compat")
-		_star_parse_geoxml_RootTGeo("${geo_xml_files}" ${star_lib_dir_out} geo_sources geo_headers)
+		_star_parse_geoxml_RootTGeo("${geo_xml_files}" "${star_lib_dir_out}" geo_sources geo_headers)
 		list(APPEND geo_sources ${star_lib_dir_out}_dict.cxx)
 	endif()
 
@@ -478,13 +482,12 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 	if(${ARGV2} STREQUAL "RootTGeo")
 		# Generate the _dict.cxx file for the library
 		star_generate_dictionary(${star_lib_name} ${star_lib_dir_out} ${star_lib_dir_out}
-			LINKDEF_HEADERS ${geo_headers} #${geo_headers_orig}
+			LINKDEF_HEADERS ${geo_headers}
 			LINKDEF_OPTIONS "-p;-D__ROOT__")
 		target_include_directories(${star_lib_name} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 	endif()
 
-	# Get relative path for the generated headers to be used at installation
-	# stage
+	# Get relative path for the generated headers to be used at installation stage
 	file(RELATIVE_PATH geo_headers_rel_path ${CMAKE_CURRENT_BINARY_DIR} ${star_lib_dir_out})
 	install(TARGETS ${star_lib_name}
 		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
@@ -494,8 +497,8 @@ endfunction()
 
 
 function(_STAR_PARSE_GEOXML_GeantGeo geo_xml_files out_dir out_sources)
-	# For each .xml file found in `star_lib_dir` (e.g. $STAR_SRC/StarVMC/Geometry) generate the
-	# source and header files
+	# For each *.xml file found in `star_lib_dir` (e.g.
+	# $STAR_SRC/StarVMC/Geometry) generate the source and header files
 	foreach(geo_xml_file ${geo_xml_files})
 		get_filename_component(geo_name ${geo_xml_file} NAME_WE)
 		set(geo_agesrc ${out_dir}/${geo_name}.age)
@@ -509,16 +512,17 @@ function(_STAR_PARSE_GEOXML_GeantGeo geo_xml_files out_dir out_sources)
 		list(APPEND geo_sources_generated ${geo_agesrc})
 	endforeach()
 
+	# Add an existing *.age file to the generated ones
 	star_process_g("${geo_sources_generated};${STAR_SRC}/StarVMC/xgeometry/xgeometry.age" ${out_dir} out_sources_)
 
-	# Return generated list
+	# Return complete list of *.age files
 	set(${out_sources} ${out_sources_} PARENT_SCOPE)
 endfunction()
 
 
 function(_STAR_PARSE_GEOXML_RootTGeo geo_xml_files out_dir out_sources out_headers)
-	# For each .xml file found in `star_lib_dir` (e.g. $STAR_SRC/StarVMC/Geometry) generate the
-	# source and header files
+	# For each *.xml file found in `star_lib_dir` (e.g.
+	# $STAR_SRC/StarVMC/Geometry) generate the source and header files
 	foreach(geo_xml_file ${geo_xml_files})
 		get_filename_component(geo_name ${geo_xml_file} NAME_WE)
 		set(geo_header ${out_dir}/${geo_name}.h)
@@ -550,6 +554,9 @@ function(_STAR_PARSE_GEOXML_RootTGeo geo_xml_files out_dir out_sources out_heade
 endfunction()
 
 
+#
+# Builds the starsim library and executable
+#
 function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 
 	star_target_paths(${starsim_dir} dummy starsim_dir_abs star_lib_dir_out)
@@ -563,12 +570,11 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 	file(GLOB_RECURSE age_files "${starsim_dir_abs}/*.age")
 	star_process_g("${age_files}" ${star_lib_dir_out} f_age_files)
 
-	set(starsim_sources ${cxx_files} ${c_files} ${f_files} ${f_g_files} ${f_age_files})
-	set(starsimlib_EXCLUDE
+	set(starsimlib_sources ${cxx_files} ${c_files} ${f_files} ${f_g_files} ${f_age_files})
+	FILTER_LIST(starsimlib_sources EXCLUDE
 		"atlroot"
 		"${starsim_dir_abs}/acmain.cxx"
 		"${starsim_dir_abs}/comis/cschar.F")
-	FILTER_LIST(starsim_sources EXCLUDE ${starsimlib_EXCLUDE})
 
 	set(starsim_INCLUDE_DIRECTORIES
 		"${starsim_dir_abs}/include"
@@ -576,7 +582,8 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 		"${STAR_SRC}/asps/Simulation/gcalor/include"
 		"${CERNLIB_INCLUDE_DIRS}")
 
-	add_library(starsimlib STATIC ${starsim_sources})
+	# Build and install starsim library
+	add_library(starsimlib STATIC ${starsimlib_sources})
 	GET_SUBDIRS(starsim_subdirs ${starsim_dir_abs} INCLUDE_PARENT)
 	target_include_directories(starsimlib PRIVATE ${starsim_subdirs} ${starsim_INCLUDE_DIRECTORIES})
 	set_target_properties(starsimlib PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
@@ -634,11 +641,12 @@ function(STAR_ADD_LIBRARY_BASIC star_lib_dir)
 	install(TARGETS ${star_lib_name}
 		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
 		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL)
-
 endfunction()
 
 
+#
 # Builds a ${star_lib_name}_Tables library from ${star_lib_dir}/idl/*.idl files
+#
 function(STAR_ADD_LIBRARY_TABLE star_lib_dir)
 
 	star_target_paths(${star_lib_dir} star_lib_name star_lib_dir_abs star_lib_dir_out)
@@ -646,8 +654,8 @@ function(STAR_ADD_LIBRARY_TABLE star_lib_dir)
 	set(star_lib_name ${star_lib_name}_Tables)
 
 	file(GLOB_RECURSE idl_files ${star_lib_dir_abs}/idl/*.idl)
-	FILTER_LIST( idl_files EXCLUDE ${${star_lib_name}_EXCLUDE} )
-	star_process_idl("${idl_files}" "" ${star_lib_dir_out} sources_idl headers_idl)
+	FILTER_LIST(idl_files EXCLUDE ${${star_lib_name}_EXCLUDE})
+	star_process_idl("${idl_files}" "" "${star_lib_dir_out}" sources_idl headers_idl)
 
 	add_library(${star_lib_name} ${sources_idl})
 	set_target_properties(${star_lib_name} PROPERTIES
@@ -661,8 +669,10 @@ function(STAR_ADD_LIBRARY_TABLE star_lib_dir)
 endfunction()
 
 
+#
 # Build customized library StGenericVertexMakerNoSti based on StGenericVertexMaker
-function(STAR_ADD_LIBRARY_VERTEXNOSTI star_lib_dir )
+#
+function(STAR_ADD_LIBRARY_VERTEXNOSTI star_lib_dir)
 
 	star_target_paths(${star_lib_dir} star_lib_name star_lib_dir_abs star_lib_dir_out)
 
@@ -682,7 +692,7 @@ function(STAR_ADD_LIBRARY_VERTEXNOSTI star_lib_dir )
 		${star_lib_dir_abs}/VertexFinderOptions.cxx
 		${star_lib_dir_abs}/Minuit/StMinuitVertexFinder.cxx
 		${star_lib_dir_abs}/Minuit/St_VertexCutsC.cxx
-		${star_lib_dir_out}_dict.cxx )
+		${star_lib_dir_out}_dict.cxx)
 	# Output the library to the respecitve subdirectory in the binary directory
 	set_target_properties(StGenericVertexMakerNoSti PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
 
@@ -709,9 +719,11 @@ function(STAR_ADD_LIBRARY_VERTEXNOSTI star_lib_dir )
 endfunction()
 
 
-# Generate source from idl files
+#
+# Generate source and header files from idl files
+#
 function(STAR_PROCESS_IDL idl_files star_lib_name star_lib_dir_out out_sources_idl out_headers_idl)
-
+	# Define internal lists to be filled
 	set(_out_sources_idl)
 	set(_out_headers_idl)
 
@@ -720,18 +732,18 @@ function(STAR_PROCESS_IDL idl_files star_lib_name star_lib_dir_out out_sources_i
 	set(outpath_table_struct ${CMAKE_CURRENT_BINARY_DIR}/include)
 	set(outpath_table_ttable ${CMAKE_CURRENT_BINARY_DIR}/include/tables/${star_lib_name})
 
-	foreach( idll ${idl_files} )
+	foreach(idll ${idl_files})
 
 		file(STRINGS ${idll} idl_matches_module REGEX "interface.*:.*amiModule")
 
-		if( idl_matches_module )
-			_star_process_idl_module(${idll} sources_idl_ headers_idl_)
+		if(idl_matches_module)
+			_star_process_idl_module(${idll} _sources_idl _headers_idl)
 		else()
-			_star_process_idl_file(${idll} sources_idl_ headers_idl_)
+			_star_process_idl_file(${idll} _sources_idl _headers_idl)
 		endif()
 
-		list(APPEND _out_sources_idl ${sources_idl_})
-		list(APPEND _out_headers_idl ${headers_idl_})
+		list(APPEND _out_sources_idl ${_sources_idl})
+		list(APPEND _out_headers_idl ${_headers_idl})
 	endforeach()
 
 	set(${out_sources_idl} ${_out_sources_idl} PARENT_SCOPE)
@@ -788,7 +800,6 @@ endfunction()
 
 
 function(_STAR_PROCESS_IDL_MODULE idll out_sources out_headers)
-
 	# For the file and variable names we closely follow the convention in mgr/Conscript-standard
 	get_filename_component(idl ${idll} NAME_WE)
 	set(idlh "${outpath_table_struct}/${idl}.h")
@@ -829,14 +840,14 @@ endfunction()
 
 function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
 
-	set(out_F_files_)
+	set(_out_F_files)
 
 	get_property(global_include_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
 	get_property(target_include_dirs SOURCE pams/sim/g2t PROPERTY INCLUDE_DIRECTORIES)
 	set(_target_include_dirs ${global_include_dirs} ${target_include_dirs})
-	string( REGEX REPLACE "([^;]+)" "-I\\1" _target_include_dirs "${_target_include_dirs}" )
+	string(REGEX REPLACE "([^;]+)" "-I\\1" _target_include_dirs "${_target_include_dirs}")
 
-	foreach( f_file ${in_F_files} )
+	foreach(f_file ${in_F_files})
 		get_filename_component(f_file_name_we ${f_file} NAME_WE)
 		set(g_file "${star_lib_dir_out}/${f_file_name_we}.g")
 		set(out_F_file "${star_lib_dir_out}/${f_file_name_we}.F")
@@ -848,19 +859,19 @@ function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
 			COMMAND ${CMAKE_CURRENT_BINARY_DIR}/agetof -V 1 ${g_file} -o ${out_F_file}
 			DEPENDS ${f_file} agetof VERBATIM)
 
-		list(APPEND out_F_files_ ${out_F_file})
+		list(APPEND _out_F_files ${out_F_file})
 	endforeach()
 
-	set(${out_F_files} ${out_F_files_} PARENT_SCOPE)
+	set(${out_F_files} ${_out_F_files} PARENT_SCOPE)
 endfunction()
 
 
 
 function(STAR_PROCESS_G in_g_files star_lib_dir_out out_F_files)
 
-	set(out_F_files_)
+	set(_out_F_files)
 
-	foreach( g_file ${in_g_files} )
+	foreach(g_file ${in_g_files})
 		get_filename_component(g_file_name_we ${g_file} NAME_WE)
 		set(out_F_file "${star_lib_dir_out}/${g_file_name_we}.F")
 
@@ -870,10 +881,10 @@ function(STAR_PROCESS_G in_g_files star_lib_dir_out out_F_files)
 			COMMAND ${CMAKE_CURRENT_BINARY_DIR}/agetof -V 1 ${g_file} -o ${out_F_file}
 			DEPENDS ${g_file} agetof VERBATIM)
 
-		list(APPEND out_F_files_ ${out_F_file})
+		list(APPEND _out_F_files ${out_F_file})
 	endforeach()
 
-	set( ${out_F_files} ${out_F_files_} PARENT_SCOPE )
+	set(${out_F_files} ${_out_F_files} PARENT_SCOPE)
 endfunction()
 
 
@@ -890,16 +901,17 @@ function(STAR_ADD_EXECUTABLE_ROOT4STAR star_exec_dir)
 		${exec_dir_abs}/TGeant3/gcadd.cxx
 		${exec_dir_abs}/TGeant3/galicef.F
 		${exec_dir_abs}/TGeant3/gcomad.F
-		${exec_dir_out}/rexe_DictInc.cxx
+		${exec_dir_out}/rexe_dict.cxx
 	)
 
 	target_include_directories(root4star PRIVATE
 		"${STAR_SRC}/asps/Simulation/geant321/include")
 
+	# Generate rexe_dict.cxx
 	add_custom_command(
-		OUTPUT ${exec_dir_out}/rexe_DictInc.cxx
+		OUTPUT ${exec_dir_out}/rexe_dict.cxx
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${exec_dir_out}
-		COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f  ${exec_dir_out}/rexe_DictInc.cxx -c -p -D__ROOT__
+		COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f  ${exec_dir_out}/rexe_dict.cxx -c -p -D__ROOT__
 		-I${exec_dir_abs}/TGeant3/ StarMC.h TGiant3.h ${exec_dir_abs}/rexeLinkDef.h
 		DEPENDS  ${exec_dir_abs}/TGeant3/StarMC.h ${exec_dir_abs}/TGeant3/TGiant3.h ${exec_dir_abs}/rexeLinkDef.h
 		VERBATIM )
@@ -909,7 +921,7 @@ function(STAR_ADD_EXECUTABLE_ROOT4STAR star_exec_dir)
 	set_target_properties(root4star PROPERTIES LINK_FLAGS "-Wl,-export-dynamic")
 
 	install(TARGETS root4star
-        RUNTIME DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/bin" OPTIONAL)
+		RUNTIME DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/bin" OPTIONAL)
 endfunction()
 
 
@@ -918,7 +930,7 @@ function(STAR_ADD_EXECUTABLE_AGETOF star_exec_dir)
 
 	star_target_paths(${star_exec_dir} dummy exec_dir_abs dummy)
 
-	add_executable( agetof
+	add_executable(agetof
 		${exec_dir_abs}/readlink.c
 		${exec_dir_abs}/afexist.F
 		${exec_dir_abs}/afname.F
@@ -946,8 +958,7 @@ function(STAR_ADD_EXECUTABLE_AGETOF star_exec_dir)
 		${exec_dir_abs}/nxtcrd.F
 		${exec_dir_abs}/raw.F
 		${exec_dir_abs}/rw.F
-		${exec_dir_abs}/user.F
-	)
+		${exec_dir_abs}/user.F)
 
 	add_custom_command(TARGET agetof PRE_BUILD
 		COMMAND ${CMAKE_COMMAND} -E copy ${exec_dir_abs}/agetof.def ${CMAKE_CURRENT_BINARY_DIR}
