@@ -33,3 +33,7 @@ if(TARGET gcalor)
 	target_include_directories(gcalor PRIVATE "${STAR_SRC}/asps/Simulation/geant321/include"
 	                                          "${STAR_SRC}/asps/Simulation/starsim/include")
 endif()
+
+if(TARGET StEpcMaker)
+    set_target_properties(StEpcMaker PROPERTIES LINK_LIBRARIES "${CERNLIB_LIBRARIES}")
+endif()
