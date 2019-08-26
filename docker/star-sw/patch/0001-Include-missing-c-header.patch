@@ -1,0 +1,53 @@
+From 94c712a8941bd062160e76491f365eed945c31f9 Mon Sep 17 00:00:00 2001
+From: Dmitri Smirnov <d.s@plexoos.com>
+Date: Mon, 19 Aug 2019 17:42:53 -0400
+Subject: [PATCH 1/4] Include missing c++ header
+
+---
+ StRoot/StPicoEvent/StPicoBEmcPidTraits.h | 2 ++
+ StRoot/StPicoEvent/StPicoBEmcSmdEHit.h   | 2 ++
+ StRoot/StPicoEvent/StPicoBEmcSmdPHit.h   | 2 ++
+ 3 files changed, 6 insertions(+)
+
+diff --git a/StRoot/StPicoEvent/StPicoBEmcPidTraits.h b/StRoot/StPicoEvent/StPicoBEmcPidTraits.h
+index 5fa718f416..ea651e30d5 100644
+--- a/StRoot/StPicoEvent/StPicoBEmcPidTraits.h
++++ b/StRoot/StPicoEvent/StPicoBEmcPidTraits.h
+@@ -9,6 +9,8 @@
+ #ifndef StPicoBEmcPidTraits_h
+ #define StPicoBEmcPidTraits_h
+ 
++#include <limits>
++
+ // ROOT headers
+ #include "TObject.h"
+ 
+diff --git a/StRoot/StPicoEvent/StPicoBEmcSmdEHit.h b/StRoot/StPicoEvent/StPicoBEmcSmdEHit.h
+index e27ec620e0..a1cf79f659 100644
+--- a/StRoot/StPicoEvent/StPicoBEmcSmdEHit.h
++++ b/StRoot/StPicoEvent/StPicoBEmcSmdEHit.h
+@@ -8,6 +8,8 @@
+ #ifndef StPicoBEmcSmdEHit_h
+ #define StPicoBEmcSmdEHit_h
+ 
++#include <limits>
++
+ // ROOT headers
+ #include "TObject.h"
+ 
+diff --git a/StRoot/StPicoEvent/StPicoBEmcSmdPHit.h b/StRoot/StPicoEvent/StPicoBEmcSmdPHit.h
+index c0518ea355..908398b37f 100644
+--- a/StRoot/StPicoEvent/StPicoBEmcSmdPHit.h
++++ b/StRoot/StPicoEvent/StPicoBEmcSmdPHit.h
+@@ -8,6 +8,8 @@
+ #ifndef StPicoBEmcSmdPHit_h
+ #define StPicoBEmcSmdPHit_h
+ 
++#include <limits>
++
+ // ROOT headers
+ #include "TObject.h"
+ 
+-- 
+2.16.1
+

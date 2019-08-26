@@ -1,0 +1,132 @@
+From 0743e572f0ae2ab0ca2ad1568fb9aa56d5729d32 Mon Sep 17 00:00:00 2001
+From: Dmitri Smirnov <d.s@plexoos.com>
+Date: Mon, 19 Aug 2019 17:47:22 -0400
+Subject: [PATCH 4/4] Make internal type public for root5 and gcc5.4 combo
+
+---
+ StRoot/StTofHitMaker/StTofHitMaker.h       | 2 ++
+ StRoot/StTofpMatchMaker/StTofpMatchMaker.h | 2 ++
+ StRoot/StTofrMatchMaker/StTofrMatchMaker.h | 4 +++-
+ StarVMC/StarAgmlLib/AgMaterial.h           | 4 ++++
+ StarVMC/StarAgmlLib/AgPlacement.h          | 2 ++
+ 5 files changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/StRoot/StTofHitMaker/StTofHitMaker.h b/StRoot/StTofHitMaker/StTofHitMaker.h
+index d22def4143..e12ea29d78 100644
+--- a/StRoot/StTofHitMaker/StTofHitMaker.h
++++ b/StRoot/StTofHitMaker/StTofHitMaker.h
+@@ -45,6 +45,7 @@ class StTofHitMaker:public StRTSBaseMaker
+       void fillStEvent();     //! ship collection to StEvent
+       /// TOF Raw hits info. struct
+       ///----------------------------------------------------
++   public:
+       struct TofRawHit {
+         unsigned short fiberid;           /// 0 1 2,3
+         unsigned short trayID;            /// 1,2,......,120,for tray, 121, 122 for upvpd
+@@ -53,6 +54,7 @@ class StTofHitMaker:public StRTSBaseMaker
+         unsigned int   timestamp;         /// data word before unpack
+         unsigned int   triggertimestamp;  /// trigger word before unpack
+      };
++   private:
+      vector<TofRawHit> TofLeadingHits;
+      vector<TofRawHit> TofTrailingHits;
+ 
+diff --git a/StRoot/StTofpMatchMaker/StTofpMatchMaker.h b/StRoot/StTofpMatchMaker/StTofpMatchMaker.h
+index cb1f6807c7..805bb00c39 100644
+--- a/StRoot/StTofpMatchMaker/StTofpMatchMaker.h
++++ b/StRoot/StTofpMatchMaker/StTofpMatchMaker.h
+@@ -126,12 +126,14 @@ private:
+   Bool_t mOuterTrackGeometry; //! use outer track geometry (true) for extrapolation
+   string mHistoFileName; //! name of histogram file, if empty no write-out
+ 
++public:
+   Bool_t validAdc(float const);
+   Bool_t validTdc(float const);
+   Bool_t validEvent(StEvent *);
+   Bool_t validTrack(StTrack*);
+   Bool_t validTofTrack(StTrack*);
+ 
++private:
+   // event counters
+   Int_t mEventCounter;          //! #processed events
+   Int_t mAcceptedEventCounter;  //! #events w/ valid prim.vertex
+diff --git a/StRoot/StTofrMatchMaker/StTofrMatchMaker.h b/StRoot/StTofrMatchMaker/StTofrMatchMaker.h
+index a3c5a44ea3..9fe0f6b75b 100644
+--- a/StRoot/StTofrMatchMaker/StTofrMatchMaker.h
++++ b/StRoot/StTofrMatchMaker/StTofrMatchMaker.h
+@@ -150,6 +150,7 @@ private:
+     void bookHistograms();
+     void writeHistogramsToFile();
+     
++public:
+     Bool_t validAdc(Float_t const);
+     Bool_t validTdc(Float_t const);
+     Bool_t validEvent(StEvent *);
+@@ -164,7 +165,6 @@ private:
+     //y8++ INL Corr moved here
+     float getINLCorr(int boardId, int tdcChanId);
+ 
+-public:
+     Bool_t  doPrintMemoryInfo;     //! 
+     Bool_t  doPrintCpuInfo;        //!
+ 
+@@ -319,6 +319,7 @@ private:
+ #endif
+     typedef idVector::iterator idVectorIter;   
+ 
++public:
+     struct StructCellHit{
+       Int_t channel;
+       Int_t tray;
+@@ -344,6 +345,7 @@ private:
+       Float_t projY;
+       Float_t projZ;
+     };
++private:
+     TRACKTREE trackTree;
+     
+ #ifndef ST_NO_TEMPLATE_DEF_ARGS
+diff --git a/StarVMC/StarAgmlLib/AgMaterial.h b/StarVMC/StarAgmlLib/AgMaterial.h
+index 137dd4ec98..dba41df615 100644
+--- a/StarVMC/StarAgmlLib/AgMaterial.h
++++ b/StarVMC/StarAgmlLib/AgMaterial.h
+@@ -98,12 +98,16 @@ class AgMaterial : public TNamed, public AgParameterList<double>
+   std::vector< TString >  mC;
+   std::vector< Double_t > mA, mZ, mW;
+ 
++ public:
++
+   struct MyComponent {
+ 	  Double_t a;
+ 	  Double_t z;
+ 	  Double_t w;
+   };
+ 
++ protected:
++
+   std::map< TString, MyComponent > mComponentTable; // Table storing already defined components
+ 
+   static std::map< TString, AgMaterial * > mMaterialTable; // List of existing materials  
+diff --git a/StarVMC/StarAgmlLib/AgPlacement.h b/StarVMC/StarAgmlLib/AgPlacement.h
+index b0bedeba4c..ae5cac7d72 100644
+--- a/StarVMC/StarAgmlLib/AgPlacement.h
++++ b/StarVMC/StarAgmlLib/AgPlacement.h
+@@ -59,6 +59,7 @@ class AgPlacement : public TNamed, public AgParameterList<double>
+   //  TString mMother;
+   //  TString mGroup;
+ 
++ public:
+   struct Rotation3 
+   {
+     Double_t alpha;
+@@ -83,6 +84,7 @@ class AgPlacement : public TNamed, public AgParameterList<double>
+     Double_t z;
+     Translation() : x(0), y(0), z(0){ };
+   };
++ protected:
+ 
+   enum { kUnknown, kRot3, kRot6, kRotO };
+   enum { kAlphaX,  kAlphaY, kAlphaZ };
+-- 
+2.16.1
+

@@ -1,0 +1,26 @@
+From cd468a71696352fd48d6dc478e33b2bb9fbc3365 Mon Sep 17 00:00:00 2001
+From: Dmitri Smirnov <d.s@plexoos.com>
+Date: Mon, 19 Aug 2019 17:49:01 -0400
+Subject: [PATCH 2/4] Compare addresses of ostream objects. Equal operator is
+ not defined
+
+---
+ StRoot/TPCCATracker/AliHLTTPCCATrackParamVector.cxx | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/StRoot/TPCCATracker/AliHLTTPCCATrackParamVector.cxx b/StRoot/TPCCATracker/AliHLTTPCCATrackParamVector.cxx
+index 951397020b..ecc952af22 100644
+--- a/StRoot/TPCCATracker/AliHLTTPCCATrackParamVector.cxx
++++ b/StRoot/TPCCATracker/AliHLTTPCCATrackParamVector.cxx
+@@ -597,7 +597,7 @@ std::istream &operator>>( std::istream &in, AliHLTTPCCATrackParamVector &t )
+ 
+ std::ostream &operator<<( std::ostream &out, const AliHLTTPCCATrackParamVector &t )
+ {
+-  if ( out == std::cerr ) {
++  if ( &out == &std::cerr ) {
+     out << "------------------------------ Track Param ------------------------------"
+         << "\n             X: " << t.X()
+         << "\n    SignCosPhi: " << t.SignCosPhi()
+-- 
+2.16.1
+
