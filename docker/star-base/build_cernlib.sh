@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Establish the environment variables for the build procedures
 # Depending on the system, other directories may need to be added to the PATH
@@ -32,13 +32,13 @@ $CVSCOSRC/config/imake_boot
 
 # Install kuipc and the scripts (cernlib, paw and gxint) in $CERN_ROOT/bin
 
-make bin/kuipc > log/kuipc 2>&1
+make bin/kuipc &> ../log/kuipc
 make scripts/Makefile
 cd scripts
-make install.bin > ../log/scripts 2>&1
+make install.bin &> ../../log/scripts
 
 # Install the libraries
 
 cd $CERN_ROOT/build
-make > log/make.`date +%m%d` 2>&1
-make install.include > log/make_install.`date +%m%d` 2>&1
+make &> ../log/make.`date +%m%d`
+make install.include &> ../log/make_install.`date +%m%d`
