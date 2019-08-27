@@ -8,19 +8,22 @@ CERN_LEVEL=2006
 
 CERN=`pwd`
 CERN_ROOT=$CERN/$CERN_LEVEL
+CERN_INCLUDEDIR=$CERN/$CERN_LEVEL/include
 CVSCOSRC=$CERN/$CERN_LEVEL/src
 PATH=$CERN_ROOT/bin:$PATH
 
 export CERN
 export CERN_LEVEL
-export CERN_ROOT 
+export CERN_ROOT
+export CERN_INCLUDEDIR
 export CVSCOSRC
 export PATH
 
 # Create the build directory structure
 
 cd $CERN_ROOT
-mkdir -p build bin lib build/log
+rm -fr build bin lib include
+mkdir -p build bin lib log include
 
 # Create the top level Makefile with imake
 
@@ -38,3 +41,4 @@ make install.bin > ../log/scripts 2>&1
 
 cd $CERN_ROOT/build
 make > log/make.`date +%m%d` 2>&1
+make install.include > log/make_install.`date +%m%d` 2>&1
