@@ -37,6 +37,7 @@ message(STATUS "star-sw: CMAKE_C_FLAGS = \"${CMAKE_C_FLAGS}\"")
 message(STATUS "star-sw: CMAKE_Fortran_FLAGS = \"${CMAKE_Fortran_FLAGS}\"")
 
 star_preinstall_headers(${CMAKE_BINARY_DIR}/include)
+star_preinstall_geo_pams(${CMAKE_BINARY_DIR})
 
 include_directories(
 	${ROOT_INCLUDE_DIR}

@@ -399,6 +399,47 @@ function(STAR_PREINSTALL_HEADERS destination_dir)
 endfunction()
 
 
+
+function(STAR_PREINSTALL_GEO_PAMS destination_dir)
+
+	set(geo_pams_files
+		"${STAR_SRC}/pams/geometry/calbgeo/calbpar.g"
+		"${STAR_SRC}/pams/geometry/calbgeo/etsphit.g"
+		"${STAR_SRC}/pams/geometry/fpdmgeo/ffpdstep.g"
+		"${STAR_SRC}/pams/geometry/fgtdgeo/fgtdgeo.g"
+		"${STAR_SRC}/pams/geometry/fgtdgeo/fgtdgeo1.g"
+		"${STAR_SRC}/pams/geometry/fgtdgeo/fgtdgeo2.g"
+		"${STAR_SRC}/pams/geometry/fhcmgeo/fhcmgeo.g"
+		"${STAR_SRC}/pams/geometry/fpdmgeo/fpdmgeo.g"
+		"${STAR_SRC}/pams/geometry/fstdgeo/fstdgeo.g"
+		"${STAR_SRC}/pams/geometry/gembgeo/gembgeo.g"
+		"${STAR_SRC}/pams/geometry/hpdtgeo/hpdtgeo.g"
+		"${STAR_SRC}/pams/geometry/igtdgeo/igtdgeo.g"
+		"${STAR_SRC}/pams/geometry/istbgeo/istbgeo.g"
+		"${STAR_SRC}/pams/geometry/istbgeo/istbgeo1.g"
+		"${STAR_SRC}/pams/geometry/istbgeo/istbgeo2.g"
+		"${STAR_SRC}/pams/geometry/istbgeo/istbgeo3.g"
+		"${STAR_SRC}/pams/geometry/istbgeo/istbgeo4.g"
+		"${STAR_SRC}/pams/geometry/istbgeo/istbgeo5.g"
+		"${STAR_SRC}/pams/geometry/istbgeo/istbgeo6.g"
+		"${STAR_SRC}/pams/geometry/istbgeo/istbgeo00.g"
+		"${STAR_SRC}/pams/geometry/itspgeo/itspgeo.g"
+		"${STAR_SRC}/pams/geometry/pixlgeo/pixlgeo00.g"
+		"${STAR_SRC}/pams/geometry/pixlgeo/pixlgeo.g"
+		"${STAR_SRC}/pams/geometry/pixlgeo/pixlgeo1.g"
+		"${STAR_SRC}/pams/geometry/pixlgeo/pixlgeo2.g"
+		"${STAR_SRC}/pams/geometry/richgeo/richgeo.g"
+		"${STAR_SRC}/pams/geometry/tpcegeo/tpcegeo.g"
+		"${STAR_SRC}/pams/geometry/wallgeo/wallgeo.g")
+
+	foreach(geo_pams_file ${geo_pams_files})
+		file(RELATIVE_PATH rel_path ${STAR_SRC} ${geo_pams_file})
+		configure_file("${geo_pams_file}" "${destination_dir}/${rel_path}" COPYONLY)
+	endforeach()
+
+endfunction()
+
+
 #
 # Creates ROOT TGeo geometries from xml files
 #
