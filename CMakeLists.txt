@@ -82,6 +82,7 @@ star_add_library_basic(asps/Simulation/gcalor)
 star_add_library(pams/geometry)
 star_add_library(pams/ctf St_ctf)
 star_add_library(pams/sim/g2t St_g2t)
+star_add_library(pams/sim/gstar)
 
 GET_SUBDIRS(star_lib_dirs "StarVMC;StRoot")
 FILTER_LIST(star_lib_dirs EXCLUDE ${STAR_LIB_DIR_BLACKLIST})
