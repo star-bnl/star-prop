@@ -578,23 +578,12 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 		"${starsim_dir_abs}/deccc/cschar.c")
 	FILTER_LIST(starsim_sources EXCLUDE ${starsimlib_EXCLUDE})
 
-	set(starsim_dict ${star_lib_dir_out}/atlroot/atlroot_DictInc.cxx)
-	add_custom_command(
-		OUTPUT ${starsim_dict}
-		COMMAND ${CMAKE_COMMAND} -E make_directory ${star_lib_dir_out}/atlroot
-		COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f  ${starsim_dict} -c -p -D__ROOT__
-		-I${starsim_dir_abs}/atlroot/ agconvert.h aroot.h ${starsim_dir_abs}/atlroot/LinkDef.h
-		DEPENDS ${starsim_dir_abs}/atlroot/agconvert.h
-		        ${starsim_dir_abs}/atlroot/aroot.h
-		        ${starsim_dir_abs}/atlroot/LinkDef.h
-		VERBATIM )
-
 	set(starsim_INCLUDE_DIRECTORIES
 		"${starsim_dir_abs}/include"
 		"${STAR_SRC}/asps/Simulation/geant321/include"
 		"${CERNLIB_INCLUDE_DIRS}")
 
-	add_library(starsimlib STATIC ${starsim_sources} ${starsim_dict})
+	add_library(starsimlib STATIC ${starsim_sources})
 	GET_SUBDIRS(starsim_subdirs ${starsim_dir_abs} INCLUDE_PARENT)
 	target_include_directories(starsimlib PRIVATE ${starsim_subdirs} ${starsim_INCLUDE_DIRECTORIES})
 	set_target_properties(starsimlib PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
