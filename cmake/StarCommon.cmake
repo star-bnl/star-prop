@@ -469,6 +469,7 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 	# available options "RootTGeo" and "GeantGeo". Default is "RootTGeo"
 	if(${ARGV2} STREQUAL "GeantGeo")
 		_star_parse_geoxml_GeantGeo("${geo_xml_files}" ${star_lib_dir_out} geo_sources)
+		list(APPEND geo_sources ${STAR_SRC}/StarVMC/Geometry/Helpers.h)
 	else()
 		# Exclude some xml files
 		FILTER_LIST(geo_xml_files EXCLUDE "Compat")
