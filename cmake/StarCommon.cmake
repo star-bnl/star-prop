@@ -911,8 +911,9 @@ function(STAR_ADD_EXECUTABLE_ROOT4STAR star_exec_dir)
 		DEPENDS  ${exec_dir_abs}/TGeant3/StarMC.h ${exec_dir_abs}/TGeant3/TGiant3.h ${exec_dir_abs}/rexeLinkDef.h
 		VERBATIM )
 
-	target_link_libraries(root4star starsimlib geant321 starsimlib gcalor
+	target_link_libraries(root4star -Wl,--whole-archive starsimlib  -Wl,--no-whole-archive geant321 gcalor
 		${ROOT_LIBRARIES} ${CERNLIB_LIBRARIES} gfortran Xt Xpm X11 Xm dl crypt)
+	set_target_properties(root4star PROPERTIES LINK_FLAGS "-Wl,-export-dynamic")
 
 	install(TARGETS root4star
         RUNTIME DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/bin" OPTIONAL)
