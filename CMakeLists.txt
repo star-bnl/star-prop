@@ -78,6 +78,7 @@ star_add_library_geometry(StarVMC/Geometry xgeometry GeantGeo)
 star_add_library_starsim(asps/Simulation/starsim)
 star_add_library_basic(asps/Simulation/geant321)
 star_add_library_basic(asps/Simulation/gcalor)
+star_add_library_basic(StRoot/StarMagField StarMagFieldNoDict)
 
 star_add_library(pams/geometry)
 star_add_library(pams/ctf St_ctf)

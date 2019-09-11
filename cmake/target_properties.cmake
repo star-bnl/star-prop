@@ -37,3 +37,7 @@ endif()
 if(TARGET StEpcMaker)
     set_target_properties(StEpcMaker PROPERTIES LINK_LIBRARIES "${CERNLIB_LIBRARIES}")
 endif()
+
+if(TARGET StarMagFieldNoDict)
+	target_compile_options(StarMagFieldNoDict PRIVATE "-U__ROOT__")
+endif()
