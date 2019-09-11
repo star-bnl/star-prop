@@ -603,6 +603,17 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 		LIBRARY DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL
 		ARCHIVE DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/lib" OPTIONAL)
 
+	# Build and install starsim executable
+	add_executable(starsim ${starsim_dir_abs}/acmain.cxx)
+
+	target_link_libraries(starsim -Wl,--whole-archive starsimlib -Wl,--no-whole-archive -Wl,-Bdynamic geant321 gcalor
+		 ${CERNLIB_LIBRARIES} X11 nsl crypt dl ${MYSQL_LIBRARIES} pthread z m ssl crypto dl gfortran Xt Xpm X11 m dl rt -rdynamic -pthread m dl rt)
+	set_target_properties(starsim PROPERTIES LINK_FLAGS "-Wl,-export-dynamic")
+
+	install(TARGETS starsim RUNTIME DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/bin" OPTIONAL)
+	install(FILES "${starsim_dir_abs}/atlsim.bank"        DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/bin" RENAME "starsim.bank"        OPTIONAL)
+	install(FILES "${starsim_dir_abs}/atlsim.logon.kumac" DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/bin" RENAME "starsim.logon.kumac" OPTIONAL)
+	install(FILES "${starsim_dir_abs}/atlsim.makefile"    DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/bin" RENAME "starsim.makefile"    OPTIONAL)
 endfunction()
 
 
