@@ -572,9 +572,9 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 
 	set(starsim_sources ${cxx_files} ${c_files} ${f_files} ${f_g_files} ${f_age_files})
 	set(starsimlib_EXCLUDE
+		"atlroot"
 		"${starsim_dir_abs}/acmain.cxx"
 		"${starsim_dir_abs}/dzdoc/dzddiv.F"
-		"${starsim_dir_abs}/atlroot/atlrootDict.cxx"
 		"${starsim_dir_abs}/deccc/cschar.c")
 	FILTER_LIST(starsim_sources EXCLUDE ${starsimlib_EXCLUDE})
 
