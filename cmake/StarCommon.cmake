@@ -581,6 +581,7 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 	set(starsim_INCLUDE_DIRECTORIES
 		"${starsim_dir_abs}/include"
 		"${STAR_SRC}/asps/Simulation/geant321/include"
+		"${STAR_SRC}/asps/Simulation/gcalor/include"
 		"${CERNLIB_INCLUDE_DIRS}")
 
 	add_library(starsimlib STATIC ${starsim_sources})
