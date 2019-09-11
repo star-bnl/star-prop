@@ -482,11 +482,7 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 		LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out}
 		PUBLIC_HEADER "${geo_headers}")
 
-	if(${ARGV2} STREQUAL "GeantGeo")
-		# The geometry library is built from ${STAR_SRC}/pams/geometry. Not to be confused with
-		# the geometry_Tables build from *.idl files in the same directory
-		target_link_libraries(${star_lib_name} geometry)
-	else()
+	if(${ARGV2} STREQUAL "RootTGeo")
 		# Generate the _dict.cxx file for the library
 		star_generate_dictionary(${star_lib_name} ${star_lib_dir_out} ${star_lib_dir_out}
 			LINKDEF_HEADERS ${geo_headers} #${geo_headers_orig}
