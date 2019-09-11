@@ -57,6 +57,7 @@ set(STAR_LIB_DIR_BLACKLIST
 	StarVMC/geant3            # how is it used?
 	StarVMC/GeoTestMaker      # blacklisted in cons
 	StarVMC/minicern          # provided by ROOT
+	StarVMC/StarAgmlUtil
 	StarVMC/StarBASE
 	StarVMC/StarGeometry      # library built from StarVMC/Geometry
 	StarVMC/StarSim
