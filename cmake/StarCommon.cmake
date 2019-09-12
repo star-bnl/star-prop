@@ -22,16 +22,9 @@ find_program(ROOT_DICTGEN_EXECUTABLE NAMES rootcling rootcint HINTS $ENV{ROOTSYS
 # Define common STAR_ and CMAKE_ variables used to build the STAR code
 
 # -D__ROOT__ is used by classes in StarClassLibrary guarding calls to ClassDef() macro
-# -D_UCMLOGGER_ is used in StStarLogger
 # -DNEW_DAQ_READER is used in StTofHitMaker
-# -Df2cFortran required by starsim and cern/pro/include/cfortran/cfortran.h
-set(STAR_C_CXX_DEFINITIONS "-D__ROOT__ -D_UCMLOGGER_ -DNEW_DAQ_READER -Df2cFortran")
-# CPP_DATE, CPP_TIME, CPP_TITLE_CH, and CPP_VERS are used by gcalor and by asps/Simulation/starsim/aversion.F
-# CERNLIB_CG is used by asps/Simulation/geant321/gdraw/gdcota.F
-# CERNLIB_COMIS is used by asps/Simulation/geant321/gxint/gxcs.F
-# GFORTRAN is used by asps/Simulation/starsim/atmain/etime.F
-set(STAR_Fortran_DEFINITIONS "-DCERNLIB_TYPE -DCERNLIB_DOUBLE -DCERNLIB_NOQUAD -DCERNLIB_LINUX \
--DCPP_DATE=0 -DCPP_TIME=0 -DCPP_TITLE_CH=\"'dummy'\" -DCPP_VERS=\"'dummy'\" -DCERNLIB_CG -DCERNLIB_COMIS -DGFORTRAN")
+set(STAR_C_CXX_DEFINITIONS "-D__ROOT__ -DNEW_DAQ_READER")
+set(STAR_Fortran_DEFINITIONS "-DCERNLIB_TYPE -DCERNLIB_DOUBLE -DCERNLIB_NOQUAD -DCERNLIB_LINUX")
 set(STAR_Fortran_FLAGS "-fd-lines-as-code -std=legacy -fno-second-underscore -fno-automatic")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STAR_C_CXX_DEFINITIONS}")
