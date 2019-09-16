@@ -41,3 +41,7 @@ endif()
 if(TARGET StarMagFieldNoDict)
 	target_compile_options(StarMagFieldNoDict PRIVATE "-U__ROOT__")
 endif()
+
+if(TARGET xgeometry)
+	set_target_properties(xgeometry PROPERTIES LINK_LIBRARIES StarMagFieldNoDict)
+endif()
