@@ -24,7 +24,7 @@ find_program(ROOT_DICTGEN_EXECUTABLE NAMES rootcling rootcint HINTS $ENV{ROOTSYS
 # -D__ROOT__ is used by classes in StarClassLibrary guarding calls to ClassDef() macro
 # -DNEW_DAQ_READER is used in StTofHitMaker
 set(STAR_C_CXX_DEFINITIONS "-D__ROOT__ -DNEW_DAQ_READER")
-set(STAR_Fortran_DEFINITIONS "-DCERNLIB_TYPE -DCERNLIB_DOUBLE -DCERNLIB_NOQUAD -DCERNLIB_LINUX")
+set(STAR_Fortran_DEFINITIONS "-DCERNLIB_TYPE")
 set(STAR_Fortran_FLAGS "-fd-lines-as-code -std=legacy -fno-second-underscore -fno-automatic")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STAR_C_CXX_DEFINITIONS}")
