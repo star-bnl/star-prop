@@ -574,7 +574,7 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 	set(starsimlib_EXCLUDE
 		"atlroot"
 		"${starsim_dir_abs}/acmain.cxx"
-		"${starsim_dir_abs}/deccc/cschar.c")
+		"${starsim_dir_abs}/comis/cschar.F")
 	FILTER_LIST(starsim_sources EXCLUDE ${starsimlib_EXCLUDE})
 
 	set(starsim_INCLUDE_DIRECTORIES
