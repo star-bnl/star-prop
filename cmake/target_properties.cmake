@@ -28,7 +28,16 @@ endif()
 # CERNLIB_COMIS is used by asps/Simulation/geant321/gxint/gxcs.F
 if(TARGET geant321)
 	target_include_directories(geant321 PRIVATE "${STAR_SRC}/asps/Simulation/starsim/include")
-	target_compile_options(geant321 PRIVATE -DCERNLIB_CG -DCERNLIB_COMIS)
+	target_compile_options(geant321 PRIVATE
+		-DCERNLIB_BSLASH
+		-DCERNLIB_CG
+		-DCERNLIB_COMIS
+		-DCERNLIB_CZ
+		-DCERNLIB_DOUBLE
+		-DCERNLIB_DZDOC
+		-DCERNLIB_HIGZ
+		-DCERNLIB_LINUX
+		-DCERNLIB_TYPE)
 endif()
 
 # CPP_DATE, CPP_TIME, CPP_TITLE_CH, and CPP_VERS are used by gcalor library
@@ -46,7 +55,18 @@ endif()
 if(TARGET starsimlib)
 	target_compile_options(starsimlib PRIVATE
 		-DCPP_DATE=${STAR_BUILD_DATE} -DCPP_TIME=${STAR_BUILD_TIME} -DCPP_TITLE_CH="starsim" -DCPP_VERS="W"
-		-DGFORTRAN -Df2cFortran)
+		-DGFORTRAN -Df2cFortran -DWithoutPGI
+		-DCERNLIB_BSLASH
+		-DCERNLIB_CG
+		-DCERNLIB_DZDOC
+		-DCERNLIB_GCALOR
+		-DCERNLIB_HADRON
+		-DCERNLIB_HIGZ
+		-DCERNLIB_LINUX
+		-DCERNLIB_MYSQL
+		-DCERNLIB_NONEWL
+		-DCERNLIB_SHL
+		-DCERNLIB_TYPE)
 endif()
 
 if(TARGET StEpcMaker)
