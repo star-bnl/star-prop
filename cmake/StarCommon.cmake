@@ -21,6 +21,9 @@ find_program(ROOT_DICTGEN_EXECUTABLE NAMES rootcling rootcint HINTS $ENV{ROOTSYS
 
 # Define common STAR_ and CMAKE_ variables used to build the STAR code
 
+string(TIMESTAMP STAR_BUILD_DATE "%y%m%d")
+string(TIMESTAMP STAR_BUILD_TIME "%H%M")
+
 # -D__ROOT__ is used by classes in StarClassLibrary guarding calls to ClassDef() macro
 # -DNEW_DAQ_READER is used in StTofHitMaker
 set(STAR_C_CXX_DEFINITIONS "-D__ROOT__ -DNEW_DAQ_READER")

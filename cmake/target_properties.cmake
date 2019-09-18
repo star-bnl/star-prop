@@ -36,7 +36,7 @@ if(TARGET gcalor)
 	target_include_directories(gcalor PRIVATE "${STAR_SRC}/asps/Simulation/geant321/include"
 	                                          "${STAR_SRC}/asps/Simulation/starsim/include")
 	target_compile_options(gcalor PRIVATE
-		-DCPP_DATE=0 -DCPP_TIME=0 -DCPP_TITLE_CH="dummy" -DCPP_VERS="dummy")
+		-DCPP_DATE=${STAR_BUILD_DATE} -DCPP_TIME=${STAR_BUILD_TIME} -DCPP_TITLE_CH="gcalor" -DCPP_VERS="W")
 endif()
 
 # CPP_DATE, CPP_TIME, CPP_TITLE_CH, and CPP_VERS are used by starsim library
@@ -45,7 +45,7 @@ endif()
 # f2cFortran is used by starsim and cern/pro/include/cfortran/cfortran.h
 if(TARGET starsimlib)
 	target_compile_options(starsimlib PRIVATE
-		-DCPP_DATE=0 -DCPP_TIME=0 -DCPP_TITLE_CH="dummy" -DCPP_VERS="dummy"
+		-DCPP_DATE=${STAR_BUILD_DATE} -DCPP_TIME=${STAR_BUILD_TIME} -DCPP_TITLE_CH="starsim" -DCPP_VERS="W"
 		-DGFORTRAN -Df2cFortran)
 endif()
 
