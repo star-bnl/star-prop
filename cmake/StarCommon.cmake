@@ -25,7 +25,7 @@ find_program(ROOT_DICTGEN_EXECUTABLE NAMES rootcling rootcint HINTS $ENV{ROOTSYS
 # -DNEW_DAQ_READER is used in StTofHitMaker
 set(STAR_C_CXX_DEFINITIONS "-D__ROOT__ -DNEW_DAQ_READER")
 set(STAR_Fortran_DEFINITIONS "-DCERNLIB_TYPE")
-set(STAR_Fortran_FLAGS "-fd-lines-as-code -std=legacy -fno-second-underscore -fno-automatic")
+set(STAR_Fortran_FLAGS "-std=legacy -fno-second-underscore -fno-automatic")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STAR_C_CXX_DEFINITIONS}")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${STAR_C_CXX_DEFINITIONS}")
