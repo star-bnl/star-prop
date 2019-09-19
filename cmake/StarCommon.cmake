@@ -624,12 +624,15 @@ function(STAR_ADD_LIBRARY_BASIC star_lib_dir)
 		set(star_lib_name ${user_lib_name})
 	endif()
 
+	# Deal with sources
+	GET_EXCLUDE_LIST(${star_lib_name} star_lib_exclude)
+
 	file(GLOB_RECURSE cxx_files "${star_lib_dir_abs}/*.cxx")
-	FILTER_LIST(cxx_files EXCLUDE ${${star_lib_name}_EXCLUDE})
+	FILTER_LIST(cxx_files EXCLUDE ${star_lib_exclude})
 	file(GLOB_RECURSE c_files "${star_lib_dir_abs}/*.c")
-	FILTER_LIST( c_files EXCLUDE ${${star_lib_name}_EXCLUDE} )
+	FILTER_LIST(c_files EXCLUDE ${star_lib_exclude} )
 	file(GLOB_RECURSE f_files "${star_lib_dir_abs}/*.F")
-	FILTER_LIST( f_files EXCLUDE ${${star_lib_name}_EXCLUDE} )
+	FILTER_LIST(f_files EXCLUDE ${star_lib_exclude})
 	# Also find all *.g and *.age files. They need to be processed with agetof
 	file(GLOB_RECURSE g_files "${star_lib_dir_abs}/*.g")
 	star_process_g("${g_files}" ${star_lib_dir_out} f_g_files)
