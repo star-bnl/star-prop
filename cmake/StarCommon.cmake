@@ -660,7 +660,6 @@ function(STAR_ADD_LIBRARY_TABLE star_lib_dir)
 	set(star_lib_name ${star_lib_name}_Tables)
 
 	file(GLOB_RECURSE idl_files ${star_lib_dir_abs}/idl/*.idl)
-	FILTER_LIST(idl_files EXCLUDE ${${star_lib_name}_EXCLUDE})
 	star_process_idl("${idl_files}" "" "${star_lib_dir_out}" sources_idl headers_idl)
 
 	add_library(${star_lib_name} ${sources_idl})
@@ -1021,7 +1020,6 @@ set(StEStructPool_LINKDEF_HEADERS
 	"${PROJECT_SOURCE_DIR}/star-aux/StArray_cint.h")
 
 set(St_base_EXCLUDE "StRoot/St_base/St_staf_dummies.c")
-set(StDb_Tables_EXCLUDE "StDb/idl/tpcDedxPidAmplDb.idl")
 set(geant321_EXCLUDE
 	"asps/Simulation/geant321/doc"
 	"asps/Simulation/geant321/gxuser")
