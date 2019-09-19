@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.6 FATAL_ERROR)
 
-project(star-sw
-	DESCRIPTION "Software for the STAR Experiment at Relativistic Heavy Ion Collider"
-	HOMEPAGE_URL "https://gitlab.com/star-bnl"
-	LANGUAGES C CXX Fortran)
+project(star-sw LANGUAGES C CXX Fortran)
 
 set(STAR_SRC "$ENV{STAR}" CACHE PATH "Path to star software source code")
 
