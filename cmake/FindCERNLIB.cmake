@@ -24,8 +24,17 @@ endif()
 
 set(CERNLIB_LIBRARIES)
 foreach(_cernlib ${_cernlibs})
+
+	set(_cernlib_names "${_cernlib}")
+
+	# Search for lapack under a different name. This is relevant for STAR
+	# experiment setup where lapack3 comes from CERNLIB_ROOT location
+	if(_cernlib STREQUAL "lapack")
+		set(_cernlib_names "lapack" "lapack3")
+	endif()
+
 	find_library(CERNLIB_${_cernlib}_LIBRARY
-		NAMES ${_cernlib}
+		NAMES ${_cernlib_names}
 		PATHS "${CERNLIB_ROOT}"
 		PATH_SUFFIXES lib)
 
