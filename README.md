@@ -59,3 +59,18 @@ The STAR software also depends on the following external packages/libraries:
     make install
 
 where `[N]` is the number of compile jobs to run simultaneously, e.g. set it to`$(nproc)`.
+
+
+# Release Notes
+
+Highlighted features of the past and planned releases.
+
+__Next proposed features__
+
+- Revisit `cvs2git` scripts and move them to this repository
+- Implement basic CI based on STAR nightly tests
+
+__0.1.0__
+
+- Support build of all STAR libraries needed to run reconstruction and embedding
+  jobs
