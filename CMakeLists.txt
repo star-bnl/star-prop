@@ -5,9 +5,6 @@ project(star-sw
 	HOMEPAGE_URL "https://gitlab.com/star-bnl"
 	LANGUAGES C CXX Fortran)
 
-# FindCERNLIB.cmake uses CERNLIB_ROOT
-cmake_policy(SET CMP0074 NEW)
-
 set(STAR_SRC "$ENV{STAR}" CACHE PATH "Path to star software source code")
 
 # Add to path in order to pick up the FindXXX.cmake files included in this project
