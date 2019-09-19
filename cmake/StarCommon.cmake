@@ -1019,7 +1019,6 @@ set(StEvent_LINKDEF_HEADERS
 set(StEStructPool_LINKDEF_HEADERS
 	"${PROJECT_SOURCE_DIR}/star-aux/StArray_cint.h")
 
-set(St_base_EXCLUDE "StRoot/St_base/St_staf_dummies.c")
 set(geant321_EXCLUDE
 	"asps/Simulation/geant321/doc"
 	"asps/Simulation/geant321/gxuser")
