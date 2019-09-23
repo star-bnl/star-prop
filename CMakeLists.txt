@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.6 FATAL_ERROR)
 
+find_program(CCACHE_EXECUTABLE ccache)
+if(CCACHE_EXECUTABLE)
+	set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CCACHE_EXECUTABLE})
+	set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ${CCACHE_EXECUTABLE})
+endif()
+
 project(star-sw LANGUAGES C CXX Fortran)
 
 set(STAR_SRC "$ENV{STAR}" CACHE PATH "Path to star software source code")
