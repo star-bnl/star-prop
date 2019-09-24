@@ -5,6 +5,10 @@
 # LOG4CXX_INCLUDE_DIR - the liblog4cxx include directory
 # LOG4CXX_LIBRARIES - liblog4cxx library
 
+# First search for log4cxx installed in STAR environment on RACF cluster
+FIND_PATH(LOG4CXX_INCLUDE_DIR  NAMES logger.h PATHS $ENV{OPTSTAR} PATH_SUFFIXES include/log4cxx NO_DEFAULT_PATH)
+FIND_LIBRARY(LOG4CXX_LIBRARIES NAMES log4cxx  PATHS $ENV{OPTSTAR} PATH_SUFFIXES lib NO_DEFAULT_PATH)
+
 FIND_PATH(LOG4CXX_INCLUDE_DIR logger.h PATH_SUFFIXES log4cxx PATHS /opt/local/include ${LOG4CXX_ROOT}/include)
 FIND_LIBRARY(LOG4CXX_LIBRARIES NAMES log4cxx log4cxxd PATHS /opt/local/lib ${LOG4CXX_ROOT}/lib)
 
