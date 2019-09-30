@@ -1,0 +1,49 @@
+From 59168b26bd3219b8afb6d9dfaf9085238a92552a Mon Sep 17 00:00:00 2001
+From: smirnovd <>
+Date: Wed, 3 Jan 2018 21:23:36 +0000
+Subject: [PATCH] StKFVertexMaker: Added missing include
+
+---
+ StRoot/StiMaker/StKFVertexMaker.h | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/StRoot/StiMaker/StKFVertexMaker.h b/StRoot/StiMaker/StKFVertexMaker.h
+index a9aea84e09..2b4a82396e 100644
+--- a/StRoot/StiMaker/StKFVertexMaker.h
++++ b/StRoot/StiMaker/StKFVertexMaker.h
+@@ -1,4 +1,4 @@
+-// $Id: StKFVertexMaker.h,v 2.4 2014/08/06 11:43:59 jeromel Exp $
++// $Id: StKFVertexMaker.h,v 2.5 2018/01/03 21:23:36 smirnovd Exp $
+ 
+ #ifndef STAR_StKFVertexMaker
+ #define STAR_StKFVertexMaker
+@@ -21,6 +21,7 @@
+ #include "Math/GSLMinimizer1D.h"
+ #include "StEnumerations.h"
+ #include "TCanvas.h"
++#include "TH1K.h"
+ class StPrimaryVertex;
+ class StEvent;
+ class StDcaGeometry;
+@@ -71,7 +72,7 @@ class StKFVertexMaker : public StMaker {
+   TCanvas                 *fc1;
+   /// Displayed on session exit, leave it as-is please ...
+   virtual const char *GetCVS() const {
+-    static const char cvs[]="Tag $Name:  $ $Id: StKFVertexMaker.h,v 2.4 2014/08/06 11:43:59 jeromel Exp $ built " __DATE__ " " __TIME__ ; 
++    static const char cvs[]="Tag $Name:  $ $Id: StKFVertexMaker.h,v 2.5 2018/01/03 21:23:36 smirnovd Exp $ built " __DATE__ " " __TIME__ ; 
+     return cvs;
+   }
+ 
+@@ -79,6 +80,9 @@ class StKFVertexMaker : public StMaker {
+ };
+ #endif
+ // $Log: StKFVertexMaker.h,v $
++// Revision 2.5  2018/01/03 21:23:36  smirnovd
++// StKFVertexMaker: Added missing include
++//
+ // Revision 2.4  2014/08/06 11:43:59  jeromel
+ // Suffix on literals need to be space (later gcc compiler makes it an error) - first wave of fixes
+ //
+-- 
+2.16.1
+

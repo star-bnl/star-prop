@@ -1,0 +1,16 @@
+From b9dbd7a92caa169bf1c1adc863f925e195941207 Mon Sep 17 00:00:00 2001
+From: smirnovd <>
+Date: Thu, 19 Sep 2019 14:56:15 +0000
+Subject: [PATCH] Remove empty file
+
+---
+ StDb/idl/tpcDedxPidAmplDb.idl | 0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ delete mode 100644 StDb/idl/tpcDedxPidAmplDb.idl
+
+diff --git a/StDb/idl/tpcDedxPidAmplDb.idl b/StDb/idl/tpcDedxPidAmplDb.idl
+deleted file mode 100644
+index e69de29bb2..0000000000
+-- 
+2.16.1
+
