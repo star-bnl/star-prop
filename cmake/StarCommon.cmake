@@ -584,7 +584,7 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 	add_executable(starsim ${starsim_dir_abs}/acmain.cxx)
 
 	target_link_libraries(starsim -Wl,--whole-archive starsimlib -Wl,--no-whole-archive -Wl,-Bdynamic geant321 gcalor
-		 ${CERNLIB_LIBRARIES} X11 nsl crypt dl ${MYSQL_LIBRARIES} pthread z m ssl crypto dl gfortran Xt Xpm X11 m dl rt -rdynamic -pthread m dl rt)
+		 ${CERNLIB_LIBRARIES} ${MYSQL_LIBRARIES} gfortran Xt Xpm X11 z m rt dl crypt)
 	set_target_properties(starsim PROPERTIES LINK_FLAGS "-Wl,-export-dynamic")
 
 	install(TARGETS starsim RUNTIME DESTINATION "${STAR_ADDITIONAL_INSTALL_PREFIX}/bin" OPTIONAL)
