@@ -52,7 +52,7 @@ endforeach()
 # Although not checked explicitly the hope is that the other header files (e.g.
 # paw/paw.h) are in the same parent directory
 find_path(CERNLIB_INCLUDE_DIRS
-	NAMES "cfortran/cfortran.h"
+	NAMES comis/pilot.h zebra/pilot.h paw/pilot.h
 	PATHS "${CERNLIB_ROOT}"
 	PATH_SUFFIXES include)
 
