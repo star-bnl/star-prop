@@ -55,6 +55,22 @@ foreach(black ${_star_blacklisted_libs})
 	list(APPEND STAR_BLACKLISTED_LIB_DIRS ${black})
 endforeach()
 
+
+# Applies patches found in `patch` subdirectory only to $STAR_SRC code checked
+# out from a git repository.
+function(STAR_APPLY_PATCH)
+	if(STAR_PATCH AND NOT EXISTS ${STAR_SRC}/.git)
+		message(WARNING "StarCommon: Patchset ${STAR_PATCH} is not applied. ${STAR_SRC} is not a Git repository")
+		return()
+	endif()
+
+	if(NOT STAR_PATCH STREQUAL STAR_PATCH_APPLIED)
+		execute_process(COMMAND ${PROJECT_SOURCE_DIR}/scripts/apply_patch.py ${STAR_SRC} ${STAR_PATCH} OUTPUT_FILE patch.out ERROR_FILE patch.out)
+		set(STAR_PATCH_APPLIED "${STAR_PATCH}" CACHE STRING "Applied patch ID" FORCE)
+	endif()
+endfunction()
+
+
 #
 # Preselects all header files found in a `star_lib_dir` directory to be used by
 # rootcint/rootcling during ROOT dictionary creation. The list is put into the

@@ -30,6 +30,9 @@ message(STATUS "star-sw: CMAKE_CXX_FLAGS = \"${CMAKE_CXX_FLAGS}\"")
 message(STATUS "star-sw: CMAKE_C_FLAGS = \"${CMAKE_C_FLAGS}\"")
 message(STATUS "star-sw: CMAKE_Fortran_FLAGS = \"${CMAKE_Fortran_FLAGS}\"")
 
+set(STAR_PATCH "NO" CACHE STRING "Requested patch ID")
+star_apply_patch()
+
 star_preinstall_headers(${CMAKE_BINARY_DIR}/include)
 star_preinstall_geo_pams(${CMAKE_BINARY_DIR})
 
