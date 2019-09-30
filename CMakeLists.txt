@@ -87,7 +87,14 @@ foreach(star_lib_dir ${star_lib_dirs})
 	star_add_library(${star_lib_dir})
 endforeach()
 
-include("cmake/target_dependencies.cmake")
+# Generate cmake file with library dependencies
+set(STAR_TARGET_DEPENDENCIES_FILE ${CMAKE_CURRENT_BINARY_DIR}/target_dependencies.cmake)
+if(NOT EXISTS ${STAR_TARGET_DEPENDENCIES_FILE})
+	execute_process(COMMAND ${PROJECT_SOURCE_DIR}/scripts/dep_scan.py ${STAR_SRC}
+		OUTPUT_FILE ${STAR_TARGET_DEPENDENCIES_FILE})
+endif()
+
+include(${STAR_TARGET_DEPENDENCIES_FILE})
 include("cmake/target_properties.cmake")
 
 
