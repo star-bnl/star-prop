@@ -48,44 +48,12 @@ if(DEFINED ENV{STAR_HOST_SYS})
 	set(STAR_ADDITIONAL_INSTALL_PREFIX ".$ENV{STAR_HOST_SYS}")
 endif()
 
-
-set(STAR_LIB_DIR_BLACKLIST
-	StarVMC/geant3            # official geant3 is in asps/Simulation/geant321
-	StarVMC/GeoTestMaker      # blacklisted in cons
-	StarVMC/minicern          # outdated build as StarMiniCern. Also provided by ROOT
-	StarVMC/StarAgmlUtil      # built as basic library without ROOT dictionaries
-	StarVMC/StarBASE
-	StarVMC/StarGeometry      # library built from StarVMC/Geometry
-	StarVMC/StarSim
-	StarVMC/StarVMCApplication
-	StarVMC/StVMCMaker
-	StarVMC/StVmcTools
-	StarVMC/xgeometry         # library built from StarVMC/Geometry
-	StRoot/html               # not a library
-	StRoot/macros             # not a library
-	StRoot/qainfo             # not a library
-	StRoot/StAngleCorrMaker   # blacklisted in cons
-	StRoot/StarGenerator      # mostly external MC generators
-	StRoot/StDaqClfMaker      # blacklisted in cons
-	StRoot/StEbye2ptMaker     # blacklisted in cons
-	StRoot/StEbyePool         # blacklisted in cons
-	StRoot/StEbyeScaTagsMaker # blacklisted in cons
-	StRoot/StEEmcPool         # requires subdir processing
-	StRoot/StFgtPool          # blacklisted in cons
-	StRoot/StFlowMaker        # missing from lib/
-	StRoot/StFtpcV0Maker      # blacklisted in cons
-	StRoot/St_geom_Maker      # requires qt4/include/QtGui
-	StRoot/StHbtMaker         # fortran error
-	StRoot/StHighptPool       # blacklisted in cons
-	StRoot/StJetFinder        # needs FindFastJet.cmake
-	StRoot/StJetMaker
-	StRoot/StShadowMaker      # blacklisted in cons, crypted code
-	StRoot/StSpinMaker        # blacklisted in cons, error in fortran code
-	StRoot/StSpinPool         # blacklisted in cons
-	StRoot/StStrangePool      # blacklisted in cons
-	StRoot/StTofPool          # missing from lib/
-)
-
+# Read blacklisted directories from a file into a list
+file(STRINGS "${PROJECT_SOURCE_DIR}/cmake/blacklisted_lib_dirs.txt" _star_blacklisted_libs)
+foreach(black ${_star_blacklisted_libs})
+	string(REGEX REPLACE "^([^ ]+).*" "\\1" black ${black})
+	list(APPEND STAR_BLACKLISTED_LIB_DIRS ${black})
+endforeach()
 
 #
 # Preselects all header files found in a `star_lib_dir` directory to be used by

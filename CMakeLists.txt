@@ -81,7 +81,7 @@ star_add_library(pams/sim/g2t St_g2t)
 star_add_library(pams/sim/gstar)
 
 GET_SUBDIRS(star_lib_dirs "StarVMC;StRoot")
-FILTER_LIST(star_lib_dirs EXCLUDE ${STAR_LIB_DIR_BLACKLIST})
+FILTER_LIST(star_lib_dirs EXCLUDE ${STAR_BLACKLISTED_LIB_DIRS})
 
 foreach(star_lib_dir ${star_lib_dirs})
 	star_add_library(${star_lib_dir})
