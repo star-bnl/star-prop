@@ -34,37 +34,37 @@ import sys
 
 lib_blacklist = set([
     # StarVMC
-    "GeoTestMaker",
-    "minicern",
-    "StarBASE",
-    "StarGeometry",
-    "StarSim",
-    "StarVMCApplication",
-    "StVMCMaker",
-    "StVmcTools",
-    "xgeometry",
+    "StarVMC/GeoTestMaker",
+    "StarVMC/minicern",
+    "StarVMC/StarBASE",
+    "StarVMC/StarGeometry",
+    "StarVMC/StarSim",
+    "StarVMC/StarVMCApplication",
+    "StarVMC/StVMCMaker",
+    "StarVMC/StVmcTools",
+    "StarVMC/xgeometry",
 
     # StRoot
-    "macros",
-    "StarGenerator",
-    "StEEmcPool",
-    "StFgtPool",
-    "StFlowMaker",
-    "St_geom_Maker",
-    "StHbtMaker",
-    "StHighptPool",
-    "StJetMaker",
-    "StJetFinder",
-    "StSpinMaker",
-    "StSpinPool",
-    "StTofPool",
+    "StRoot/macros",
+    "StRoot/StarGenerator",
+    "StRoot/StEEmcPool",
+    "StRoot/StFgtPool",
+    "StRoot/StFlowMaker",
+    "StRoot/St_geom_Maker",
+    "StRoot/StHbtMaker",
+    "StRoot/StHighptPool",
+    "StRoot/StJetMaker",
+    "StRoot/StJetFinder",
+    "StRoot/StSpinMaker",
+    "StRoot/StSpinPool",
+    "StRoot/StTofPool",
 ])
 
 def scan_libs(src_root, relpath):
     with os.scandir(os.path.join(src_root, relpath)) as scan:
         dirs = filter(lambda entry: entry.is_dir(), scan)
         libs = [_dir.name for _dir in dirs]
-    libs = filter(lambda libname: libname not in lib_blacklist, libs)
+    libs = filter(lambda libname: os.path.join(relpath, libname) not in lib_blacklist, libs)
     return dict([(libname, os.path.join(relpath, libname)) for libname in libs])
 
 def is_source_ext(filename):
