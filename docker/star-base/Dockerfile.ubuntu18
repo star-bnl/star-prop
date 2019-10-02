@@ -1,0 +1,54 @@
+FROM ubuntu:18.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+WORKDIR /tmp
+
+# Install system packages
+COPY packages packages
+RUN apt-get update -qq \
+ && apt-get -y install $(cat packages) \
+ && apt-get clean \
+ && Rscript -e 'install.packages(c("RInside","Rcpp"), repos="https://cran.r-project.org")' \
+ && localedef -i en_US -f UTF-8 en_US.UTF-8 \
+ && rm -rf /var/lib/apt/lists/* /tmp/* /packages
+
+# Install python3.7 from a PPA and link python3 to it
+RUN apt update \
+ && apt install -y software-properties-common \
+ && add-apt-repository ppa:deadsnakes/ppa \
+ && apt update \
+ && apt install -y python3.7 \
+ && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1
+
+# Install python module used by STAR software
+RUN pip install pyparsing
+
+# Install newer version of CMake
+RUN curl https://cmake.org/files/v3.15/cmake-3.15.2.tar.gz | tar -xz -C /tmp \
+ && cd /tmp/cmake-3.15.2 && ./bootstrap && make -j $(nproc) && make install \
+ && rm -fr /tmp/*
+
+# Install ROOT5
+RUN curl https://root.cern.ch/download/root_v5.34.38.source.tar.gz | tar -xz -C /tmp \
+ && mv /tmp/root /tmp/root-5-34-38 \
+ && mkdir /tmp/root-build && cd /tmp/root-build \
+ && cmake /tmp/root-5-34-38 \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -Drpath=ON \
+    -Dtable=ON \
+    -Dpythia6=ON \
+    -Dpythia6_nolink=ON \
+    -Dvc=ON \
+ && make -j $(nproc) \
+ && make install \
+ && rm -fr /tmp/*
+
+# Install CERNLIB
+WORKDIR /cern
+COPY cernlib_2006.patch cernlib_2006.patch
+COPY build_cernlib.sh build_cernlib.sh
+RUN curl https://cernlib.web.cern.ch/cernlib/download/2006_source/tar/2006_src.tar.gz | tar -xz -C /cern \
+ && patch -p0 < /cern/cernlib_2006.patch \
+ && ./build_cernlib.sh \
+ && rm -fr /cern/2006/src /cern/2006/log /cern/2006/build
