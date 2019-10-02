@@ -11,6 +11,14 @@ RUN apt-get update -qq \
  && localedef -i en_US -f UTF-8 en_US.UTF-8 \
  && rm -rf /var/lib/apt/lists/* /tmp/* /packages
 
+# Install python3.7 from a PPA and link python3 to it
+RUN apt update \
+ && apt install -y software-properties-common \
+ && add-apt-repository ppa:deadsnakes/ppa \
+ && apt update \
+ && apt install -y python3.7 \
+ && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1
+
 # Install python module used by STAR software
 RUN pip install pyparsing
 
