@@ -32,33 +32,15 @@ import os
 import re
 import sys
 
-lib_blacklist = set([
-    # StarVMC
-    "StarVMC/GeoTestMaker",
-    "StarVMC/minicern",
-    "StarVMC/StarBASE",
-    "StarVMC/StarGeometry",
-    "StarVMC/StarSim",
-    "StarVMC/StarVMCApplication",
-    "StarVMC/StVMCMaker",
-    "StarVMC/StVmcTools",
-    "StarVMC/xgeometry",
+def read_blacklist():
+    file_blacklist = os.path.join(os.path.dirname(__file__), '../cmake/blacklisted_lib_dirs.txt')
+    with open(file_blacklist) as f:
+        lib_blacklist = f.readlines()
+    # Remove comments at the end of each line and surrounding whitespace
+    lib_blacklist = [(re.sub("#.*$", "", x)).strip() for x in lib_blacklist]
+    return lib_blacklist
 
-    # StRoot
-    "StRoot/macros",
-    "StRoot/StarGenerator",
-    "StRoot/StEEmcPool",
-    "StRoot/StFgtPool",
-    "StRoot/StFlowMaker",
-    "StRoot/St_geom_Maker",
-    "StRoot/StHbtMaker",
-    "StRoot/StHighptPool",
-    "StRoot/StJetMaker",
-    "StRoot/StJetFinder",
-    "StRoot/StSpinMaker",
-    "StRoot/StSpinPool",
-    "StRoot/StTofPool",
-])
+lib_blacklist = set(read_blacklist())
 
 def scan_libs(src_root, relpath):
     with os.scandir(os.path.join(src_root, relpath)) as scan:
