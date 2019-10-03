@@ -836,6 +836,12 @@ function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
 	set(_target_include_dirs ${global_include_dirs} ${target_include_dirs})
 	string(REGEX REPLACE "([^;]+)" "-I\\1" _target_include_dirs "${_target_include_dirs}")
 
+	if(star_lib_name STREQUAL "St_g2t")
+		set(_agetof_additional_options -V f)
+	else()
+		set(_agetof_additional_options)
+	endif()
+
 	foreach(f_file ${in_F_files})
 		get_filename_component(f_file_name_we ${f_file} NAME_WE)
 		set(g_file "${star_lib_dir_out}/${f_file_name_we}.g")
@@ -845,7 +851,7 @@ function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
 			OUTPUT ${g_file} ${out_F_file}
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${star_lib_dir_out}
 			COMMAND ${CMAKE_C_COMPILER} -E -P ${STAR_Fortran_DEFINITIONS} ${_target_include_dirs} ${f_file} -o ${g_file}
-			COMMAND ${CMAKE_CURRENT_BINARY_DIR}/agetof -V 1 ${g_file} -o ${out_F_file}
+			COMMAND ${CMAKE_CURRENT_BINARY_DIR}/agetof -V 1 ${_agetof_additional_options} ${g_file} -o ${out_F_file}
 			DEPENDS ${f_file} agetof VERBATIM)
 
 		list(APPEND _out_F_files ${out_F_file})
