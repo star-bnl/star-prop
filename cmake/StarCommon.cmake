@@ -828,12 +828,14 @@ endfunction()
 
 
 function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
+	# Exit right away if there is no input files to process
+	if(NOT "${in_F_files}")
+		return()
+	endif()
 
 	set(_out_F_files)
 
-	get_property(global_include_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
-	get_property(target_include_dirs SOURCE pams/sim/g2t PROPERTY INCLUDE_DIRECTORIES)
-	set(_target_include_dirs ${global_include_dirs} ${target_include_dirs})
+	get_property(_target_include_dirs TARGET ${star_lib_name} PROPERTY INCLUDE_DIRECTORIES)
 	string(REGEX REPLACE "([^;]+)" "-I\\1" _target_include_dirs "${_target_include_dirs}")
 
 	foreach(f_file ${in_F_files})

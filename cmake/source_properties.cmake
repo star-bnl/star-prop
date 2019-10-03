@@ -1,5 +1,3 @@
-set_property(SOURCE pams/sim/g2t PROPERTY INCLUDE_DIRECTORIES "${STAR_SRC}/asps/Simulation/geant321/include;${STAR_SRC}/asps/Simulation/starsim/include")
-
 define_property(SOURCE PROPERTY AGETOF_ADDITIONAL_OPTIONS
 	BRIEF_DOCS "Additional options for agetof executable"
 	FULL_DOCS  "Some Fortran files require agetof to take the '-V f' option in "
