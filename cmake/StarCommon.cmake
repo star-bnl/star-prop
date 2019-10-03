@@ -836,16 +836,12 @@ function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
 	set(_target_include_dirs ${global_include_dirs} ${target_include_dirs})
 	string(REGEX REPLACE "([^;]+)" "-I\\1" _target_include_dirs "${_target_include_dirs}")
 
-	if(star_lib_name STREQUAL "St_g2t")
-		set(_agetof_additional_options -V f)
-	else()
-		set(_agetof_additional_options)
-	endif()
-
 	foreach(f_file ${in_F_files})
 		get_filename_component(f_file_name_we ${f_file} NAME_WE)
 		set(g_file "${star_lib_dir_out}/${f_file_name_we}.g")
 		set(out_F_file "${star_lib_dir_out}/${f_file_name_we}.F")
+
+		get_property(_agetof_additional_options SOURCE ${f_file} PROPERTY AGETOF_ADDITIONAL_OPTIONS)
 
 		add_custom_command(
 			OUTPUT ${g_file} ${out_F_file}
