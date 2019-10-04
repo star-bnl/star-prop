@@ -1,5 +1,10 @@
 # Set package specific properties
 
+if(TARGET StDaqLib)
+	target_include_directories(StDaqLib PRIVATE "${STAR_SRC}/StRoot/RTS/include")
+	target_compile_options(StDaqLib PRIVATE -DNEW_DAQ_READER)
+endif()
+
 # Common build rules cannot be applied to StGenericVertexMakerNoSti library
 if(TARGET StGenericVertexMaker)
 	star_add_library_vertexnosti(StRoot/StGenericVertexMaker)
@@ -83,6 +88,21 @@ if(TARGET StEpcMaker)
 	set_target_properties(StEpcMaker PROPERTIES LINK_LIBRARIES "${CERNLIB_LIBRARIES}")
 endif()
 
+if(TARGET StDbBroker)
+	target_include_directories(StDbBroker PRIVATE "${MYSQL_INCLUDE_DIRS}")
+	set_target_properties(StDbBroker PROPERTIES LINK_LIBRARIES "${MYSQL_LIBRARIES}")
+	get_filename_component(_mysql_dir ${MYSQL_LIBRARIES} DIRECTORY)
+	set_target_properties(StDbBroker PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${STAR_ADDITIONAL_INSTALL_PREFIX}/lib;${_mysql_dir}")
+endif()
+
+if(TARGET StDbLib)
+	target_include_directories(StDbLib PRIVATE "${LIBXML2_INCLUDE_DIR};${MYSQL_INCLUDE_DIRS}")
+	set_target_properties(StDbLib PROPERTIES LINK_LIBRARIES "${LIBXML2_LIBRARIES};${MYSQL_LIBRARIES}")
+	get_filename_component(_libxml2_dir ${LIBXML2_LIBRARIES} DIRECTORY)
+	get_filename_component(_mysql_dir ${MYSQL_LIBRARIES} DIRECTORY)
+	set_target_properties(StDbLib PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${STAR_ADDITIONAL_INSTALL_PREFIX}/lib;${_libxml2_dir};${_mysql_dir}")
+endif()
+
 if(TARGET StarClassLibrary)
 	install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink libStarClassLibrary.so \
 		${CMAKE_INSTALL_PREFIX}/${STAR_ADDITIONAL_INSTALL_PREFIX}/lib/StarClassLibrary.so)")
@@ -95,6 +115,11 @@ endif()
 
 if(TARGET StarMagFieldNoDict)
 	target_compile_options(StarMagFieldNoDict PRIVATE "-U__ROOT__")
+endif()
+
+if(TARGET StTofHitMaker)
+	target_include_directories(StTofHitMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src")
+	target_compile_options(StTofHitMaker PRIVATE -DNEW_DAQ_READER)
 endif()
 
 if(TARGET xgeometry)
