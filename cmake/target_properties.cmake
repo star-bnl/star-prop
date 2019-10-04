@@ -13,6 +13,13 @@ endif()
 
 if(TARGET TPCCATracker)
 	set_target_properties(TPCCATracker PROPERTIES LINK_LIBRARIES "${ROOT_Vc_LIBRARY}")
+	install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink libTPCCATracker.so \
+		${CMAKE_INSTALL_PREFIX}/${STAR_ADDITIONAL_INSTALL_PREFIX}/lib/TPCCATracker.so)")
+endif()
+
+if(TARGET StiCA)
+	install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink libStiCA.so \
+		${CMAKE_INSTALL_PREFIX}/${STAR_ADDITIONAL_INSTALL_PREFIX}/lib/StiCA.so)")
 endif()
 
 if(TARGET Stv)
@@ -73,6 +80,11 @@ if(TARGET StEpcMaker)
 	set_target_properties(StEpcMaker PROPERTIES LINK_LIBRARIES "${CERNLIB_LIBRARIES}")
 endif()
 
+if(TARGET StarClassLibrary)
+	install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink libStarClassLibrary.so \
+		${CMAKE_INSTALL_PREFIX}/${STAR_ADDITIONAL_INSTALL_PREFIX}/lib/StarClassLibrary.so)")
+endif()
+
 if(TARGET StDbLib)
 	target_include_directories(StDbLib PRIVATE "${LIBXML2_INCLUDE_DIR}")
 	set_target_properties(StDbLib PROPERTIES LINK_LIBRARIES "${LIBXML2_LIBRARIES}")
@@ -84,4 +96,6 @@ endif()
 
 if(TARGET xgeometry)
 	set_target_properties(xgeometry PROPERTIES LINK_LIBRARIES StarMagFieldNoDict)
+	install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink libxgeometry.so \
+		${CMAKE_INSTALL_PREFIX}/${STAR_ADDITIONAL_INSTALL_PREFIX}/lib/xgeometry.so)")
 endif()
