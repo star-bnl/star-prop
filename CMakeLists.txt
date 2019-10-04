@@ -38,7 +38,6 @@ star_preinstall_geo_pams(${CMAKE_BINARY_DIR})
 
 include_directories(
 	${ROOT_INCLUDE_DIR}
-	${LOG4CXX_INCLUDE_DIR}
 	${MYSQL_INCLUDE_DIRS}
 	${STAR_SRC}
 	${STAR_SRC}/StRoot

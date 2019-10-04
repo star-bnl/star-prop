@@ -9,6 +9,9 @@ endif()
 # -D_UCMLOGGER_ is used in StStarLogger
 if(TARGET StStarLogger)
 	target_compile_options(StStarLogger PRIVATE -D_UCMLOGGER_)
+	target_include_directories(StStarLogger PRIVATE "${LOG4CXX_INCLUDE_DIR};${MYSQL_INCLUDE_DIRS}")
+	set_target_properties(StStarLogger PROPERTIES LINK_LIBRARIES "${LOG4CXX_LIBRARIES}")
+	set_target_properties(StStarLogger PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif()
 
 if(TARGET TPCCATracker)
