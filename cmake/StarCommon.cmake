@@ -48,6 +48,8 @@ if(DEFINED ENV{STAR_HOST_SYS})
 	set(STAR_ADDITIONAL_INSTALL_PREFIX ".$ENV{STAR_HOST_SYS}")
 endif()
 
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${STAR_ADDITIONAL_INSTALL_PREFIX}/lib")
+
 # Read blacklisted directories from a file into a list
 file(STRINGS "${PROJECT_SOURCE_DIR}/cmake/blacklisted_lib_dirs.txt" _star_blacklisted_libs)
 foreach(black ${_star_blacklisted_libs})
