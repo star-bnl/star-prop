@@ -57,42 +57,6 @@ if [ -n "${old_rootsys}" ] ; then
       drop_from_path "$DYLD_LIBRARY_PATH" "${old_rootsys}/lib"
       DYLD_LIBRARY_PATH=$newpath
    fi
-   if [ -n "${SHLIB_PATH}" ]; then
-      drop_from_path "$SHLIB_PATH" "${old_rootsys}/lib"
-      SHLIB_PATH=$newpath
-   fi
-   if [ -n "${LIBPATH}" ]; then
-      drop_from_path "$LIBPATH" "${old_rootsys}/lib"
-      LIBPATH=$newpath
-   fi
-   if [ -n "${PYTHONPATH}" ]; then
-      drop_from_path "$PYTHONPATH" "${old_rootsys}/lib"
-      PYTHONPATH=$newpath
-   fi
-   if [ -n "${MANPATH}" ]; then
-      drop_from_path "$MANPATH" "${old_rootsys}/man"
-      MANPATH=$newpath
-   fi
-   if [ -n "${CMAKE_PREFIX_PATH}" ]; then
-      drop_from_path "$CMAKE_PREFIX_PATH" "${old_rootsys}"
-      CMAKE_PREFIX_PATH=$newpath
-   fi
-   if [ -n "${JUPYTER_PATH}" ]; then
-      drop_from_path "$JUPYTER_PATH" "${old_rootsys}/etc/notebook"
-      JUPYTER_PATH=$newpath
-   fi
-
-fi
-
-if [ -z "${MANPATH}" ]; then
-   # Grab the default man path before setting the path to avoid duplicates
-   if command -v manpath >/dev/null; then
-      default_manpath=`manpath`
-   elif command -v man >/dev/null; then
-      default_manpath=`man -w 2> /dev/null`
-   else
-      default_manpath=""
-   fi
 fi
 
 if [ -z "${PATH}" ]; then
@@ -111,49 +75,6 @@ if [ -z "${DYLD_LIBRARY_PATH}" ]; then
    DYLD_LIBRARY_PATH=@libdir@; export DYLD_LIBRARY_PATH   # Mac OS X
 else
    DYLD_LIBRARY_PATH=@libdir@:$DYLD_LIBRARY_PATH; export DYLD_LIBRARY_PATH
-fi
-
-if [ -z "${SHLIB_PATH}" ]; then
-   SHLIB_PATH=@libdir@; export SHLIB_PATH                 # legacy HP-UX
-else
-   SHLIB_PATH=@libdir@:$SHLIB_PATH; export SHLIB_PATH
-fi
-
-if [ -z "${LIBPATH}" ]; then
-   LIBPATH=@libdir@; export LIBPATH                       # AIX
-else
-   LIBPATH=@libdir@:$LIBPATH; export LIBPATH
-fi
-
-if [ -z "${PYTHONPATH}" ]; then
-   PYTHONPATH=@libdir@; export PYTHONPATH
-else
-   PYTHONPATH=@libdir@:$PYTHONPATH; export PYTHONPATH
-fi
-
-if [ -z "${MANPATH}" ]; then
-   MANPATH=@mandir@:${default_manpath}; export MANPATH
-else
-   MANPATH=@mandir@:$MANPATH; export MANPATH
-fi
-
-if [ -z "${CMAKE_PREFIX_PATH}" ]; then
-   CMAKE_PREFIX_PATH=$ROOTSYS; export CMAKE_PREFIX_PATH       # Linux, ELF HP-UX
-else
-   CMAKE_PREFIX_PATH=$ROOTSYS:$CMAKE_PREFIX_PATH; export CMAKE_PREFIX_PATH
-fi
-
-if [ -z "${JUPYTER_PATH}" ]; then
-   JUPYTER_PATH=$ROOTSYS/etc/notebook; export JUPYTER_PATH       # Linux, ELF HP-UX
-else
-   JUPYTER_PATH=$ROOTSYS/etc/notebook:$JUPYTER_PATH; export JUPYTER_PATH
-fi
-
-# Prevent Cppyy from checking the PCH (and avoid warning)
-export CLING_STANDARD_PCH=none
-
-if [ "x`root-config --arch | grep -v win32gcc | grep -i win32`" != "x" ]; then
-  ROOTSYS="`cygpath -w $ROOTSYS`"
 fi
 
 unset old_rootsys
