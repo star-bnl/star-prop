@@ -19,8 +19,8 @@ drop_from_path()
                           -e "s;^${drop}\$;;g"`
 }
 
-if [ -n "${ROOTSYS}" ] ; then
-   old_rootsys=${ROOTSYS}
+if [ -n "${STAR}" ] ; then
+   old_star=${STAR}
 fi
 
 SOURCE=${BASH_ARGV[0]}
@@ -29,32 +29,32 @@ if [ "x$SOURCE" = "x" ]; then
 fi
 
 if [ "x${SOURCE}" = "x" ]; then
-    if [ -f bin/thisroot.sh ]; then
-        ROOTSYS="$PWD"; export ROOTSYS
-    elif [ -f ./thisroot.sh ]; then
-        ROOTSYS=$(cd ..  > /dev/null; pwd); export ROOTSYS
+    if [ -f bin/thisstar.sh ]; then
+        STAR="$PWD"; export STAR
+    elif [ -f ./thisstar.sh ]; then
+        STAR=$(cd ..  > /dev/null; pwd); export STAR
     else
         echo ERROR: must "cd where/star-sw/is/installed" before calling ". bin/thisstar.sh" for this version of bash!
-        ROOTSYS=; export ROOTSYS
+        STAR=; export STAR
         return 1
     fi
 else
     # get param to "."
-    thisroot=$(dirname ${SOURCE})
-    ROOTSYS=$(cd ${thisroot}/.. > /dev/null;pwd); export ROOTSYS
+    thisstar=$(dirname ${SOURCE})
+    STAR=$(cd ${thisstar}/.. > /dev/null;pwd); export STAR
 fi
 
-if [ -n "${old_rootsys}" ] ; then
+if [ -n "${old_star}" ] ; then
    if [ -n "${PATH}" ]; then
-      drop_from_path "$PATH" "${old_rootsys}/bin"
+      drop_from_path "$PATH" "${old_star}/bin"
       PATH=$newpath
    fi
    if [ -n "${LD_LIBRARY_PATH}" ]; then
-      drop_from_path "$LD_LIBRARY_PATH" "${old_rootsys}/lib"
+      drop_from_path "$LD_LIBRARY_PATH" "${old_star}/lib"
       LD_LIBRARY_PATH=$newpath
    fi
    if [ -n "${DYLD_LIBRARY_PATH}" ]; then
-      drop_from_path "$DYLD_LIBRARY_PATH" "${old_rootsys}/lib"
+      drop_from_path "$DYLD_LIBRARY_PATH" "${old_star}/lib"
       DYLD_LIBRARY_PATH=$newpath
    fi
 fi
@@ -77,6 +77,6 @@ else
    DYLD_LIBRARY_PATH=@libdir@:$DYLD_LIBRARY_PATH; export DYLD_LIBRARY_PATH
 fi
 
-unset old_rootsys
-unset thisroot
+unset old_star
+unset thisstar
 unset -f drop_from_path
