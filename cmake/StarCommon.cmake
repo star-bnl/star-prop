@@ -47,7 +47,16 @@ if(DEFINED ENV{STAR_HOST_SYS})
 	set(STAR_INSTALL_PREFIX "${STAR_INSTALL_PREFIX}/.$ENV{STAR_HOST_SYS}")
 endif()
 
-set(CMAKE_INSTALL_RPATH "${STAR_INSTALL_PREFIX}/lib")
+set(STAR_INSTALL_BINDIR "${STAR_INSTALL_PREFIX}/bin" CACHE PATH "Path to installed executables")
+set(STAR_INSTALL_LIBDIR "${STAR_INSTALL_PREFIX}/lib" CACHE PATH "Path to installed libraries")
+
+mark_as_advanced(
+	STAR_INSTALL_PREFIX
+	STAR_INSTALL_BINDIR
+	STAR_INSTALL_LIBDIR
+)
+
+set(CMAKE_INSTALL_RPATH "${STAR_INSTALL_LIBDIR}")
 
 # Read blacklisted directories from a file into a list
 file(STRINGS "${PROJECT_SOURCE_DIR}/cmake/blacklisted_lib_dirs.txt" _star_blacklisted_libs)
