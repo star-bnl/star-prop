@@ -1,11 +1,6 @@
-# Source this script to set up the ROOT build that this script is part of.
+# Source this script to set up the build that this script is part of.
 #
-# Conveniently an alias like this can be defined in .bashrc:
-#   alias thisroot=". bin/thisroot.sh"
-#
-# This script if for the bash like shells, see thisroot.csh for csh like shells.
-#
-# Author: Fons Rademakers, 18/8/2006
+# Adopted from root/config/thisroot.sh, ROOT v6-19-01
 
 drop_from_path()
 {
@@ -39,7 +34,7 @@ if [ "x${SOURCE}" = "x" ]; then
     elif [ -f ./thisroot.sh ]; then
         ROOTSYS=$(cd ..  > /dev/null; pwd); export ROOTSYS
     else
-        echo ERROR: must "cd where/root/is" before calling ". bin/thisroot.sh" for this version of bash!
+        echo ERROR: must "cd where/star-sw/is/installed" before calling ". bin/thisstar.sh" for this version of bash!
         ROOTSYS=; export ROOTSYS
         return 1
     fi
