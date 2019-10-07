@@ -129,3 +129,5 @@ install(DIRECTORY
 install(DIRECTORY
 	${STAR_SRC}/StDb/servers
 	DESTINATION StDb/)
+
+configure_file(${PROJECT_SOURCE_DIR}/scripts/thisstar.sh.in ${STAR_INSTALL_BINDIR}/thisstar.sh @ONLY NEWLINE_STYLE UNIX)
