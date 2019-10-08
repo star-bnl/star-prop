@@ -36,13 +36,10 @@ star_apply_patch()
 star_preinstall_headers(${CMAKE_BINARY_DIR}/include)
 star_preinstall_geo_pams(${CMAKE_BINARY_DIR})
 
+# Include directories common to all targets
 include_directories(
 	${ROOT_INCLUDE_DIR}
-	${STAR_SRC}
 	${STAR_SRC}/StRoot
-	${STAR_SRC}/StRoot/RTS/include
-	${STAR_SRC}/StRoot/RTS/src
-	${STAR_SRC}/StRoot/RTS/trg/include
 	# Inlude path to header files with flatten directory hierarchy
 	# created by star_preinstall_headers()
 	${CMAKE_BINARY_DIR}/include

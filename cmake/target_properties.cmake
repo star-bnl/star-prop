@@ -1,14 +1,52 @@
 # Set package specific properties
 
+if(TARGET RTS)
+	set(_inc_dirs
+		${ROOT_INCLUDE_DIR}
+		${STAR_SRC}/StRoot
+		${STAR_SRC}/StRoot/RTS/src
+		${STAR_SRC}/StRoot/RTS/include
+		${STAR_SRC}/StRoot/RTS/trg/include)
+	set_target_properties(RTS PROPERTIES INCLUDE_DIRECTORIES "${_inc_dirs}")
+endif()
+
+if(TARGET StBTofHitMaker)
+	target_include_directories(StBTofHitMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src")
+endif()
+
 if(TARGET StDaqLib)
 	target_include_directories(StDaqLib PRIVATE "${STAR_SRC}/StRoot/RTS/include")
 	target_compile_options(StDaqLib PRIVATE -DNEW_DAQ_READER)
+endif()
+
+if(TARGET StDAQMaker)
+	target_include_directories(StDAQMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src;${STAR_SRC}/StRoot/RTS/include")
+endif()
+
+if(TARGET StEmcRawMaker)
+	target_include_directories(StEmcRawMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src")
+endif()
+
+if(TARGET StFgtRawMaker)
+	target_include_directories(StFgtRawMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src;${STAR_SRC}/StRoot/RTS/include")
+endif()
+
+if(TARGET StFpsRawHitMaker)
+	target_include_directories(StFpsRawHitMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src;${STAR_SRC}/StRoot/RTS/include")
+endif()
+
+if(TARGET StRtsReaderMaker)
+	target_include_directories(StRtsReaderMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src")
 endif()
 
 # Common build rules cannot be applied to StGenericVertexMakerNoSti library
 if(TARGET StGenericVertexMaker)
 	star_add_library_vertexnosti(StRoot/StGenericVertexMaker)
 	add_dependencies(StGenericVertexMakerNoSti StDb_Tables geometry_Tables sim_Tables)
+endif()
+
+if(TARGET StIstRawHitMaker)
+	target_include_directories(StIstRawHitMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src;${STAR_SRC}/StRoot/RTS/include")
 endif()
 
 # -D_UCMLOGGER_ is used in StStarLogger
@@ -30,8 +68,28 @@ if(TARGET StiCA)
 		${CMAKE_INSTALL_PREFIX}/${STAR_ADDITIONAL_INSTALL_PREFIX}/lib/StiCA.so)")
 endif()
 
+if(TARGET StMtdHitMaker)
+	target_include_directories(StMtdHitMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src")
+endif()
+
+if(TARGET StTpcHitMaker)
+	target_include_directories(StTpcHitMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src;${STAR_SRC}/StRoot/RTS/include")
+endif()
+
 if(TARGET Stv)
 	target_include_directories(Stv PRIVATE "${STAR_SRC}/StarVMC/geant3/TGeant3")
+endif()
+
+if(TARGET StvMaker)
+	target_include_directories(StvMaker PRIVATE "${STAR_SRC}")
+endif()
+
+if(TARGET StvSeed)
+	target_include_directories(StvSeed PRIVATE "${STAR_SRC}")
+endif()
+
+if(TARGET StvUtil)
+	target_include_directories(StvUtil PRIVATE "${STAR_SRC}")
 endif()
 
 if(TARGET St_g2t)
@@ -103,6 +161,10 @@ if(TARGET StDbLib)
 	set_target_properties(StDbLib PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${STAR_ADDITIONAL_INSTALL_PREFIX}/lib;${_libxml2_dir};${_mysql_dir}")
 endif()
 
+if(TARGET StarAgmlUtil)
+	target_include_directories(StarAgmlUtil PRIVATE "${STAR_SRC}")
+endif()
+
 if(TARGET StarClassLibrary)
 	install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink libStarClassLibrary.so \
 		${CMAKE_INSTALL_PREFIX}/${STAR_ADDITIONAL_INSTALL_PREFIX}/lib/StarClassLibrary.so)")
@@ -115,6 +177,10 @@ endif()
 
 if(TARGET StarMagFieldNoDict)
 	target_compile_options(StarMagFieldNoDict PRIVATE "-U__ROOT__")
+endif()
+
+if(TARGET StSstDaqMaker)
+	target_include_directories(StSstDaqMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src;${STAR_SRC}/StRoot/RTS/include")
 endif()
 
 if(TARGET StTofHitMaker)
