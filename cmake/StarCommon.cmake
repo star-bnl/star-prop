@@ -242,6 +242,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 
 	GET_SUBDIRS(star_lib_subdirs ${star_lib_dir_abs} INCLUDE_PARENT)
 	target_include_directories(${star_lib_name} PRIVATE
+		"${STAR_SRC}"           # Some files in StvXXX include "StarVMC/.../*.h"
 		"${star_lib_subdirs}"
 		"${CMAKE_CURRENT_BINARY_DIR}/include"
 		"${CMAKE_CURRENT_BINARY_DIR}/include/tables/${star_lib_name_for_tables}")
