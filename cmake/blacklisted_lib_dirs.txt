@@ -14,11 +14,14 @@ StRoot/macros             # not a library
 StRoot/qainfo             # not a library
 StRoot/StAngleCorrMaker   # blacklisted in cons
 StRoot/StarGenerator      # mostly external MC generators
+StRoot/StBTofPool         # requires subdir processing
 StRoot/StDaqClfMaker      # blacklisted in cons
 StRoot/StEbye2ptMaker     # blacklisted in cons
 StRoot/StEbyePool         # blacklisted in cons
 StRoot/StEbyeScaTagsMaker # blacklisted in cons
 StRoot/StEEmcPool         # requires subdir processing
+StRoot/StEmcPool          # requires subdir processing
+StRoot/StEStructPool      # requires subdir processing
 StRoot/StFgtPool          # blacklisted in cons
 StRoot/StFlowMaker        # missing from lib/
 StRoot/StFtpcV0Maker      # blacklisted in cons
@@ -27,8 +30,10 @@ StRoot/StHbtMaker         # fortran error
 StRoot/StHighptPool       # blacklisted in cons
 StRoot/StJetFinder        # needs FindFastJet.cmake
 StRoot/StJetMaker
+StRoot/StSpectraPool      # requires subdir processing
 StRoot/StShadowMaker      # blacklisted in cons, crypted code
 StRoot/StSpinMaker        # blacklisted in cons, error in fortran code
 StRoot/StSpinPool         # blacklisted in cons
 StRoot/StStrangePool      # blacklisted in cons
+StRoot/StSvtPool          # requires subdir processing
 StRoot/StTofPool          # missing from lib/
