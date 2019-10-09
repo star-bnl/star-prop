@@ -478,11 +478,11 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 		PUBLIC_HEADER "${geo_headers}")
 
 	if(${ARGV2} STREQUAL "RootTGeo")
+		target_include_directories(${star_lib_name} PRIVATE "${CMAKE_CURRENT_BINARY_DIR};${STAR_SRC}")
 		# Generate the _dict.cxx file for the library
 		star_generate_dictionary(${star_lib_name} ${star_lib_dir_out} ${star_lib_dir_out}
 			LINKDEF_HEADERS ${geo_headers}
 			LINKDEF_OPTIONS "-p;-D__ROOT__")
-		target_include_directories(${star_lib_name} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
 	endif()
 
 	# Get relative path for the generated headers to be used at installation stage
