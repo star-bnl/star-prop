@@ -2,7 +2,7 @@ FROM star-base
 
 WORKDIR /tmp
 
-# Install STAR software
+# Build and install STAR software
 RUN git clone https://gitlab.com/star-bnl/star-sw.git \
  && git clone --depth 1 https://gitlab.com/star-bnl/star-cvs.git \
  && mkdir /tmp/star-build && cd /tmp/star-build \

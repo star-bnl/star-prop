@@ -23,7 +23,7 @@ StRoot/StEEmcPool         # requires subdir processing
 StRoot/StEmcPool          # requires subdir processing
 StRoot/StEStructPool      # requires subdir processing
 StRoot/StFgtPool          # blacklisted in cons
-StRoot/StFlowMaker        # missing from lib/
+StRoot/StFlowMaker        # blacklisted in cons?
 StRoot/StFtpcV0Maker      # blacklisted in cons
 StRoot/St_geom_Maker      # requires qt4/include/QtGui
 StRoot/StHbtMaker         # fortran error
@@ -31,9 +31,9 @@ StRoot/StHighptPool       # blacklisted in cons
 StRoot/StJetFinder        # needs FindFastJet.cmake
 StRoot/StJetMaker
 StRoot/StSpectraPool      # requires subdir processing
-StRoot/StShadowMaker      # blacklisted in cons, crypted code
+StRoot/StShadowMaker      # blacklisted in cons, encrypted code
 StRoot/StSpinMaker        # blacklisted in cons, error in fortran code
 StRoot/StSpinPool         # blacklisted in cons
 StRoot/StStrangePool      # blacklisted in cons
 StRoot/StSvtPool          # requires subdir processing
-StRoot/StTofPool          # missing from lib/
+StRoot/StTofPool          # blacklisted in cons?

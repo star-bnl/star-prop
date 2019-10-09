@@ -24,7 +24,7 @@ find_program(ROOT_DICTGEN_EXECUTABLE NAMES rootcling rootcint HINTS $ENV{ROOTSYS
 string(TIMESTAMP STAR_BUILD_DATE "%y%m%d")
 string(TIMESTAMP STAR_BUILD_TIME "%H%M")
 
-# -D__ROOT__ is used by classes in StarClassLibrary guarding calls to ClassDef() macro
+# -D__ROOT__ is used by many classes guarding calls to ClassDef() macro
 set(STAR_C_CXX_DEFINITIONS "-D__ROOT__")
 set(STAR_Fortran_DEFINITIONS "-DCERNLIB_TYPE")
 set(STAR_Fortran_FLAGS "-std=legacy -fno-second-underscore -fno-automatic")
@@ -177,8 +177,8 @@ function(STAR_GENERATE_DICTIONARY star_lib_name star_lib_dir star_lib_dir_out)
 	# Prepare include directories to be used during ROOT dictionary generation.
 	# These directories are tied to the `star_lib_name` target via the
 	# INCLUDE_DIRECTORIES property.
-	get_target_property( target_include_dirs ${star_lib_name} INCLUDE_DIRECTORIES )
-	string( REGEX REPLACE "([^;]+)" "-I\\1" dict_include_dirs "${target_include_dirs}" )
+	get_target_property(target_include_dirs ${star_lib_name} INCLUDE_DIRECTORIES)
+	string(REGEX REPLACE "([^;]+)" "-I\\1" dict_include_dirs "${target_include_dirs}")
 
 	# Generate ROOT dictionary using the *_LinkDef.h and *_DictInc.h files
 	add_custom_command(OUTPUT ${star_lib_dir_out}_dict.cxx ${star_lib_dir_out}_dict.h
@@ -240,10 +240,10 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	# Output the library to the respecitve subdirectory in the binary directory
 	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
 
-	GET_SUBDIRS(star_lib_subdirs ${star_lib_dir_abs} INCLUDE_PARENT)
+	GET_SUBDIRS(_star_lib_subdirs ${star_lib_dir_abs} INCLUDE_PARENT)
 	target_include_directories(${star_lib_name} PRIVATE
 		"${STAR_SRC}"           # Some files in StvXXX include "StarVMC/.../*.h"
-		"${star_lib_subdirs}"
+		"${_star_lib_subdirs}"
 		"${CMAKE_CURRENT_BINARY_DIR}/include"
 		"${CMAKE_CURRENT_BINARY_DIR}/include/tables/${star_lib_name_for_tables}")
 
@@ -456,7 +456,7 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 
 	set(geo_py_parser ${STAR_SRC}/mgr/agmlParser.py)
 
-	find_program(EXEC_PYTHON NAMES python2.7 python2)
+	find_program(PYTHON_EXECUTABLE NAMES python2.7 python2)
 
 	file(GLOB_RECURSE geo_xml_files "${star_lib_dir_abs}/*.xml")
 
@@ -504,7 +504,7 @@ function(_STAR_PARSE_GEOXML_GeantGeo geo_xml_files out_dir out_sources)
 		add_custom_command(
 			OUTPUT ${geo_agesrc}
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${out_dir}
-			COMMAND ${EXEC_PYTHON} ${geo_py_parser} --file=${geo_xml_file} --module=${geo_name} --export=Mortran > ${geo_agesrc}
+			COMMAND ${PYTHON_EXECUTABLE} ${geo_py_parser} --file=${geo_xml_file} --module=${geo_name} --export=Mortran > ${geo_agesrc}
 			DEPENDS ${geo_py_parser} ${geo_xml_file})
 
 		list(APPEND geo_sources_generated ${geo_agesrc})
@@ -528,7 +528,7 @@ function(_STAR_PARSE_GEOXML_RootTGeo geo_xml_files out_dir out_sources out_heade
 
 		add_custom_command(
 			OUTPUT ${geo_source} ${geo_header}
-			COMMAND ${EXEC_PYTHON} ${geo_py_parser} --file=${geo_xml_file} --module=${geo_name} --export=AgROOT --path=${out_dir}
+			COMMAND ${PYTHON_EXECUTABLE} ${geo_py_parser} --file=${geo_xml_file} --module=${geo_name} --export=AgROOT --path=${out_dir}
 			DEPENDS ${geo_py_parser} ${geo_xml_file})
 
 		if(${geo_name} MATCHES "Config")
