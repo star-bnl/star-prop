@@ -233,7 +233,6 @@ def scan_star(src_root):
                     lib_dependencies.setdefault(libname, set()).add(other_libname)
 
     # Compiled for the same source code, not a dependency
-    lib_dependencies["St_ctf"].remove("ctf_Tables")
     lib_dependencies["ctf_Tables"].remove("St_ctf")
 
     return lib_dependencies
