@@ -1,0 +1,27 @@
+From cddb70a5af8edb3e20d1520fbf474cb37bc9d3ea Mon Sep 17 00:00:00 2001
+From: Dmitri Smirnov <d.s@plexoos.com>
+Date: Wed, 9 Oct 2019 18:13:46 -0400
+Subject: [PATCH] Fix pointless abs() of never negative (unsigned) argument
+
+---
+ StRoot/StETofCalibMaker/StETofCalibMaker.cxx | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/StRoot/StETofCalibMaker/StETofCalibMaker.cxx b/StRoot/StETofCalibMaker/StETofCalibMaker.cxx
+index dd5f98f177..f4b4891b76 100644
+--- a/StRoot/StETofCalibMaker/StETofCalibMaker.cxx
++++ b/StRoot/StETofCalibMaker/StETofCalibMaker.cxx
+@@ -1453,7 +1453,9 @@ StETofCalibMaker::triggerTime( StETofHeader* header )
+         }
+         auto next = std::next( it, 1 );
+ 
+-        if( next != countsGdpbTs.end() &&  abs( next->first - it->first ) == 1 ) {
++        if( next != countsGdpbTs.end() &&
++           (next->first - it->first == 1 || it->first - next->first == 1) )
++        {
+             combinedCountsGdpbTs[ it->first ] = it->second + next->second;
+         }
+         else if( next == countsGdpbTs.end() && combinedCountsGdpbTs.size() == 0 ) {
+-- 
+2.16.1
+
