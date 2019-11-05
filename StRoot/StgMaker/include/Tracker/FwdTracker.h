@@ -442,9 +442,7 @@ namespace KiTrack {
 				LOG_F( INFO, "Not running Automation Step" );
 			}
 			if ( doAutomation && doCleanBadStates ) {
-				int LayerOffset = cfg.get<int>( criteriaPath + ":LayerOffset", 0 );
-				LOG_F( INFO, "Cleaning bad states with LayerOffset = %d", LayerOffset );
-				automaton.cleanBadStates( LayerOffset );
+				automaton.cleanBadStates();
 			}
 
 			LOG_F( INFO, "nSegments=%lu", automaton.getSegments().size() );
