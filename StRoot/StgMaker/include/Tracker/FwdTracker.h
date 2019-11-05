@@ -181,7 +181,6 @@ namespace KiTrack {
 			// write out the config we use (do before histos):
 			TNamed n( "cfg", cfg.toXml() );
 			n.Write();
-			WriteGitCommit( "commit");
 
 			qPlotter->writeHistograms();
 			trackFitter->writeHistograms();
