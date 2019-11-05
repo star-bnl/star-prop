@@ -346,38 +346,38 @@ endmacro()
 #
 function(STAR_TARGET_PATHS star_lib_dir lib_name path_abs path_out)
 
-	set(path_abs_)
-	set(path_out_)
+	set(_path_abs)
+	set(_path_out)
 
 	if( IS_ABSOLUTE ${star_lib_dir} )
+		get_filename_component(_star_src_abs ${STAR_SRC} ABSOLUTE)
 
-		get_filename_component(star_src_abs ${STAR_SRC} ABSOLUTE)
-		if(star_lib_dir MATCHES "^${star_src_abs}")
-			file(RELATIVE_PATH path_rel_ ${STAR_SRC} ${star_lib_dir})
+		if(star_lib_dir MATCHES "^${_star_src_abs}")
+			file(RELATIVE_PATH _path_rel ${STAR_SRC} ${star_lib_dir})
 		elseif(star_lib_dir MATCHES "^${PROJECT_SOURCE_DIR}")
-			file(RELATIVE_PATH path_rel_ ${PROJECT_SOURCE_DIR} ${star_lib_dir})
+			file(RELATIVE_PATH _path_rel ${PROJECT_SOURCE_DIR} ${star_lib_dir})
 		else()
 			message(FATAL_ERROR
-				"StarCommon: Absolute path \"${star_lib_dir}\" must match either \"${star_src_abs}\" or \"${PROJECT_SOURCE_DIR}\"")
+				"StarCommon: Absolute path \"${star_lib_dir}\" must match either \"${_star_src_abs}\" or \"${PROJECT_SOURCE_DIR}\"")
 		endif()
 
-		set(path_abs_ ${star_lib_dir})
-		set(path_out_ ${CMAKE_CURRENT_BINARY_DIR}/${path_rel_})
+		set(_path_abs ${star_lib_dir})
+		set(_path_out ${CMAKE_CURRENT_BINARY_DIR}/${_path_rel})
 	else()
-		set(path_abs_ ${STAR_SRC}/${star_lib_dir})
-		set(path_out_ ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir})
+		set(_path_abs ${STAR_SRC}/${star_lib_dir})
+		set(_path_out ${CMAKE_CURRENT_BINARY_DIR}/${star_lib_dir})
 	endif()
 
 	# First check that the path exists
-	if( NOT IS_DIRECTORY ${path_abs_} )
-		message( FATAL_ERROR "StarCommon: Directory \"${path_abs_}\" not found" )
+	if( NOT IS_DIRECTORY ${_path_abs} )
+		message( FATAL_ERROR "StarCommon: Directory \"${_path_abs}\" not found" )
 	endif()
 
-	get_filename_component(lib_name_ ${star_lib_dir} NAME)
+	get_filename_component(_lib_name ${star_lib_dir} NAME)
 
-	set(${lib_name} ${lib_name_} PARENT_SCOPE)
-	set(${path_abs} ${path_abs_} PARENT_SCOPE)
-	set(${path_out} ${path_out_} PARENT_SCOPE)
+	set(${lib_name} ${_lib_name} PARENT_SCOPE)
+	set(${path_abs} ${_path_abs} PARENT_SCOPE)
+	set(${path_out} ${_path_out} PARENT_SCOPE)
 
 endfunction()
 
