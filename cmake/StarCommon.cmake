@@ -262,6 +262,19 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 endfunction()
 
 
+#
+# Forms file names used in ROOT dictionary generation. Note that
+# `star_lib_dir_out` and `star_lib_name` variables must be set to appropriate
+# values in the scope where this macro is called.
+#
+macro(GET_ROOT_DICT_FILE_NAMES linkdef_file dictinc_file dict_source dict_header)
+	# Set default names for generated files
+	set(${linkdef_file} "${star_lib_dir_out}/${star_lib_name}_LinkDef.h")
+	set(${dictinc_file} "${star_lib_dir_out}/${star_lib_name}_DictInc.h")
+	set(${dict_source}  "${star_lib_dir_out}/${star_lib_name}_dict.cxx")
+	set(${dict_header}  "${star_lib_dir_out}/${star_lib_name}_dict.h")
+endmacro()
+
 
 macro(FILTER_LIST list_to_filter)
 	cmake_parse_arguments(ARG "" "" "EXCLUDE" ${ARGN})
