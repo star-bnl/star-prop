@@ -3,6 +3,7 @@
 #include "Tracker/FwdTracker.h"
 #include "Tracker/FwdHit.h"
 #include "Tracker/TrackFitter.h"
+#include "XmlConfig/XmlConfig.h"
 
 #include "TMath.h"
 
@@ -145,6 +146,7 @@ int StgMaker::Init() {
   // Initialize configuration file
   std::string configFile = "config.xml";
   std::map<string, string> cmdLineConfig;
+  XmlConfig _xmlconfig;
   _xmlconfig.loadFile( configFile, cmdLineConfig );
   // Dump configuration to screen
   LOG_INFO << _xmlconfig.dump().c_str() << endm;

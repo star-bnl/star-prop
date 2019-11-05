@@ -4,7 +4,6 @@
 #include "StMaker.h"
 
 #ifndef __CINT__
-#include "StgUtil/XmlConfig/XmlConfig.h"
 #include "Track.h"
 
 namespace KiTrack { 
@@ -26,10 +25,6 @@ class StTrackDetectorInfo;
 class StgMaker : public StMaker {
 
   ClassDef(StgMaker,0);
-
-#ifndef __CINT__
-  XmlConfig _xmlconfig;
-#endif
 
 public:
 
