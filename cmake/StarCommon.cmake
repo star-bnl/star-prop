@@ -352,12 +352,13 @@ function(STAR_TARGET_PATHS star_lib_dir lib_name path_abs path_out)
 	if( IS_ABSOLUTE ${star_lib_dir} )
 
 		get_filename_component(star_src_abs ${STAR_SRC} ABSOLUTE)
-		if( ${star_src_abs} MATCHES ${star_lib_dir} )
-			message( FATAL "StarCommon: Absolute path \"${star_lib_dir}\" must match ${star_src_abs}" )
+		if(star_lib_dir MATCHES "^${star_src_abs}")
+			file(RELATIVE_PATH path_rel_ ${STAR_SRC} ${star_lib_dir})
+		else()
+			message(FATAL_ERROR "StarCommon: Absolute path \"${star_lib_dir}\" must match \"${star_src_abs}\"")
 		endif()
 
 		set(path_abs_ ${star_lib_dir})
-		file(RELATIVE_PATH path_rel_ ${STAR_SRC} ${star_lib_dir})
 		set(path_out_ ${CMAKE_CURRENT_BINARY_DIR}/${path_rel_})
 	else()
 		set(path_abs_ ${STAR_SRC}/${star_lib_dir})
@@ -366,7 +367,7 @@ function(STAR_TARGET_PATHS star_lib_dir lib_name path_abs path_out)
 
 	# First check that the path exists
 	if( NOT IS_DIRECTORY ${path_abs_} )
-		message( FATAL "StarCommon: Directory \"${path_abs_}\" not found" )
+		message( FATAL_ERROR "StarCommon: Directory \"${path_abs_}\" not found" )
 	endif()
 
 	get_filename_component(lib_name_ ${star_lib_dir} NAME)
