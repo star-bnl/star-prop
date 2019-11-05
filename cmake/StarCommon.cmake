@@ -114,21 +114,19 @@ endfunction()
 
 
 #
-# Generates ${star_lib_dir}_LinkDef.h and ${star_lib_dir}_DictInc.h header files
-# used in ROOT dictionary generation by rootcint/rootcling. Only header files
-# passed in LINKDEF_HEADERS argument are used. The user can optionally pass an
-# existing LinkDef file in LINKDEF argument to be incorporated in the generated
-# ${star_lib_dir}_LinkDef.h
+# Generates `_linkdef_file` and `_dictinc_file` header files used in ROOT
+# dictionary generation by rootcint/rootcling. Only header files passed in
+# LINKDEF_HEADERS argument are used. The user can optionally pass an existing
+# LinkDef file in LINKDEF argument to be incorporated in the generated
+# `_linkdef_file`.
 #
 function(STAR_GENERATE_LINKDEF star_lib_name star_lib_dir_out)
 	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS" ${ARGN})
 
-	# Set default name for LinkDef file
-	set(linkdef_file "${star_lib_dir}_LinkDef.h")
-	set(dictinc_file "${star_lib_dir}_DictInc.h")
+	GET_ROOT_DICT_FILE_NAMES(_linkdef_file _dictinc_file _dict_source _dict_header)
 
 	# Pass both files to get_likdef.sh as -o arguments
-	set(gen_linkdef_args "-l;${linkdef_file};-d;${dictinc_file};${ARG_LINKDEF_HEADERS}")
+	set(gen_linkdef_args "-l;${_linkdef_file};-d;${_dictinc_file};${ARG_LINKDEF_HEADERS}")
 
 	if(ARG_LINKDEF)
 		list(APPEND gen_linkdef_args "-i;${ARG_LINKDEF}")
@@ -136,7 +134,7 @@ function(STAR_GENERATE_LINKDEF star_lib_name star_lib_dir_out)
 
 	# Generate the above files to be used in dictionary generation by ROOT
 	add_custom_command(
-		OUTPUT ${linkdef_file} ${dictinc_file}
+		OUTPUT ${_linkdef_file} ${_dictinc_file}
 		COMMAND "${PROJECT_SOURCE_DIR}/scripts/gen_linkdef.sh" ${gen_linkdef_args}
 		DEPENDS "${PROJECT_SOURCE_DIR}/scripts/gen_linkdef.sh" ${ARG_LINKDEF_HEADERS}
 		VERBATIM)
@@ -180,12 +178,14 @@ function(STAR_GENERATE_DICTIONARY star_lib_name star_lib_dir star_lib_dir_out)
 	get_target_property(target_include_dirs ${star_lib_name} INCLUDE_DIRECTORIES)
 	string(REGEX REPLACE "([^;]+)" "-I\\1" dict_include_dirs "${target_include_dirs}")
 
-	# Generate ROOT dictionary using the *_LinkDef.h and *_DictInc.h files
-	add_custom_command(OUTPUT ${star_lib_dir_out}_dict.cxx ${star_lib_dir_out}_dict.h
-		COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f ${star_lib_dir_out}_dict.cxx
+	GET_ROOT_DICT_FILE_NAMES(_linkdef_file _dictinc_file _dict_source _dict_header)
+
+	# Generate `_dict_source` and `_dict_header` using the `_linkdef_file` and `_dictinc_file` files
+	add_custom_command(OUTPUT ${_dict_source} ${_dict_header}
+		COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f ${_dict_source}
 		-c ${ARG_LINKDEF_OPTIONS} ${dict_include_dirs}
-		${ARG_LINKDEF_HEADERS} ${star_lib_dir_out}_DictInc.h ${star_lib_dir_out}_LinkDef.h
-		DEPENDS ${ARG_LINKDEF_HEADERS} ${star_lib_dir_out}_DictInc.h ${star_lib_dir_out}_LinkDef.h
+		${ARG_LINKDEF_HEADERS} ${_dictinc_file} ${_linkdef_file}
+		DEPENDS ${ARG_LINKDEF_HEADERS} ${_dictinc_file} ${_linkdef_file}
 		VERBATIM)
 endfunction()
 
@@ -234,8 +234,9 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 
 	set(sources ${sources_cpp} ${sources_idl} ${sources_gtoF} ${sources_F})
 
-	# XXX The hardcoded .cxx extension below should be defined by cmake?
-	add_library(${star_lib_name} ${sources} ${star_lib_dir_out}_dict.cxx)
+	GET_ROOT_DICT_FILE_NAMES(_linkdef_file _dictinc_file _dict_source _dict_header)
+
+	add_library(${star_lib_name} ${sources} ${_dict_source})
 
 	# Output the library to the respecitve subdirectory in the binary directory
 	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
@@ -247,7 +248,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 		"${CMAKE_CURRENT_BINARY_DIR}/include"
 		"${CMAKE_CURRENT_BINARY_DIR}/include/tables/${star_lib_name_for_tables}")
 
-	# Generate the _dict.cxx file for the library
+	# Generate the dictionary file for the library
 	star_generate_dictionary(${star_lib_name} ${star_lib_dir_abs} ${star_lib_dir_out}
 		LINKDEF_HEADERS ${${star_lib_name}_LINKDEF_HEADERS}
 		LINKDEF_OPTIONS "-p;-D__ROOT__"
@@ -482,7 +483,8 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 		# Exclude some xml files
 		FILTER_LIST(geo_xml_files EXCLUDE "Compat")
 		_star_parse_geoxml_RootTGeo("${geo_xml_files}" "${star_lib_dir_out}" geo_sources geo_headers)
-		list(APPEND geo_sources ${star_lib_dir_out}_dict.cxx)
+		GET_ROOT_DICT_FILE_NAMES(_linkdef_file _dictinc_file _dict_source _dict_header)
+		list(APPEND geo_sources ${_dict_source})
 	endif()
 
 	add_library(${star_lib_name} ${geo_sources})
@@ -492,7 +494,7 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 
 	if(${ARGV2} STREQUAL "RootTGeo")
 		target_include_directories(${star_lib_name} PRIVATE "${CMAKE_CURRENT_BINARY_DIR};${STAR_SRC}")
-		# Generate the _dict.cxx file for the library
+		# Generate the dictionary file for the library
 		star_generate_dictionary(${star_lib_name} ${star_lib_dir_out} ${star_lib_dir_out}
 			LINKDEF_HEADERS ${geo_headers}
 			LINKDEF_OPTIONS "-p;-D__ROOT__")
@@ -693,8 +695,8 @@ function(STAR_ADD_LIBRARY_VERTEXNOSTI star_lib_dir)
 	set(vtxnosti_headers
 		${star_lib_dir_abs}/StGenericVertexMaker.h
 		${star_lib_dir_abs}/Minuit/St_VertexCutsC.h)
-	set(linkdef_file "${star_lib_dir_out}_LinkDef.h")
-	set(dictinc_file "${star_lib_dir_out}_DictInc.h")
+
+	GET_ROOT_DICT_FILE_NAMES(_linkdef_file _dictinc_file _dict_source _dict_header)
 
 	add_library(StGenericVertexMakerNoSti
 		${star_lib_dir_abs}/StCtbUtility.cxx
@@ -705,13 +707,13 @@ function(STAR_ADD_LIBRARY_VERTEXNOSTI star_lib_dir)
 		${star_lib_dir_abs}/VertexFinderOptions.cxx
 		${star_lib_dir_abs}/Minuit/StMinuitVertexFinder.cxx
 		${star_lib_dir_abs}/Minuit/St_VertexCutsC.cxx
-		${star_lib_dir_out}_dict.cxx)
+		${_dict_source})
 	# Output the library to the respecitve subdirectory in the binary directory
 	set_target_properties(StGenericVertexMakerNoSti PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
 
 	add_custom_command(
-		OUTPUT ${dictinc_file} ${linkdef_file}
-		COMMAND ${PROJECT_SOURCE_DIR}/scripts/gen_linkdef.sh -l ${linkdef_file} -d ${dictinc_file} ${vtxnosti_headers}
+		OUTPUT ${_dictinc_file} ${_linkdef_file}
+		COMMAND ${PROJECT_SOURCE_DIR}/scripts/gen_linkdef.sh -l ${_linkdef_file} -d ${_dictinc_file} ${vtxnosti_headers}
 		DEPENDS ${PROJECT_SOURCE_DIR}/scripts/gen_linkdef.sh ${vtxnosti_headers} )
 
 	get_property(global_include_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
@@ -719,11 +721,11 @@ function(STAR_ADD_LIBRARY_VERTEXNOSTI star_lib_dir)
 
 	# Generate ROOT dictionary using the *_LinkDef.h and *_DictInc.h files
 	add_custom_command(
-		OUTPUT ${star_lib_dir_out}_dict.cxx
-		COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f ${star_lib_dir_out}_dict.cxx
+		OUTPUT ${_dict_source}
+		COMMAND ${ROOT_DICTGEN_EXECUTABLE} -cint -f ${_dict_source}
 		-c -p -D__ROOT__ ${global_include_dirs}
-		${vtxnosti_headers} ${dictinc_file} ${linkdef_file}
-		DEPENDS ${vtxnosti_headers} ${dictinc_file} ${linkdef_file}
+		${vtxnosti_headers} ${_dictinc_file} ${_linkdef_file}
+		DEPENDS ${vtxnosti_headers} ${_dictinc_file} ${_linkdef_file}
 		VERBATIM )
 
 	install(TARGETS StGenericVertexMakerNoSti
