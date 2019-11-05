@@ -1,13 +1,16 @@
-
 #define LOGURU_IMPLEMENTATION 1
-#include "Tracker/FwdTracker.h"
-#include "Tracker/FwdHit.h"
-#include "Tracker/TrackFitter.h"
-#include "XmlConfig/XmlConfig.h"
+
+#include "StgMaker/StgMaker.h"
+#include "StgMaker/include/Tracker/FwdTracker.h"
+#include "StgMaker/include/Tracker/FwdHit.h"
+#include "StgMaker/include/Tracker/TrackFitter.h"
+#include "StgMaker/XmlConfig/XmlConfig.h"
+
+#include "KiTrack/IHit.h"
 
 #include "TMath.h"
 
-#include "StgMaker.h"
+#include <limits>
 #include <map>
 #include <string>
 
@@ -21,14 +24,10 @@
 #include "StTrackGeometry.h"
 #include "StHelixModel.h"
 
-#include "TRungeKutta.h"
-
 #include "tables/St_g2t_track_Table.h"
 #include "tables/St_g2t_fts_hit_Table.h"
 
-
 #include "StarMagField.h"
-#include "TRandom.h"
 
 #include "StEventUtilities/StEventHelper.h"
 
@@ -36,8 +35,6 @@
 #include "StEvent/StEnumerations.h"
 
 #include "StarClassLibrary/StPhysicalHelix.hh"
-
-#include <limits>
 
 
 //_______________________________________________________________________________________

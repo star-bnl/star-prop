@@ -1,7 +1,7 @@
 #ifndef VERTEX_FINDER_H
 #define VERTEX_FINDER_H
 
-#include "Tracker/FwdHit.h"
+#include "StgMaker/include/Tracker/FwdHit.h"
 
 class VertexFinder {
 	public:

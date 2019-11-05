@@ -2,17 +2,17 @@
 #define HIT_LOADER_H
 
 #include <map>
-#include "Tracker/FwdHit.h"
-#include "XmlConfig.h"
-
-#include "Tracker/loguru.h"
 
 #include "TFile.h"
 #include "TTree.h"
 #include "TRandom.h"
 #include "TRandom3.h"
 
-#include "Tracker/ConfigUtil.h"
+#include "StgMaker/include/Tracker/FwdHit.h"
+#include "StgMaker/include/Tracker/loguru.h"
+#include "StgMaker/include/Tracker/ConfigUtil.h"
+
+#include "StgMaker/XmlConfig/XmlConfig.h"
 
 class IHitLoader {
 	public:

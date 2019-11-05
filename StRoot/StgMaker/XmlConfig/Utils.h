@@ -11,11 +11,8 @@
 #include <unistd.h> 
 
 // for round
-#include <math.h>
+#include <cmath>
 #include <vector>
-
-// for logging in the framework
-#include "Logger.h"
 
 using namespace std;
 

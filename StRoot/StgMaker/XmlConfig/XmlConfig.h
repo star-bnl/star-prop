@@ -1,31 +1,21 @@
 #ifndef XML_CONFIG_H
 #define XML_CONFIG_H
 
-#ifndef __CINT__
-#include "RapidXmlWrapper.h"
-#endif
-
-// STD
 #include <string>
 #include <iostream>
 #include <vector>
-#include <exception>
 #include <sstream>
 #include <map>
-#include <unordered_map>
 #include <algorithm>
 #include <iomanip>
 #include <memory>
 #include <utility>         // std::pair, std::make_pair
-#include <stdexcept>      // std::out_of_range
 
 #include <sys/stat.h>
 
-// Roobarb
-#include "Logger.h"
-#include "Utils.h"
-// Interfaces
-#include "IObject.h"
+#include "StgMaker/XmlConfig/Utils.h"
+#include "StgMaker/XmlConfig/IObject.h"
+#include "StgMaker/XmlConfig/RapidXmlWrapper.h"
 
 
 namespace jdb {

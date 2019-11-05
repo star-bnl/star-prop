@@ -1,8 +1,6 @@
 #ifndef FWD_TRACKER_H
 #define FWD_TRACKER_H
 
-// #include <KiTrack/IHit.h>
-
 #include "TTree.h"
 #include "TFile.h"
 #include "TH1.h"
@@ -10,36 +8,32 @@
 #include "TH2F.h"
 #include "TGraph2D.h"
 #include "TRandom3.h"
-#include <Fit/Fitter.h>
+#include "TVector3.h"
+#include "Fit/Fitter.h"
 
-// STL
-#include <string.h>
+#include <string>
 #include <vector>
 #include <algorithm>
 #include <memory>
 
-#include "loguru.h"
-#include "Criteria/Crit_Histo.h"
-#include "Tracker/FwdHit.h"
-#include "Tracker/FastSim.h"
-#include "Tracker/HitLoader.h"
-#include "Tracker/QualityPlotter.h"
-#include "Tracker/VertexFinder.h"
-#include "Tracker/TrackFitter.h"
+#include "StgMaker/include/Tracker/loguru.h"
+#include "StgMaker/include/Tracker/ConfigUtil.h"
+#include "StgMaker/include/Tracker/FwdHit.h"
+#include "StgMaker/include/Tracker/FastSim.h"
+#include "StgMaker/include/Tracker/HitLoader.h"
+#include "StgMaker/include/Tracker/QualityPlotter.h"
+#include "StgMaker/include/Tracker/VertexFinder.h"
+#include "StgMaker/include/Tracker/TrackFitter.h"
 
-#include <KiTrack/SegmentBuilder.h>
-#include <KiTrack/Automaton.h>
-#include <Criteria/Criteria.h>
-#include <Criteria/ICriterion.h>
-#include <KiTrack/SubsetHopfieldNN.h>
+#include "KiTrack/SegmentBuilder.h"
+#include "KiTrack/Automaton.h"
+#include "Criteria/Criteria.h"
+#include "Criteria/ICriterion.h"
+#include "KiTrack/SubsetHopfieldNN.h"
 
+#include "GenFit/FitStatus.h"
 
-#include "ConfigUtil.h"
-#include "TVector3.h"
-
-#include "GitCommitTagger.h"
-
-#include <FitStatus.h>
+#include "StgMaker/XmlConfig/XmlConfig.h"
 
 // template <>
 // TString XmlConfig::get<TString>( string path ) const {

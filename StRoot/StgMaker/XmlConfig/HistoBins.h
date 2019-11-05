@@ -2,10 +2,10 @@
 #define HISTOGRAM_BINS
 
 // ROOBARB
-#include "XmlConfig.h"
-#include "Utils.h"
-#include "Logger.h"
-#include "IObject.h"
+#include "StgMaker/XmlConfig/XmlConfig.h"
+#include "StgMaker/XmlConfig/Utils.h"
+#include "StgMaker/XmlConfig/Logger.h"
+#include "StgMaker/XmlConfig/IObject.h"
 
 
 // STL
@@ -13,7 +13,6 @@
 #include <string> 
 #include <algorithm>
 #include <limits>
-#include <math.h>
 #include <unordered_map>
 #include <utility>
 using namespace std;

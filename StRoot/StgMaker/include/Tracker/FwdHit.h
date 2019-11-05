@@ -1,9 +1,10 @@
 #ifndef FWD_HIT_H
 #define FWD_HIT_H
 
-#include <KiTrack/IHit.h>
-#include <KiTrack/ISectorConnector.h>
-#include <KiTrack/ISectorSystem.h>
+#include "KiTrack/IHit.h"
+#include "KiTrack/ISectorConnector.h"
+#include "KiTrack/ISectorSystem.h"
+#include "KiTrack/KiTrackExceptions.h"
 
 #include <string.h>
 #include <vector>

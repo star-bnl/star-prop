@@ -1,22 +1,20 @@
 #ifndef QUALITY_PLOTTER_H
 #define QUALITY_PLOTTER_H
 
-#include "XmlConfig.h"
-#include "HistoBins.h"
 #include <string>
 #include <map>
 
-// ROOT
 #include "TH1.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TVector3.h"
 
-#include "loguru.h"
+#include "GenFit/FitStatus.h"
 
-#include "FwdHit.h"
-
-#include <FitStatus.h>
+#include "StgMaker/include/Tracker/loguru.h"
+#include "StgMaker/include/Tracker/FwdHit.h"
+#include "StgMaker/XmlConfig/XmlConfig.h"
+#include "StgMaker/XmlConfig/HistoBins.h"
 
 class QualityPlotter {
 public:

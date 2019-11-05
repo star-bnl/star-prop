@@ -1,45 +1,37 @@
 #ifndef TRACK_FITTER_H
 #define TRACK_FITTER_H
 
-#include "XmlConfig.h"
+#include "GenFit/ConstField.h"
+#include "GenFit/Exception.h"
+#include "GenFit/FieldManager.h"
+#include "GenFit/KalmanFitterRefTrack.h"
+#include "GenFit/KalmanFitter.h"
+#include "GenFit/StateOnPlane.h"
+#include "GenFit/Track.h"
+#include "GenFit/TrackPoint.h"
+#include "GenFit/MaterialEffects.h"
+#include "GenFit/RKTrackRep.h"
+#include "GenFit/TGeoMaterialInterface.h"
+#include "GenFit/EventDisplay.h"
+#include "GenFit/PlanarMeasurement.h"
+#include "GenFit/SpacepointMeasurement.h"
 
-// GENFIT
-#include <ConstField.h>
-#include <Exception.h>
-#include <FieldManager.h>
-#include <KalmanFitterRefTrack.h>
-#include <KalmanFitter.h>
-#include <StateOnPlane.h>
-#include <Track.h>
-#include <TrackPoint.h>
-
-#include <MaterialEffects.h>
-#include <RKTrackRep.h>
-#include <TGeoMaterialInterface.h>
-
-#include <EventDisplay.h>
-
-#include <PlanarMeasurement.h>
-#include <SpacepointMeasurement.h>
-
-#include <TEveManager.h>
-#include <TGeoManager.h>
-#include <TVector3.h>
-#include <vector>
-#include <numeric>
-
-#include "TDatabasePDG.h"
-#include <TMath.h>
-
-
-// Project
 #include "Criteria/SimpleCircle.h"
-#include "Tracker/FwdHit.h"
-#include "STARField.h"
-#include "loguru.h"
 
+#include "TGeoManager.h"
 #include "TRandom.h"
 #include "TRandom3.h"
+#include "TVector3.h"
+#include "TDatabasePDG.h"
+#include "TMath.h"
+
+#include <vector>
+
+#include "StgMaker/include/Tracker/FwdHit.h"
+#include "StgMaker/include/Tracker/STARField.h"
+#include "StgMaker/include/Tracker/loguru.h"
+#include "StgMaker/XmlConfig/XmlConfig.h"
+
 
 // hack of a global field pointer
 genfit::AbsBField* _gField = 0;

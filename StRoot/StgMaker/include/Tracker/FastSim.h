@@ -1,14 +1,12 @@
 #ifndef FAST_SIM_H
 #define FAST_SIM_H
 
-#include "loguru.h"
-
-#include "Tracker/FwdHit.h"
+#include "StgMaker/include/Tracker/loguru.h"
+#include "StgMaker/include/Tracker/FwdHit.h"
 
 #include <map>
 #include <string>
 
-// ROOT
 #include "TFile.h"
 #include "TTree.h"
 #include "TRandom3.h"

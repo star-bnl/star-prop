@@ -4,7 +4,7 @@
 #include "StMaker.h"
 
 #ifndef __CINT__
-#include "Track.h"
+#include "GenFit/Track.h"
 
 namespace KiTrack { 
   class IHit;
