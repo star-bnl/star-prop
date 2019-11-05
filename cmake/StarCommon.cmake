@@ -120,7 +120,7 @@ endfunction()
 # existing LinkDef file in LINKDEF argument to be incorporated in the generated
 # ${star_lib_dir}_LinkDef.h
 #
-function(STAR_GENERATE_LINKDEF star_lib_dir)
+function(STAR_GENERATE_LINKDEF star_lib_name star_lib_dir_out)
 	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS" ${ARGN})
 
 	# Set default name for LinkDef file
@@ -171,8 +171,8 @@ function(STAR_GENERATE_DICTIONARY star_lib_name star_lib_dir star_lib_dir_out)
 	endif()
 
 	# Generate a basic LinkDef file and, if available, merge with the one
-	# provided by the user
-	star_generate_linkdef(${star_lib_dir_out} LINKDEF ${user_linkdef} LINKDEF_HEADERS ${linkdef_headers})
+	# possibly provided by the user in `star_lib_dir`
+	star_generate_linkdef(${star_lib_name} ${star_lib_dir_out} LINKDEF ${user_linkdef} LINKDEF_HEADERS ${linkdef_headers})
 
 	# Prepare include directories to be used during ROOT dictionary generation.
 	# These directories are tied to the `star_lib_name` target via the
