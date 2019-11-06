@@ -14,8 +14,7 @@
 using namespace std;
 using namespace rapidxml;
 
-#include "Logger.h"
-using namespace jdb;
+#include "St_base/StMessMgr.h"
 
 
 typedef unordered_map<string, string> config_map;

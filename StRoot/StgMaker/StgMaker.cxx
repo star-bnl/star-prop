@@ -35,6 +35,7 @@
 #include "StEvent/StEnumerations.h"
 
 #include "StarClassLibrary/StPhysicalHelix.hh"
+#include "St_base/StMessMgr.h"
 
 
 //_______________________________________________________________________________________

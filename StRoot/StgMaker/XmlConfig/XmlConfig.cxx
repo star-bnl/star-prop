@@ -2,6 +2,8 @@
 #include "StgMaker/XmlConfig/XmlString.h"
 #include "StgMaker/XmlConfig/Utils.h"
 
+#include "St_base/StMessMgr.h"
+
 #ifdef __CINT__
 ClassImp( jdb::XmlConfig );
 #endif

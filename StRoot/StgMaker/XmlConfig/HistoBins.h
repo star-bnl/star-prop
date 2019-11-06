@@ -4,7 +4,6 @@
 // ROOBARB
 #include "StgMaker/XmlConfig/XmlConfig.h"
 #include "StgMaker/XmlConfig/Utils.h"
-#include "StgMaker/XmlConfig/Logger.h"
 #include "StgMaker/XmlConfig/IObject.h"
 
 
@@ -20,6 +19,8 @@ using namespace std;
 #include "TMath.h"
 #include "TH2.h"
 #include "TH3.h"
+
+#include "St_base/StMessMgr.h"
 
 namespace jdb{
 
