@@ -80,3 +80,6 @@ fi
 unset old_star
 unset thisstar
 unset -f drop_from_path
+
+export STAR_VERSION=DEV
+export STAR_LEVEL=dev
