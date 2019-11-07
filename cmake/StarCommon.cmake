@@ -612,7 +612,7 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 	# Build and install starsim executable
 	add_executable(starsim ${starsim_dir_abs}/acmain.cxx)
 
-	target_link_libraries(starsim -Wl,--whole-archive starsimlib -Wl,--no-whole-archive -Wl,-Bdynamic geant321 gcalor
+	target_link_libraries(starsim -Wl,--whole-archive -Wl,-Bstatic -Wl,-z -Wl,muldefs starsimlib -Wl,--no-whole-archive -Wl,-Bdynamic geant321 gcalor
 		 ${CERNLIB_LIBRARIES} ${MYSQL_LIBRARIES} gfortran Xt Xpm X11 z m rt dl crypt)
 	set_target_properties(starsim PROPERTIES LINK_FLAGS "-Wl,-export-dynamic")
 
@@ -939,7 +939,7 @@ function(STAR_ADD_EXECUTABLE_ROOT4STAR star_exec_dir)
 		DEPENDS  ${exec_dir_abs}/TGeant3/StarMC.h ${exec_dir_abs}/TGeant3/TGiant3.h ${exec_dir_abs}/rexeLinkDef.h
 		VERBATIM )
 
-	target_link_libraries(root4star -Wl,--whole-archive starsimlib  -Wl,--no-whole-archive geant321 gcalor
+	target_link_libraries(root4star -Wl,--whole-archive -Wl,-Bstatic -Wl,-z -Wl,muldefs starsimlib -Wl,--no-whole-archive -Wl,-Bdynamic geant321 gcalor
 		${ROOT_LIBRARIES} ${CERNLIB_LIBRARIES} ${MYSQL_LIBRARIES} gfortran Xt Xpm X11 Xm dl crypt)
 	set_target_properties(root4star PROPERTIES LINK_FLAGS "-Wl,-export-dynamic")
 
