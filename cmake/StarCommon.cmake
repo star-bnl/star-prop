@@ -21,8 +21,14 @@ find_program(ROOT_DICTGEN_EXECUTABLE NAMES rootcling rootcint HINTS $ENV{ROOTSYS
 
 # Define common STAR_ and CMAKE_ variables used to build the STAR code
 
-string(TIMESTAMP STAR_BUILD_DATE "%y%m%d")
-string(TIMESTAMP STAR_BUILD_TIME "%H%M")
+# Define the build "DATE" and "TIME" variables only when Release is built.
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+	string(TIMESTAMP STAR_BUILD_DATE "%y%m%d")
+	string(TIMESTAMP STAR_BUILD_TIME "%H%M")
+else()
+	set(STAR_BUILD_DATE "000000")
+	set(STAR_BUILD_TIME "0000")
+endif()
 
 # -D__ROOT__ is used by many classes guarding calls to ClassDef() macro
 set(STAR_C_CXX_DEFINITIONS "-D__ROOT__")
