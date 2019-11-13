@@ -123,6 +123,7 @@ install(DIRECTORY
 	${STAR_SRC}/StarDb/StMagF
 	${STAR_SRC}/StarDb/dEdxModel
 	${STAR_SRC}/StarDb/tpc
+	${STAR_SRC}/StarDb/ctf
 	DESTINATION StarDb/)
 
 install(DIRECTORY
