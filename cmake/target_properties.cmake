@@ -20,7 +20,7 @@ if(TARGET StDaqLib)
 endif()
 
 if(TARGET StDAQMaker)
-	target_include_directories(StDAQMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src;${STAR_SRC}/StRoot/RTS/include")
+	target_include_directories(StDAQMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src" "${STAR_SRC}/StRoot/RTS/include")
 endif()
 
 if(TARGET StEmcRawMaker)
@@ -28,11 +28,11 @@ if(TARGET StEmcRawMaker)
 endif()
 
 if(TARGET StFgtRawMaker)
-	target_include_directories(StFgtRawMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src;${STAR_SRC}/StRoot/RTS/include")
+	target_include_directories(StFgtRawMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src" "${STAR_SRC}/StRoot/RTS/include")
 endif()
 
 if(TARGET StFpsRawHitMaker)
-	target_include_directories(StFpsRawHitMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src;${STAR_SRC}/StRoot/RTS/include")
+	target_include_directories(StFpsRawHitMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src" "${STAR_SRC}/StRoot/RTS/include")
 endif()
 
 if(TARGET StRtsReaderMaker)
@@ -46,7 +46,7 @@ if(TARGET StGenericVertexMaker)
 endif()
 
 if(TARGET StIstRawHitMaker)
-	target_include_directories(StIstRawHitMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src;${STAR_SRC}/StRoot/RTS/include")
+	target_include_directories(StIstRawHitMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src" "${STAR_SRC}/StRoot/RTS/include")
 endif()
 
 # -D_UCMLOGGER_ is used in StStarLogger
@@ -73,7 +73,7 @@ if(TARGET StMtdHitMaker)
 endif()
 
 if(TARGET StTpcHitMaker)
-	target_include_directories(StTpcHitMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src;${STAR_SRC}/StRoot/RTS/include")
+	target_include_directories(StTpcHitMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src" "${STAR_SRC}/StRoot/RTS/include")
 endif()
 
 if(TARGET Stv)
@@ -182,7 +182,7 @@ if(TARGET StarMagFieldNoDict)
 endif()
 
 if(TARGET StSstDaqMaker)
-	target_include_directories(StSstDaqMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src;${STAR_SRC}/StRoot/RTS/include")
+	target_include_directories(StSstDaqMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src" "${STAR_SRC}/StRoot/RTS/include")
 endif()
 
 if(TARGET StTofHitMaker)
