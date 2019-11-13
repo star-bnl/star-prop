@@ -5,4 +5,13 @@ define_property(SOURCE PROPERTY AGETOF_ADDITIONAL_OPTIONS
 
 # Note "-V f" is without quotes due to VERBATIM option in the correspongin
 # ADD_CUSTOM_COMMAND() where this values is used
-set_property(SOURCE ${STAR_SRC}/pams/sim/g2t/g2t_fts.F PROPERTY AGETOF_ADDITIONAL_OPTIONS -V f)
+file(GLOB f_files "${STAR_SRC}/pams/sim/g2t/*.F")
+foreach(f_file ${f_files})
+	set_property(SOURCE ${f_file} PROPERTY AGETOF_ADDITIONAL_OPTIONS -V f)
+	set_property(SOURCE ${f_file} PROPERTY INCLUDE_DIRECTORIES
+		"${STAR_SRC}/asps/Simulation/geant321/include"
+		"${STAR_SRC}/asps/Simulation/starsim/include/"
+		"${CMAKE_CURRENT_BINARY_DIR}/include")
+endforeach()
+
+set_property(SOURCE "${STAR_SRC}/pams/sim/g2t/g2r_get.F" PROPERTY AGETOF_ADDITIONAL_OPTIONS )
