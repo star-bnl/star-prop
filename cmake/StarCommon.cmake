@@ -226,7 +226,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 
 	file(GLOB_RECURSE f_files "${star_lib_dir_abs}/*.F")
 	FILTER_LIST(f_files EXCLUDE ${star_lib_exclude})
-	star_process_f(${star_lib_name} "${f_files}" ${star_lib_dir_out} sources_F)
+	star_process_f("${f_files}" ${star_lib_dir_out} sources_F)
 
 	file(GLOB_RECURSE g_files "${star_lib_dir_abs}/*.g")
 	FILTER_LIST(g_files EXCLUDE ${star_lib_exclude})
@@ -877,7 +877,7 @@ endfunction()
 
 
 
-function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
+function(STAR_PROCESS_F in_F_files star_lib_dir_out out_F_files)
 	# Exit right away if there is no input files to process
 	if(NOT "${in_F_files}")
 		return()
@@ -885,20 +885,19 @@ function(STAR_PROCESS_F star_lib_name in_F_files star_lib_dir_out out_F_files)
 
 	set(_out_F_files)
 
-	get_property(_target_include_dirs TARGET ${star_lib_name} PROPERTY INCLUDE_DIRECTORIES)
-	string(REGEX REPLACE "([^;]+)" "-I\\1" _target_include_dirs "${_target_include_dirs}")
-
 	foreach(f_file ${in_F_files})
 		get_filename_component(f_file_name_we ${f_file} NAME_WE)
 		set(g_file "${star_lib_dir_out}/${f_file_name_we}.g")
 		set(out_F_file "${star_lib_dir_out}/${f_file_name_we}.F")
 
 		get_property(_agetof_additional_options SOURCE ${f_file} PROPERTY AGETOF_ADDITIONAL_OPTIONS)
+		get_property(_f_file_include_dirs SOURCE ${f_file} PROPERTY INCLUDE_DIRECTORIES)
+		string(REGEX REPLACE "([^;]+)" "-I\\1" _f_file_include_dirs "${_f_file_include_dirs}")
 
 		add_custom_command(
 			OUTPUT ${g_file} ${out_F_file}
 			COMMAND ${CMAKE_COMMAND} -E make_directory ${star_lib_dir_out}
-			COMMAND ${CMAKE_C_COMPILER} -E -P ${STAR_Fortran_DEFINITIONS} ${_target_include_dirs} ${f_file} -o ${g_file}
+			COMMAND ${CMAKE_C_COMPILER} -E -P ${STAR_Fortran_DEFINITIONS} ${_f_file_include_dirs} ${f_file} -o ${g_file}
 			COMMAND ${CMAKE_CURRENT_BINARY_DIR}/agetof -V 1 ${_agetof_additional_options} ${g_file} -o ${out_F_file}
 			DEPENDS ${f_file} agetof VERBATIM)
 
