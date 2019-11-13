@@ -230,7 +230,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 
 	file(GLOB_RECURSE g_files "${star_lib_dir_abs}/*.g")
 	FILTER_LIST(g_files EXCLUDE ${star_lib_exclude})
-	star_process_g("${g_files}" ${star_lib_dir_out} sources_gtoF)
+	star_process_g("${g_files}" sources_gtoF)
 
 	file(GLOB_RECURSE idl_files "${star_lib_dir_abs}/*.idl")
 	FILTER_LIST(idl_files EXCLUDE ${star_lib_exclude})
@@ -536,7 +536,7 @@ function(_STAR_PARSE_GEOXML_GeantGeo geo_xml_files out_dir out_sources)
 	endforeach()
 
 	# Add an existing *.age file to the generated ones
-	star_process_g("${geo_sources_generated};${STAR_SRC}/StarVMC/xgeometry/xgeometry.age" ${out_dir} out_sources_)
+	star_process_g("${geo_sources_generated};${STAR_SRC}/StarVMC/xgeometry/xgeometry.age" out_sources_)
 
 	# Return complete list of *.age files
 	set(${out_sources} ${out_sources_} PARENT_SCOPE)
@@ -671,9 +671,9 @@ function(STAR_ADD_LIBRARY_BASIC star_lib_dir)
 	FILTER_LIST(f_files EXCLUDE ${star_lib_exclude})
 	# Also find all *.g and *.age files. They need to be processed with agetof
 	file(GLOB_RECURSE g_files "${star_lib_dir_abs}/*.g")
-	star_process_g("${g_files}" ${star_lib_dir_out} f_g_files)
+	star_process_g("${g_files}" f_g_files)
 	file(GLOB_RECURSE age_files "${star_lib_dir_abs}/*.age")
-	star_process_g("${age_files}" ${star_lib_dir_out} f_age_files)
+	star_process_g("${age_files}" f_age_files)
 
 	add_library(${star_lib_name} ${f_files} ${f_g_files} ${f_age_files} ${cxx_files} ${c_files})
 	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
@@ -910,17 +910,20 @@ endfunction()
 
 
 
-function(STAR_PROCESS_G in_g_files star_lib_dir_out out_F_files)
+function(STAR_PROCESS_G in_g_files out_F_files)
 
 	set(_out_F_files)
 
 	foreach(g_file ${in_g_files})
 		get_filename_component(g_file_name_we ${g_file} NAME_WE)
-		set(out_F_file "${star_lib_dir_out}/${g_file_name_we}.F")
+		get_filename_component(g_file_directory ${g_file} DIRECTORY)
+		file(RELATIVE_PATH _rel_path ${STAR_SRC} ${g_file_directory})
+		set(_star_lib_dir_out ${CMAKE_CURRENT_BINARY_DIR}/${_rel_path})
+		set(out_F_file "${_star_lib_dir_out}/${g_file_name_we}.F")
 
 		add_custom_command(
 			OUTPUT ${out_F_file}
-			COMMAND ${CMAKE_COMMAND} -E make_directory ${star_lib_dir_out}
+			COMMAND ${CMAKE_COMMAND} -E make_directory ${_star_lib_dir_out}
 			COMMAND ${CMAKE_CURRENT_BINARY_DIR}/agetof -V 1 ${g_file} -o ${out_F_file}
 			DEPENDS ${g_file} agetof VERBATIM)
 
