@@ -119,12 +119,17 @@ install(DIRECTORY
 # Some modules depend on DB entries available on disk
 install(DIRECTORY
 	${STAR_SRC}/StarDb/AgMLGeometry
-	${STAR_SRC}/StarDb/Calibrations
 	${STAR_SRC}/StarDb/Geometry
 	${STAR_SRC}/StarDb/StMagF
 	${STAR_SRC}/StarDb/dEdxModel
 	${STAR_SRC}/StarDb/tpc
 	DESTINATION StarDb/)
+
+install(DIRECTORY
+	${STAR_SRC}/StarDb/Calibrations
+	DESTINATION StarDb/
+	REGEX "tpcDriftVelocity.20000" EXCLUDE
+	)
 
 install(DIRECTORY
 	${STAR_SRC}/StDb/servers
