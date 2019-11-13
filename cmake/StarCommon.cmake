@@ -878,10 +878,6 @@ endfunction()
 
 
 function(STAR_PROCESS_F in_F_files star_lib_dir_out out_F_files)
-	# Exit right away if there is no input files to process
-	if(NOT "${in_F_files}")
-		return()
-	endif()
 
 	set(_out_F_files)
 
