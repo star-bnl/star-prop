@@ -39,9 +39,7 @@ if [ "x${SOURCE}" = "x" ]; then
         return 1
     fi
 else
-    # get param to "."
-    thisstar=$(dirname ${SOURCE})
-    STAR=$(cd ${thisstar}/.. > /dev/null;pwd); export STAR
+    export STAR=@CMAKE_INSTALL_PREFIX@
 fi
 
 if [ -n "${old_star}" ] ; then
