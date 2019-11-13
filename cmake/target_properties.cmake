@@ -100,7 +100,8 @@ endif()
 # CERNLIB_CG is used by asps/Simulation/geant321/gdraw/gdcota.F
 # CERNLIB_COMIS is used by asps/Simulation/geant321/gxint/gxcs.F
 if(TARGET geant321)
-	target_include_directories(geant321 PRIVATE "${STAR_SRC}/asps/Simulation/starsim/include")
+	target_include_directories(geant321 PRIVATE "${STAR_SRC}/asps/Simulation/starsim/include"
+	                                            "${STAR_SRC}/asps/Simulation/geant321/include")
 	target_compile_options(geant321 PRIVATE
 		-DCERNLIB_BSLASH
 		-DCERNLIB_CG
