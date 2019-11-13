@@ -618,8 +618,7 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 
 	# Build and install starsim library
 	add_library(starsimlib STATIC ${_starsimlib_sources})
-	GET_SUBDIRS(starsim_subdirs ${starsim_dir_abs} INCLUDE_PARENT)
-	target_include_directories(starsimlib PRIVATE ${starsim_subdirs} ${starsim_INCLUDE_DIRECTORIES})
+	target_include_directories(starsimlib PRIVATE ${starsim_INCLUDE_DIRECTORIES})
 	set_target_properties(starsimlib PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
 
 	install(TARGETS starsimlib
