@@ -211,7 +211,7 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 	endif()
 
 	# Deal with sources
-	GET_EXCLUDE_LIST(${star_lib_name} star_lib_exclude)
+	GET_EXCLUDE_LIST(star_lib_exclude)
 
 	file(GLOB_RECURSE sources_cpp
 		"${star_lib_dir_abs}/*.cxx"
@@ -291,7 +291,7 @@ endmacro()
 
 
 # Return list of regex'es to exclude from globbed paths for target `star_lib_name`
-macro(GET_EXCLUDE_LIST star_lib_name exclude_list)
+macro(GET_EXCLUDE_LIST exclude_list)
 	set(${exclude_list}
 		${star_lib_name}.*macros
 		${star_lib_name}.*doc
@@ -655,7 +655,7 @@ function(STAR_ADD_LIBRARY_BASIC star_lib_dir)
 	endif()
 
 	# Deal with sources
-	GET_EXCLUDE_LIST(${star_lib_name} star_lib_exclude)
+	GET_EXCLUDE_LIST(star_lib_exclude)
 
 	file(GLOB_RECURSE cxx_files "${star_lib_dir_abs}/*.cxx")
 	FILTER_LIST(cxx_files EXCLUDE ${star_lib_exclude})
