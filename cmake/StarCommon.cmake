@@ -356,15 +356,13 @@ function(STAR_TARGET_PATHS star_lib_dir lib_name path_abs path_out)
 	set(_path_out)
 
 	if( IS_ABSOLUTE ${star_lib_dir} )
-		get_filename_component(_star_src_abs ${STAR_SRC} ABSOLUTE)
-
-		if(star_lib_dir MATCHES "^${_star_src_abs}")
+		if(star_lib_dir MATCHES "^${STAR_SRC}")
 			file(RELATIVE_PATH _path_rel ${STAR_SRC} ${star_lib_dir})
 		elseif(star_lib_dir MATCHES "^${PROJECT_SOURCE_DIR}")
 			file(RELATIVE_PATH _path_rel ${PROJECT_SOURCE_DIR} ${star_lib_dir})
 		else()
 			message(FATAL_ERROR
-				"StarCommon: Absolute path \"${star_lib_dir}\" must match either \"${_star_src_abs}\" or \"${PROJECT_SOURCE_DIR}\"")
+				"StarCommon: Absolute path \"${star_lib_dir}\" must match either \"${STAR_SRC}\" or \"${PROJECT_SOURCE_DIR}\"")
 		endif()
 
 		set(_path_abs ${star_lib_dir})
