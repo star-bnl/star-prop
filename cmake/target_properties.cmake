@@ -172,11 +172,6 @@ if(TARGET StarClassLibrary)
 		${STAR_INSTALL_LIBDIR}/StarClassLibrary.so)")
 endif()
 
-if(TARGET StDbLib)
-	target_include_directories(StDbLib PRIVATE "${LIBXML2_INCLUDE_DIR}")
-	set_target_properties(StDbLib PROPERTIES LINK_LIBRARIES "${LIBXML2_LIBRARIES}")
-endif()
-
 if(TARGET StarMagFieldNoDict)
 	target_compile_options(StarMagFieldNoDict PRIVATE "-U__ROOT__")
 endif()
