@@ -578,20 +578,37 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 
 	star_target_paths(${starsim_dir} dummy starsim_dir_abs star_lib_dir_out)
 
-	file(GLOB_RECURSE cxx_files "${starsim_dir_abs}/*.cxx")
-	file(GLOB_RECURSE c_files "${starsim_dir_abs}/*.c")
-	file(GLOB_RECURSE f_files "${starsim_dir_abs}/*.F")
-	# Also find all *.g and *.age files. They need to be pre-processed with agetof
-	file(GLOB_RECURSE g_files "${starsim_dir_abs}/*.g")
-	star_process_g("${g_files}" ${star_lib_dir_out} f_g_files)
-	file(GLOB_RECURSE age_files "${starsim_dir_abs}/*.age")
-	star_process_g("${age_files}" ${star_lib_dir_out} f_age_files)
+	set(_starsim_subdirs ".;rebank;geant;dzdoc;deccc;comis;comis/comis;atutil;atmain;atgeant;agzio")
+	set(_starsimlib_sources)
 
-	set(starsimlib_sources ${cxx_files} ${c_files} ${f_files} ${f_g_files} ${f_age_files})
-	FILTER_LIST(starsimlib_sources EXCLUDE
-		"atlroot"
-		"${starsim_dir_abs}/acmain.cxx"
-		"${starsim_dir_abs}/comis/cschar.F")
+	foreach(_sub_dir ${_starsim_subdirs})
+		file(GLOB _cxx_files "${starsim_dir_abs}/${_sub_dir}/*.cxx")
+		file(GLOB _c_files "${starsim_dir_abs}/${_sub_dir}/*.c")
+		file(GLOB _f_files "${starsim_dir_abs}/${_sub_dir}/*.F")
+		file(GLOB _g_files "${starsim_dir_abs}/${_sub_dir}/*.g")
+		file(GLOB _age_files "${starsim_dir_abs}/${_sub_dir}/*.age")
+
+		set(_all_files ${_cxx_files} ${_c_files} ${_f_files} ${_g_files} ${_age_files})
+		FILTER_LIST(_all_files EXCLUDE
+			"acmain.cxx"
+			"deccc/ctype.c"
+			"deccc/mykuip.c"
+			"deccc/traceqc.c"
+			"atmain/sterror.age"
+			"atmain/traceq.age"
+		)
+		list(SORT _all_files)
+
+		foreach(_source_file ${_all_files})
+			get_filename_component(_source_file_ext ${_source_file} EXT)
+			if(_source_file_ext STREQUAL ".g" OR _source_file_ext STREQUAL ".age")
+				star_process_g("${_source_file}" _f_file)
+				list(APPEND _starsimlib_sources ${_f_file})
+			else()
+				list(APPEND _starsimlib_sources ${_source_file})
+			endif()
+		endforeach()
+	endforeach()
 
 	set(starsim_INCLUDE_DIRECTORIES
 		"${starsim_dir_abs}/include"
@@ -600,7 +617,7 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 		"${CERNLIB_INCLUDE_DIRS}")
 
 	# Build and install starsim library
-	add_library(starsimlib STATIC ${starsimlib_sources})
+	add_library(starsimlib STATIC ${_starsimlib_sources})
 	GET_SUBDIRS(starsim_subdirs ${starsim_dir_abs} INCLUDE_PARENT)
 	target_include_directories(starsimlib PRIVATE ${starsim_subdirs} ${starsim_INCLUDE_DIRECTORIES})
 	set_target_properties(starsimlib PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
