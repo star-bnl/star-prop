@@ -60,12 +60,12 @@ endif()
 if(TARGET TPCCATracker)
 	set_target_properties(TPCCATracker PROPERTIES LINK_LIBRARIES "${ROOT_Vc_LIBRARY}")
 	install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink libTPCCATracker.so \
-		${STAR_INSTALL_PREFIX}/lib/TPCCATracker.so)")
+		${STAR_INSTALL_LIBDIR}/TPCCATracker.so)")
 endif()
 
 if(TARGET StiCA)
 	install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink libStiCA.so \
-		${STAR_INSTALL_PREFIX}/lib/StiCA.so)")
+		${STAR_INSTALL_LIBDIR}/StiCA.so)")
 endif()
 
 if(TARGET StMtdHitMaker)
@@ -152,7 +152,7 @@ if(TARGET StDbBroker)
 	target_include_directories(StDbBroker PRIVATE "${MYSQL_INCLUDE_DIRS}")
 	set_target_properties(StDbBroker PROPERTIES LINK_LIBRARIES "${MYSQL_LIBRARIES}")
 	get_filename_component(_mysql_dir ${MYSQL_LIBRARIES} DIRECTORY)
-	set_target_properties(StDbBroker PROPERTIES INSTALL_RPATH "${STAR_INSTALL_PREFIX}/lib;${_mysql_dir}")
+	set_target_properties(StDbBroker PROPERTIES INSTALL_RPATH "${STAR_INSTALL_LIBDIR};${_mysql_dir}")
 endif()
 
 if(TARGET StDbLib)
@@ -160,7 +160,7 @@ if(TARGET StDbLib)
 	set_target_properties(StDbLib PROPERTIES LINK_LIBRARIES "${LIBXML2_LIBRARIES};${MYSQL_LIBRARIES}")
 	get_filename_component(_libxml2_dir ${LIBXML2_LIBRARIES} DIRECTORY)
 	get_filename_component(_mysql_dir ${MYSQL_LIBRARIES} DIRECTORY)
-	set_target_properties(StDbLib PROPERTIES INSTALL_RPATH "${STAR_INSTALL_PREFIX}/lib;${_libxml2_dir};${_mysql_dir}")
+	set_target_properties(StDbLib PROPERTIES INSTALL_RPATH "${STAR_INSTALL_LIBDIR};${_libxml2_dir};${_mysql_dir}")
 endif()
 
 if(TARGET StarAgmlUtil)
@@ -169,7 +169,7 @@ endif()
 
 if(TARGET StarClassLibrary)
 	install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink libStarClassLibrary.so \
-		${STAR_INSTALL_PREFIX}/lib/StarClassLibrary.so)")
+		${STAR_INSTALL_LIBDIR}/StarClassLibrary.so)")
 endif()
 
 if(TARGET StDbLib)
@@ -193,5 +193,5 @@ endif()
 if(TARGET xgeometry)
 	set_target_properties(xgeometry PROPERTIES LINK_LIBRARIES StarMagFieldNoDict)
 	install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink libxgeometry.so \
-		${STAR_INSTALL_PREFIX}/lib/xgeometry.so)")
+		${STAR_INSTALL_LIBDIR}/xgeometry.so)")
 endif()

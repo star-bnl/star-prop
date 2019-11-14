@@ -261,11 +261,11 @@ function(STAR_ADD_LIBRARY star_lib_dir)
 		EXCLUDE ${star_lib_exclude})
 
 	install(TARGETS ${star_lib_name}
-		LIBRARY DESTINATION "${STAR_INSTALL_PREFIX}/lib" OPTIONAL
-		ARCHIVE DESTINATION "${STAR_INSTALL_PREFIX}/lib" OPTIONAL)
+		LIBRARY DESTINATION "${STAR_INSTALL_LIBDIR}" OPTIONAL
+		ARCHIVE DESTINATION "${STAR_INSTALL_LIBDIR}" OPTIONAL)
 
 	install(FILES ${headers_idl}
-		DESTINATION "${STAR_INSTALL_PREFIX}/include/tables/${star_lib_name_for_tables}" OPTIONAL)
+		DESTINATION "${STAR_INSTALL_INCLUDEDIR}/tables/${star_lib_name_for_tables}" OPTIONAL)
 endfunction()
 
 
@@ -511,9 +511,9 @@ function(STAR_ADD_LIBRARY_GEOMETRY star_lib_dir)
 	# Get relative path for the generated headers to be used at installation stage
 	file(RELATIVE_PATH geo_headers_rel_path ${CMAKE_CURRENT_BINARY_DIR} ${star_lib_dir_out})
 	install(TARGETS ${star_lib_name}
-		LIBRARY DESTINATION "${STAR_INSTALL_PREFIX}/lib" OPTIONAL
-		ARCHIVE DESTINATION "${STAR_INSTALL_PREFIX}/lib" OPTIONAL
-		PUBLIC_HEADER DESTINATION "${STAR_INSTALL_PREFIX}/include/${geo_headers_rel_path}" OPTIONAL)
+		LIBRARY DESTINATION "${STAR_INSTALL_LIBDIR}" OPTIONAL
+		ARCHIVE DESTINATION "${STAR_INSTALL_LIBDIR}" OPTIONAL
+		PUBLIC_HEADER DESTINATION "${STAR_INSTALL_INCLUDEDIR}/${geo_headers_rel_path}" OPTIONAL)
 endfunction()
 
 
@@ -626,8 +626,8 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 	set_target_properties(starsimlib PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
 
 	install(TARGETS starsimlib
-		LIBRARY DESTINATION "${STAR_INSTALL_PREFIX}/lib" OPTIONAL
-		ARCHIVE DESTINATION "${STAR_INSTALL_PREFIX}/lib" OPTIONAL)
+		LIBRARY DESTINATION "${STAR_INSTALL_LIBDIR}" OPTIONAL
+		ARCHIVE DESTINATION "${STAR_INSTALL_LIBDIR}" OPTIONAL)
 
 	# Build and install starsim executable
 	add_executable(starsim ${starsim_dir_abs}/acmain.cxx)
@@ -636,10 +636,10 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 		 ${CERNLIB_LIBRARIES} ${MYSQL_LIBRARIES} gfortran Xt Xpm X11 z m rt dl crypt)
 	set_target_properties(starsim PROPERTIES LINK_FLAGS "-Wl,-export-dynamic")
 
-	install(TARGETS starsim RUNTIME DESTINATION "${STAR_INSTALL_PREFIX}/bin" OPTIONAL)
-	install(FILES "${starsim_dir_abs}/atlsim.bank"        DESTINATION "${STAR_INSTALL_PREFIX}/bin" RENAME "starsim.bank"        OPTIONAL)
-	install(FILES "${starsim_dir_abs}/atlsim.logon.kumac" DESTINATION "${STAR_INSTALL_PREFIX}/bin" RENAME "starsim.logon.kumac" OPTIONAL)
-	install(FILES "${starsim_dir_abs}/atlsim.makefile"    DESTINATION "${STAR_INSTALL_PREFIX}/bin" RENAME "starsim.makefile"    OPTIONAL)
+	install(TARGETS starsim RUNTIME DESTINATION "${STAR_INSTALL_BINDIR}" OPTIONAL)
+	install(FILES "${starsim_dir_abs}/atlsim.bank"        DESTINATION "${STAR_INSTALL_BINDIR}" RENAME "starsim.bank"        OPTIONAL)
+	install(FILES "${starsim_dir_abs}/atlsim.logon.kumac" DESTINATION "${STAR_INSTALL_BINDIR}" RENAME "starsim.logon.kumac" OPTIONAL)
+	install(FILES "${starsim_dir_abs}/atlsim.makefile"    DESTINATION "${STAR_INSTALL_BINDIR}" RENAME "starsim.makefile"    OPTIONAL)
 endfunction()
 
 
@@ -675,8 +675,8 @@ function(STAR_ADD_LIBRARY_BASIC star_lib_dir)
 	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
 
 	install(TARGETS ${star_lib_name}
-		LIBRARY DESTINATION "${STAR_INSTALL_PREFIX}/lib" OPTIONAL
-		ARCHIVE DESTINATION "${STAR_INSTALL_PREFIX}/lib" OPTIONAL)
+		LIBRARY DESTINATION "${STAR_INSTALL_LIBDIR}" OPTIONAL
+		ARCHIVE DESTINATION "${STAR_INSTALL_LIBDIR}" OPTIONAL)
 endfunction()
 
 
@@ -698,9 +698,9 @@ function(STAR_ADD_LIBRARY_TABLE star_lib_dir)
 		PUBLIC_HEADER "${headers_idl}")
 
 	install(TARGETS ${_star_lib_name}
-		LIBRARY DESTINATION "${STAR_INSTALL_PREFIX}/lib" OPTIONAL
-		ARCHIVE DESTINATION "${STAR_INSTALL_PREFIX}/lib" OPTIONAL
-		PUBLIC_HEADER DESTINATION "${STAR_INSTALL_PREFIX}/include/tables" OPTIONAL)
+		LIBRARY DESTINATION "${STAR_INSTALL_LIBDIR}" OPTIONAL
+		ARCHIVE DESTINATION "${STAR_INSTALL_LIBDIR}" OPTIONAL
+		PUBLIC_HEADER DESTINATION "${STAR_INSTALL_INCLUDEDIR}/tables" OPTIONAL)
 endfunction()
 
 
@@ -749,8 +749,8 @@ function(STAR_ADD_LIBRARY_VERTEXNOSTI star_lib_dir)
 		VERBATIM )
 
 	install(TARGETS StGenericVertexMakerNoSti
-		LIBRARY DESTINATION "${STAR_INSTALL_PREFIX}/lib" OPTIONAL
-		ARCHIVE DESTINATION "${STAR_INSTALL_PREFIX}/lib" OPTIONAL)
+		LIBRARY DESTINATION "${STAR_INSTALL_LIBDIR}" OPTIONAL
+		ARCHIVE DESTINATION "${STAR_INSTALL_LIBDIR}" OPTIONAL)
 endfunction()
 
 
@@ -958,7 +958,7 @@ function(STAR_ADD_EXECUTABLE_ROOT4STAR star_exec_dir)
 	set_target_properties(root4star PROPERTIES LINK_FLAGS "-Wl,-export-dynamic")
 
 	install(TARGETS root4star
-		RUNTIME DESTINATION "${STAR_INSTALL_PREFIX}/bin" OPTIONAL)
+		RUNTIME DESTINATION "${STAR_INSTALL_BINDIR}" OPTIONAL)
 endfunction()
 
 

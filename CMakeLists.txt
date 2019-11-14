@@ -102,7 +102,7 @@ include("cmake/target_properties.cmake")
 install(DIRECTORY
 	${STAR_SRC}/StarVMC
 	${STAR_SRC}/StRoot
-	DESTINATION ${STAR_INSTALL_PREFIX}/include/
+	DESTINATION ${STAR_INSTALL_INCLUDEDIR}
 	FILES_MATCHING REGEX "\\.(h|hh)$")
 
 # Copy all generated headers (and the flatten hierarchy of the headers files)
