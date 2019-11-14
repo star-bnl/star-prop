@@ -55,11 +55,13 @@ endif()
 
 set(STAR_INSTALL_BINDIR "${STAR_INSTALL_PREFIX}/bin" CACHE PATH "Path to installed executables")
 set(STAR_INSTALL_LIBDIR "${STAR_INSTALL_PREFIX}/lib" CACHE PATH "Path to installed libraries")
+set(STAR_INSTALL_INCLUDEDIR "${STAR_INSTALL_PREFIX}/include" CACHE PATH "Path to installed header files")
 
 mark_as_advanced(
 	STAR_INSTALL_PREFIX
 	STAR_INSTALL_BINDIR
 	STAR_INSTALL_LIBDIR
+	STAR_INSTALL_INCLUDEDIR
 )
 
 set(CMAKE_INSTALL_RPATH "${STAR_INSTALL_LIBDIR}")
