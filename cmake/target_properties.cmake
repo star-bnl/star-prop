@@ -115,7 +115,8 @@ endif()
 
 # CPP_DATE, CPP_TIME, CPP_TITLE_CH, and CPP_VERS are used by gcalor library
 if(TARGET gcalor)
-	target_include_directories(gcalor PRIVATE "${STAR_SRC}/asps/Simulation/geant321/include"
+	target_include_directories(gcalor PRIVATE "${STAR_SRC}/asps/Simulation/gcalor/include"
+	                                          "${STAR_SRC}/asps/Simulation/geant321/include"
 	                                          "${STAR_SRC}/asps/Simulation/starsim/include")
 	target_compile_options(gcalor PRIVATE
 		-DCPP_DATE=${STAR_BUILD_DATE} -DCPP_TIME=${STAR_BUILD_TIME} -DCPP_TITLE_CH="gcalor" -DCPP_VERS="W")

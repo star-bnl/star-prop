@@ -294,7 +294,7 @@ macro(GET_EXCLUDE_LIST star_lib_name exclude_list)
 		${star_lib_name}.*macros
 		${star_lib_name}.*doc
 		${star_lib_name}.*examples
-		${${star_lib_name}_EXCLUDE})
+		"geant321/gxuser")
 endmacro()
 
 
@@ -670,8 +670,6 @@ function(STAR_ADD_LIBRARY_BASIC star_lib_dir)
 	star_process_g("${age_files}" ${star_lib_dir_out} f_age_files)
 
 	add_library(${star_lib_name} ${f_files} ${f_g_files} ${f_age_files} ${cxx_files} ${c_files})
-	GET_SUBDIRS(star_lib_subdirs ${star_lib_dir_abs} INCLUDE_PARENT)
-	target_include_directories(${star_lib_name} PRIVATE ${star_lib_subdirs})
 	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
 
 	install(TARGETS ${star_lib_name}
@@ -1052,7 +1050,3 @@ set(StEvent_LINKDEF_HEADERS
 	"${PROJECT_SOURCE_DIR}/star-aux/StArray_cint.h")
 set(StEStructPool_LINKDEF_HEADERS
 	"${PROJECT_SOURCE_DIR}/star-aux/StArray_cint.h")
-
-set(geant321_EXCLUDE
-	"asps/Simulation/geant321/doc"
-	"asps/Simulation/geant321/gxuser")
