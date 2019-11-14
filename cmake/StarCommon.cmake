@@ -144,30 +144,30 @@ endfunction()
 
 
 #
-# Generates a ROOT dictionary for `star_lib_dir` in ${STAR_SRC}.
+# Generates two files `_dict_source` and `_dict_header` in `star_lib_dir_out`.
+# The files contain the ROOT dictionary for the `star_lib_name` library and its
+# source files in `star_lib_dir`.
 #
 function(STAR_GENERATE_DICTIONARY star_lib_name star_lib_dir star_lib_dir_out)
 	cmake_parse_arguments(ARG "" "" "LINKDEF_HEADERS;LINKDEF_OPTIONS;EXCLUDE" "" ${ARGN})
 
-	# Search for default LinkDef if not specified
-	file( GLOB user_linkdefs "${star_lib_dir}/*LinkDef.h"
-	                         "${star_lib_dir}/*LinkDef.hh" )
+	# We assume the header files are generated when the directory containing
+	# input files `star_lib_dir` is inside the build directory
+	if(star_lib_dir MATCHES "^${CMAKE_CURRENT_BINARY_DIR}")
+		set(linkdef_headers "${ARG_LINKDEF_HEADERS}")
+		set(user_linkdef)
+	else()
+		# Search for default LinkDef if not specified
+		file( GLOB user_linkdefs "${star_lib_dir}/*LinkDef.h"
+		                         "${star_lib_dir}/*LinkDef.hh" )
+		# Get the first LinkDef from the list
+		if( user_linkdefs )
+			list( GET user_linkdefs 0 user_linkdef )
+		endif()
 
-	# Get the first LinkDef from the list
-	if( user_linkdefs )
-		list( GET user_linkdefs 0 user_linkdef )
-	endif()
-
-	# Preselect header files from `star_lib_dir`
-	star_headers_for_root_dictionary(${star_lib_dir} linkdef_headers)
-
-	FILTER_LIST(linkdef_headers EXCLUDE ${ARG_EXCLUDE})
-
-	# This is a hack for the call to this function from STAR_ADD_LIBRARY_GEOMETRY() where the
-	# headers are generated at runtime and cannot be globbed when cmake is invoked. So, we need
-	# to pass the necessary headers in the LINKDEF_HEADERS argument.
-	if(NOT linkdef_headers)
-		set(linkdef_headers ${ARG_LINKDEF_HEADERS})
+		# Preselect header files from `star_lib_dir`
+		star_headers_for_root_dictionary(${star_lib_dir} linkdef_headers)
+		FILTER_LIST(linkdef_headers EXCLUDE ${ARG_EXCLUDE})
 	endif()
 
 	GET_ROOT_DICT_FILE_NAMES(_linkdef_file _dictinc_file _dict_source _dict_header)
