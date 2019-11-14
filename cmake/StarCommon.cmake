@@ -120,29 +120,25 @@ endfunction()
 
 
 #
-# Generates `_linkdef_file` and `_dictinc_file` header files used in ROOT
+# Generates `linkdef_file` and `dictinc_file` header files used in ROOT
 # dictionary generation by rootcint/rootcling. Only header files passed in
-# LINKDEF_HEADERS argument are used. The user can optionally pass an existing
-# LinkDef file in LINKDEF argument to be incorporated in the generated
-# `_linkdef_file`.
+# `headers` argument are used. The user can optionally pass an existing LinkDef
+# file in `user_linkdef_file` argument to be incorporated in the generated
+# `linkdef_file`.
 #
-function(STAR_GENERATE_LINKDEF star_lib_name star_lib_dir_out)
-	cmake_parse_arguments(ARG "" "" "LINKDEF;LINKDEF_HEADERS" ${ARGN})
-
-	GET_ROOT_DICT_FILE_NAMES(_linkdef_file _dictinc_file _dict_source _dict_header)
-
+function(STAR_GENERATE_LINKDEF header_files linkdef_file dictinc_file user_linkdef_file)
 	# Pass both files to get_likdef.sh as -o arguments
-	set(gen_linkdef_args "-l;${_linkdef_file};-d;${_dictinc_file};${ARG_LINKDEF_HEADERS}")
+	set(gen_linkdef_args "-l;${linkdef_file};-d;${dictinc_file};${header_files}")
 
-	if(ARG_LINKDEF)
-		list(APPEND gen_linkdef_args "-i;${ARG_LINKDEF}")
+	if(user_linkdef_file)
+		list(APPEND gen_linkdef_args "-i;${user_linkdef_file}")
 	endif()
 
 	# Generate the above files to be used in dictionary generation by ROOT
 	add_custom_command(
-		OUTPUT ${_linkdef_file} ${_dictinc_file}
+		OUTPUT ${linkdef_file} ${dictinc_file}
 		COMMAND "${PROJECT_SOURCE_DIR}/scripts/gen_linkdef.sh" ${gen_linkdef_args}
-		DEPENDS "${PROJECT_SOURCE_DIR}/scripts/gen_linkdef.sh" ${ARG_LINKDEF_HEADERS}
+		DEPENDS "${PROJECT_SOURCE_DIR}/scripts/gen_linkdef.sh" ${header_files}
 		VERBATIM)
 endfunction()
 
@@ -174,17 +170,17 @@ function(STAR_GENERATE_DICTIONARY star_lib_name star_lib_dir star_lib_dir_out)
 		set(linkdef_headers ${ARG_LINKDEF_HEADERS})
 	endif()
 
+	GET_ROOT_DICT_FILE_NAMES(_linkdef_file _dictinc_file _dict_source _dict_header)
+
 	# Generate a basic LinkDef file and, if available, merge with the one
 	# possibly provided by the user in `star_lib_dir`
-	star_generate_linkdef(${star_lib_name} ${star_lib_dir_out} LINKDEF ${user_linkdef} LINKDEF_HEADERS ${linkdef_headers})
+	star_generate_linkdef("${linkdef_headers}" "${_linkdef_file}" "${_dictinc_file}" "${user_linkdef}")
 
 	# Prepare include directories to be used during ROOT dictionary generation.
 	# These directories are tied to the `star_lib_name` target via the
 	# INCLUDE_DIRECTORIES property.
 	get_target_property(target_include_dirs ${star_lib_name} INCLUDE_DIRECTORIES)
 	string(REGEX REPLACE "([^;]+)" "-I\\1" dict_include_dirs "${target_include_dirs}")
-
-	GET_ROOT_DICT_FILE_NAMES(_linkdef_file _dictinc_file _dict_source _dict_header)
 
 	# Generate `_dict_source` and `_dict_header` using the `_linkdef_file` and `_dictinc_file` files
 	add_custom_command(OUTPUT ${_dict_source} ${_dict_header}
