@@ -33,7 +33,7 @@ protected:
 	xml_document<> doc;
 public:
 	RapidXmlWrapper(){
-		DEBUG(  "RapidXmlWrapper", "()" );
+		LOG_DEBUG <<  "RapidXmlWrapper" << "()" << endm;
 		pathDelim = '.';
 		attrDelim = ':';
 		indexOpenDelim = "[";
@@ -42,7 +42,7 @@ public:
 	}
 	RapidXmlWrapper( string filename ){
 
-		DEBUG( "RapidXmlWrapper", "( filename=" << filename << " )" )
+		LOG_DEBUG << "RapidXmlWrapper" << "( filename=" << filename << " )" << endm;
 		fname = filename;
 		configFile = getFileContents( filename.c_str() );
 		parseXmlString( configFile );

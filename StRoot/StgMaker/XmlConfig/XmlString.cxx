@@ -12,24 +12,24 @@ namespace jdb{
 
 
 	bool XmlString::replace_token( const XmlConfig &cfg, string &_s, string &_key, int index, int len, bool _clobber ) {
-		// DEBUG( classname(), cfg.getFilename() << ", _s=" << _s << ", _key=" << _key << ", index=" << index << ", len=" << len << ", _clobber=" << bts( _clobber ) );
+		// LOG_DEBUG << classname() << cfg.getFilename() << ", _s=" << _s << ", _key=" << _key << ", index=" << index << ", len=" << len << ", _clobber=" << bts( _clobber ) << endm;
 		if ( kv.count( _key ) >= 1 ){
-			// DEBUG( classname(), "map" );
+			// LOG_DEBUG << classname() << "map" << endm;
 			string rv = kv[ _key ];
 			_s.replace( index, len, rv );
 			return true;
 		} else if ( getenv( _key.c_str() ) ) {
-			// DEBUG( classname(), "ENV" );
+			// LOG_DEBUG << classname() << "ENV" << endm;
 			string env = getenv( _key.c_str() );
 			_s.replace( index, len, env );
 			return true;
 		} else if ( cfg.exists( _key ) ) {
-			// DEBUG( classname(), "CFG" );
+			// LOG_DEBUG << classname() << "CFG" << endm;
 			string rv = cfg.getXString( _key ); // careful this could cause infinite recursion
 			_s.replace( index, len, rv );
 			return true;
 		} else if ( _clobber ){
-			// DEBUG( classname(), "CLOBBER" );
+			// LOG_DEBUG << classname() << "CLOBBER" << endm;
 			_s.replace( index, len, "" );
 			return true;
 		}

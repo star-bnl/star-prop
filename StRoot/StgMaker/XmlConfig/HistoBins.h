@@ -120,7 +120,7 @@ namespace jdb{
 		 * Divides the range high - low into a fixed number of bins from low to high"
 		 */
 		static vector<double> makeNBins( int nBins, double low, double high ){
-			DEBUG( "HistoBins", "(nBins=" << nBins << ", low=" << low << ", high=" << high << ")" );
+			LOG_DEBUG << "HistoBins" << "(nBins=" << nBins << ", low=" << low << ", high=" << high << ")" << endm;
 			vector<double> bins;
 			double step 	= (high - low ) / (double) nBins;
 			double binEdge 	= low;
@@ -140,7 +140,7 @@ namespace jdb{
 		 * @return vector of bin edges from low to high
 		 */
 		static vector<double> makeFixedWidthBins( double binWidth, double low, double high, bool canExtendMax = true ){
-			DEBUG( "HistoBins", "(binWidth=" << binWidth << ", low=" << low << ", high=" << high << " , canExtendMax=" << bts(canExtendMax) << ")" );
+			LOG_DEBUG << "HistoBins" << "(binWidth=" << binWidth << ", low=" << low << ", high=" << high << " , canExtendMax=" << bts(canExtendMax) << ")" << endm;
 			vector<double> bins;
 			int nBins = ceil(( high - low ) / binWidth);
 			double binEdge 	= low;
@@ -158,7 +158,7 @@ namespace jdb{
 
 
 		static vector<double> makeQuantileBins( vector<double> &values, int nBins, double min=-1.0, double max=-1.0 ){
-			DEBUG( "HistoBins", "( data.size=" << values.size() << ", nBins=" << nBins << ", min=" << min << ", max=" << max << ")" );
+			LOG_DEBUG << "HistoBins" << "( data.size=" << values.size() << ", nBins=" << nBins << ", min=" << min << ", max=" << max << ")" << endm;
 			int nEntries = values.size();
 			if ( nEntries <= 0 )
 				return makeNBins( nBins, min, max );
@@ -204,7 +204,7 @@ namespace jdb{
             //     sbe = "lower";
             // else
             //     sbe = "upper";
-            // DEBUG( "HistoBins", "( vector<double> , value=" << val << ", binEdge=" << sbe << " ) " );
+            // LOG_DEBUG << "HistoBins" << "( vector<double> , value=" << val << ", binEdge=" << sbe << " ) " << endm;
             
 			int n = bins.size();
 
@@ -249,7 +249,7 @@ namespace jdb{
 		static double binWidth( vector<double> &bins, unsigned int binIndex = 0 ){
 
 			if ( binIndex >= bins.size() ){
-			  //ERROR( "HistoBins", "Bin Index " << binIndex << " out of range ( 0, " << bins.size() << " )" );
+			  //LOG_ERROR << "HistoBins" << "Bin Index " << binIndex << " out of range ( 0, " << bins.size() << " )" << endm;
 				return 0.0;
 			}
 			return (bins[ binIndex + 1 ] - bins[ binIndex ]);
@@ -339,7 +339,7 @@ namespace jdb{
 		} // Constructor
 
 		void load( XmlConfig &_config, string _nodePath, string _lm = "" ) {
-			DEBUG( classname(), "(" << _config.getFilename() << ", " << _nodePath << ", " << _lm << " )"  );
+			LOG_DEBUG << classname() << "(" << _config.getFilename() << ", " << _nodePath << ", " << _lm << " )"  << endm;
 			// return;
 
 			string type = _config.getString( _nodePath + ":type", "NONE" );
@@ -352,7 +352,7 @@ namespace jdb{
 					max = bins[ nBins() ];
 					width = -1;	// not loading from fixed width
 					numberofBins = -1; // not loading from nbins
-					DEBUG( classname(), "Found vector of bin edges @ " << _nodePath );
+					LOG_DEBUG << classname() << "Found vector of bin edges @ " << _nodePath << endm;
 					return;
 				} else if ( "ls" == type || "linspace" == type ){
 					linspace( _config, _nodePath );
@@ -379,7 +379,7 @@ namespace jdb{
 			if ( "" == _lm || "x" == _lm ){
 				getValuesFromConfig( _config, _nodePath, wt, nt, mint, maxt );
 				if ( goodValues() ){
-					DEBUG( classname(), "Found HistoBins @ " << _nodePath << " with " << wt << nt << mint << maxt );
+					LOG_DEBUG << classname() << "Found HistoBins @ " << _nodePath << " with " << wt << nt << mint << maxt << endm;
 					if ( width > 0 ){
 						bins = makeFixedWidthBins( width, min, max );
 						max = bins[ nBins() ];
@@ -394,7 +394,7 @@ namespace jdb{
 			string mml = "_" + _lm;
 			getValuesFromConfig( _config, _nodePath, wt + mml, nt + mml, mint + mml, maxt + mml );
 			if ( goodValues() ){
-				DEBUG( classname(), "Found HistoBins @ " << _nodePath << " with " << wt + mml << nt + mml << mint + mml << maxt + mml );
+				LOG_DEBUG << classname() << "Found HistoBins @ " << _nodePath << " with " << wt + mml << nt + mml << mint + mml << maxt + mml << endm;
 				if ( width > 0 ){
 					bins = makeFixedWidthBins( width, min, max );
 					max = bins[ nBins() ];
@@ -404,7 +404,7 @@ namespace jdb{
 				return;
 			}
 			
-			TRACE( classname(), "Could not make HistoBins @ " << _nodePath );
+			LOG_DEBUG << classname() << "Could not make HistoBins @ " << _nodePath << endm;
 		}
 
 
@@ -415,7 +415,7 @@ namespace jdb{
 		void linspace( XmlConfig &_c, string _path = "" ){
 			vector<double> ls = _c.getDoubleVector( _path );
 			if ( ls.size() == 3 ){
-			  //INFOC( "LinSpace (" << ls[0] << ", " << ls[1] << ", " << ls[2] <<" )" );
+			  //LOG_INFO << "LinSpace (" << ls[0] << ", " << ls[1] << ", " << ls[2] <<" )" << endm;
 				bins = makeNBins( ls[2], ls[0], ls[1] );
 				min = ls[0];
 				max = ls[1];
@@ -430,7 +430,7 @@ namespace jdb{
 		void arange( XmlConfig &_c, string _path = "" ){
 			vector<double> ls = _c.getDoubleVector( _path );
 			if ( ls.size() == 3 ){
-			  //INFOC( "arange (" << ls[0] << ", " << ls[1] << ", " << ls[2] <<" )" );
+			  //LOG_INFO << "arange (" << ls[0] << ", " << ls[1] << ", " << ls[2] <<" )" << endm;
 				bins = makeFixedWidthBins( ls[2], ls[0], ls[1] );
 				min = ls[ 0 ];
 				max = ls[ 1 ];
@@ -561,8 +561,8 @@ protected:
 		void getValuesFromConfig( XmlConfig &config, string &nodePath, 
 			string widthTag =":width", string nBinsTag=":nBins", string minTag = ":min", string maxTag=":max" ){
 
-			DEBUG( classname(), nodePath );
-			DEBUG( classname(), widthTag << " " << nBinsTag << " " << minTag << " " << maxTag );
+			LOG_DEBUG << classname() << nodePath << endm;
+			LOG_DEBUG << classname() << widthTag << " " << nBinsTag << " " << minTag << " " << maxTag << endm;
 			min = 1;
 			max = 0;
 			width = 0.0;
@@ -578,7 +578,7 @@ protected:
 				width = -1;
 				// width = ( max - min ) / (double)n;
 			}
-			DEBUG( classname(), "min=" << min << ", max=" << max << ", width=" << width );
+			LOG_DEBUG << classname() << "min=" << min << ", max=" << max << ", width=" << width << endm;
 		}
 
 		bool goodValues(){

@@ -11,14 +11,14 @@ namespace jdb{
 	const string XmlConfig::declarationV1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
 	XmlConfig::XmlConfig( string filename){
-		DEBUG( classname(), "Loading Xml Configuration from : " << filename );
+		LOG_DEBUG << classname() << "Loading Xml Configuration from : " << filename << endm;
 
 		setDefaults();
 		loadFile( filename );
 	}
 
 	XmlConfig::XmlConfig(){
-		DEBUG( classname(), "Empty XmlConfig");
+		LOG_DEBUG << classname() << "Empty XmlConfig"<< endm;
 
 		setDefaults();
 	}
@@ -27,13 +27,13 @@ namespace jdb{
 	}
 
 	XmlConfig::XmlConfig( const XmlConfig &rhs){
-		DEBUG( classname(), "copy constructor!" );
+		LOG_DEBUG << classname() << "copy constructor!" << endm;
 		setDefaults();
 
-		DEBUG( classname(), "Copying filename" );
+		LOG_DEBUG << classname() << "Copying filename" << endm;
 		this->filename = rhs.filename;
 
-		DEBUG(classname(), "Copying Data map" );
+		LOG_DEBUG <<classname() << "Copying Data map" << endm;
 		this->data         = rhs.data;
 		this->orderedKeys = rhs.orderedKeys;
 	}
@@ -44,7 +44,7 @@ namespace jdb{
 		loadXmlString( xml, empty_overrides );
 	}
 	void XmlConfig::loadXmlString( string xml, map<string, string> overrides ){
-		DEBUGC( "Loading XML data from string\n" << xml );
+		LOG_DEBUG << "Loading XML data from string\n" << xml << endm;
 		this->filename = "";
 
 		RapidXmlWrapper rxw;
@@ -77,7 +77,7 @@ namespace jdb{
 	}
 
 	void XmlConfig::loadFile( string _filename, map<string, string> overrides ){
-		DEBUG( classname(), "Loading " << _filename );
+		LOG_DEBUG << classname() << "Loading " << _filename << endm;
 		
 		// check that the config file exists
 		this->filename = _filename;
@@ -110,17 +110,17 @@ namespace jdb{
 
 
 		} else {
-			ERROR( classname(), "Config File \"" << _filename << "\" DNE " ); 
+			LOG_ERROR << classname() << "Config File \"" << _filename << "\" DNE " << endm; 
 		}
 
-		INFO( classname(), "Loaded " << getFilename() );
+		LOG_INFO << classname() << "Loaded " << getFilename() << endm;
 	}
 
 	/* Sets the default strings / delimeters
 	 * 
 	 */
 	void XmlConfig::setDefaults(){
-		DEBUG( classname(), "Setting Defaults" );
+		LOG_DEBUG << classname() << "Setting Defaults" << endm;
 		// currently set may change
 		pathDelim = '.';
 		attrDelim = ':';
@@ -178,11 +178,11 @@ namespace jdb{
 			
 			string parent = (key).substr( 0, oldKey.length() );
 			if ( oldKey == parent ){
-				DEBUGC( key << " ---> " << newKey  << (key).substr( oldKey.length() ) );
+				LOG_DEBUG << key << " ---> " << newKey  << (key).substr( oldKey.length() ) << endm;
 				rewriteKey( key, newKey + string((key).substr(oldKey.length())) );
 			}
 		}
-		DEBUGC( oldKey << " ---> " << newKey );
+		LOG_DEBUG << oldKey << " ---> " << newKey << endm;
 		rewriteKey( oldKey, newKey );
 		return true;
 	}
@@ -200,7 +200,7 @@ namespace jdb{
 	}
 
 	void XmlConfig::incrementTagIndex( string path, string tagname, int n, size_t start, size_t stop ){
-		DEBUGC( "path=" << quote(path) << ", tagname=" << quote(tagname)  << ",  n=" << n << ", start=" << start << ", stop=" << stop);
+		LOG_DEBUG << "path=" << quote(path) << ", tagname=" << quote(tagname)  << ",  n=" << n << ", start=" << start << ", stop=" << stop<< endm;
 		
 		if ( stop >= orderedKeys.size() )
 			stop = orderedKeys.size() - 1;
@@ -208,7 +208,7 @@ namespace jdb{
 			start = 0;
 
 		int myDepth = depthOf( path );
-		DEBUGC( "myDepth=" << myDepth );
+		LOG_DEBUG << "myDepth=" << myDepth << endm;
 		vector<string> delete_nodes;
 		
 		for ( size_t i = stop; i >= start; i-- ){
@@ -707,7 +707,7 @@ namespace jdb{
 	}
 
 	string XmlConfig::basePath( string nodePath, bool keepAttribute ) const {
-		DEBUG( classname(), "(nodePath=\"" << nodePath << "\", keepAttrs=" << bts( keepAttribute ) << ")" );
+		LOG_DEBUG << classname() << "(nodePath=\"" << nodePath << "\", keepAttrs=" << bts( keepAttribute ) << ")" << endm;
 		string np = sanitize( nodePath );
 
 		// first split off any attributes
@@ -743,13 +743,13 @@ namespace jdb{
 
 	string XmlConfig::join( std::vector<string> paths ) const {
 		if ( paths.size() == 1 ){
-			WARN( classname(), "Only one path given, returning unaltered" );
+			LOG_WARN << classname() << "Only one path given, returning unaltered" << endm;
 			for ( string p : paths ){
 				return p;
 			}
 			return "";
 		} else if ( paths.size() < 1 ){
-			ERROR( classname(), "No paths given" );
+			LOG_ERROR << classname() << "No paths given" << endm;
 			return "";
 		} else {
 
@@ -803,7 +803,7 @@ namespace jdb{
 	}
 
 	map<string, string> XmlConfig::attributesMap( string nodePath ) const{
-		DEBUG( classname(), "(" << nodePath << ")" )
+		LOG_DEBUG << classname() << "(" << nodePath << ")" << endm;
 		vector<string> pathToAttrs = attributesOf( nodePath );
 		
 		map<string, string> rmap;
@@ -837,10 +837,10 @@ namespace jdb{
 		if ( attrs.size() >= 2)
 			attr = attrDelim + attrs[1];
 
-		DEBUG( classname(), "_qs == \"" << _qs << "\"" );
-		DEBUG( classname(), "conditionals " << vts( conds ) );
-		DEBUG( classname(), "wo-cond np " << quote( np ) );
-		DEBUG( classname(), "attr" << quote( attr ) );
+		LOG_DEBUG << classname() << "_qs == \"" << _qs << "\"" << endm;
+		LOG_DEBUG << classname() << "conditionals " << vts( conds ) << endm;
+		LOG_DEBUG << classname() << "wo-cond np " << quote( np ) << endm;
+		LOG_DEBUG << classname() << "attr" << quote( attr ) << endm;
 
 		int npl = np.length();
 
@@ -855,7 +855,7 @@ namespace jdb{
 				continue;
 			
 			string parent = p.substr( 0, npl );
-			DEBUGC( "checking " << quote(np) << " against " << quote( parent ) << " from path " << quote( p ) );
+			LOG_DEBUG << "checking " << quote(np) << " against " << quote( parent ) << " from path " << quote( p ) << endm;
 			if ( np == parent ){
 
 				if ( conds.size() < 1 )
@@ -884,10 +884,10 @@ namespace jdb{
 		trimCs += attrDelim;
 
 		if ( parts.size() >= 2 ){
-			DEBUG( classname(), "left: " << parts[0] );
-			DEBUG( classname(), "right: " << parts[1] );
+			LOG_DEBUG << classname() << "left: " << parts[0] << endm;
+			LOG_DEBUG << classname() << "right: " << parts[1] << endm;
 
-			DEBUG( classname(), "eval " << getXString( nodePath + ":" + parts[0] ) );
+			LOG_DEBUG << classname() << "eval " << getXString( nodePath + ":" + parts[0] ) << endm;
 
 			return getXString( nodePath + attrDelim + trim(parts[0], trimCs ) ) == trim(parts[1]);
 		} else {
@@ -1033,12 +1033,12 @@ namespace jdb{
 
 		string content = getString( nodePath );
 		vector<string> children = childrenOf( nodePath, 1 );
-		DEBUG( classname(), tn << " has " << children.size() << " children" );
+		LOG_DEBUG << classname() << tn << " has " << children.size() << " children" << endm;
 		string childrens = "\n";
 		for ( string c : children ){
 			childrens += ind + c + "\n";
 		}
-		DEBUG( classname(), "children: " << childrens );
+		LOG_DEBUG << classname() << "children: " << childrens << endm;
 
 		// write the encoding if we are exporting from root node
 		if ( "config" == tn && "" == nodePath )
@@ -1067,7 +1067,7 @@ namespace jdb{
 		if ( 0 < children.size() ){
 			// recurse on children nodes
 			for ( string cp : children ){
-				DEBUG( classname(), "XML for " << cp );
+				LOG_DEBUG << classname() << "XML for " << cp << endm;
 				string cXml = toXml( cp, tabCount + 1, tab, nl );
 				xml += cXml;	
 			}
@@ -1088,7 +1088,7 @@ namespace jdb{
 			out << toXml(  );
 			out.close();
 		} else {
-			ERROR( classname(), "Cannot open " << filename );
+			LOG_ERROR << classname() << "Cannot open " << filename << endm;
 		}
 	}
 
@@ -1107,7 +1107,7 @@ namespace jdb{
 			out << dump(  );
 			out.close();
 		} else {
-			ERROR( classname(), "Cannot open " << filename );
+			LOG_ERROR << classname() << "Cannot open " << filename << endm;
 		}
 	}
 
@@ -1135,7 +1135,7 @@ namespace jdb{
 
 		for ( int i = 0; i <= depth; i++  ){
 			string dp = pathToDepth( p, i );
-			INFOC( "path[depth=" << i << "] = " << dp );
+			LOG_INFO << "path[depth=" << i << "] = " << dp << endm;
 			if ( false == exists( dp ) )
 				addNode( dp );
 		}
@@ -1146,11 +1146,11 @@ namespace jdb{
 		include_xml( rxw, path, it );
 	}
 	void XmlConfig::include_xml( RapidXmlWrapper*rxw, string path, vector<string>::iterator it ){
-		DEBUGC( "rxw=" << rxw << ", path=" << path );
+		LOG_DEBUG << "rxw=" << rxw << ", path=" << path << endm;
 		
 		int bd        = depthOf( path );
 		int pathIndex = indexOf(path);
-		DEBUGC( "Include @ " << path << " at depth " << bd << ", order index = " << indexOf( path ));
+		LOG_DEBUG << "Include @ " << path << " at depth " << bd << ", order index = " << indexOf( path )<< endm;
 		map<string, size_t> unique_tag_index;
 
 		// map the indices at this level for whatever is already in the map
@@ -1175,7 +1175,7 @@ namespace jdb{
 
 		// if there is a conflict then increment what is already in here
 		for ( auto kv : unique_tag_index ){
-			DEBUGC( "checking unique tag: " << kv.first );
+			LOG_DEBUG << "checking unique tag: " << kv.first << endm;
 			int diff = unique_tag_index[kv.first] - original_index[ kv.first ];
 			if ( diff > 0 )
 				incrementTagIndex( path, kv.first, diff, pathIndex, orderedKeys.size() );
@@ -1196,14 +1196,14 @@ namespace jdb{
 
 
 	int XmlConfig::parseIncludes( string searchPath) {
-		DEBUG( classname(), " Looking for Include tags under : " << quote( searchPath ) );
+		LOG_DEBUG << classname() << " Looking for Include tags under : " << quote( searchPath ) << endm;
 		int nNotFound = 0;
 		vector<string> allPaths = childrenOf( searchPath, "Include" );
 
-		DEBUGC(  "Found " << allPaths.size() << " Include Tag(s)" );
+		LOG_DEBUG <<  "Found " << allPaths.size() << " Include Tag(s)" << endm;
 
 		for ( string path : allPaths ){
-			DEBUGC( "is processed : " << getBool( path + ":processed", false ) );
+			LOG_DEBUG << "is processed : " << getBool( path + ":processed", false ) << endm;
 			if ( true == get<bool>( path + ":processed", false ) )
 				continue;
 			// mark the include as processed so that we dont recurse infinitely
@@ -1230,7 +1230,7 @@ namespace jdb{
 				auto it = find( orderedKeys.begin(), orderedKeys.end(), path);
 				include_xml( &rxw, pathToParent( path ), it );
 			} else {
-				ERRORC( "Could not resolve include of " << get<string>( path+":url" ) );
+				LOG_ERROR << "Could not resolve include of " << get<string>( path+":url" ) << endm;
 			}
 		} // loop on includes
 
@@ -1290,24 +1290,24 @@ namespace jdb{
 	}
 
 	void XmlConfig::applyOverrides( map< string, string > over ) {
-		DEBUG( classname(), "Applying Overrides" );
+		LOG_DEBUG << classname() << "Applying Overrides" << endm;
 		for ( auto k : over ){
-			DEBUG( classname(), "Override [" << k.first << " ] = " << k.second );
+			LOG_DEBUG << classname() << "Override [" << k.first << " ] = " << k.second << endm;
 			set( k.first, k.second );
 		}
 	}
 
 	void XmlConfig::set( string nodePath, string value ) {
-		DEBUG( classname(), "nodePath = " << quote(nodePath) << ", value=" << quote(value) << ", currentNode=" << currentNode << " )" );
+		LOG_DEBUG << classname() << "nodePath = " << quote(nodePath) << ", value=" << quote(value) << ", currentNode=" << currentNode << " )" << endm;
 		string fqn = currentNode + nodePath;
 		// already exists? just override
 		if ( data.count( fqn ) ){
 			data[ fqn ] = value;
-			DEBUG( classname(), quote(fqn) << " set to " << value );
-			DEBUG( classname(), "now = " << data[ fqn ] );
+			LOG_DEBUG << classname() << quote(fqn) << " set to " << value << endm;
+			LOG_DEBUG << classname() << "now = " << data[ fqn ] << endm;
 		} else {
 			add( nodePath, value );
-			DEBUG( classname(), "add" );
+			LOG_DEBUG << classname() << "add" << endm;
 		}
 	}
 
@@ -1326,9 +1326,9 @@ namespace jdb{
 	}
 
 	void XmlConfig::addNode( string nodePath, string value ) {
-		DEBUG( classname(), "(" << nodePath << " = " << value << ")" );
+		LOG_DEBUG << classname() << "(" << nodePath << " = " << value << ")" << endm;
 		if ( exists( nodePath ) ){
-			WARN( classname(), "Overwriting nodePath " << nodePath );
+			LOG_WARN << classname() << "Overwriting nodePath " << nodePath << endm;
 		}
 
 		data[ nodePath ] = value;
@@ -1336,9 +1336,9 @@ namespace jdb{
 	}
 
 	void XmlConfig::addAttribute( string nodePath, string value ){
-		INFOC( "(" << nodePath << " = " << value << ")" );
+		LOG_INFO << "(" << nodePath << " = " << value << ")" << endm;
 		if ( exists( nodePath ) ){
-			WARN( classname(), "Overwriting nodePath " << nodePath );
+			LOG_WARN << classname() << "Overwriting nodePath " << nodePath << endm;
 		}
 
 		string base = basePath( nodePath );
@@ -1387,9 +1387,9 @@ namespace jdb{
 
 		string ppath = pathToParent( _nodePath );
 
-		DEBUGC( "key = " << vts( keys ) );
-		DEBUGC( "ppath = " << quote( ppath ) );
-		DEBUGC( "# of children " << keys.size() );
+		LOG_DEBUG << "key = " << vts( keys ) << endm;
+		LOG_DEBUG << "ppath = " << quote( ppath ) << endm;
+		LOG_DEBUG << "# of children " << keys.size() << endm;
 
 		string sMap = "";
 		for ( string key : keys ){
@@ -1402,7 +1402,7 @@ namespace jdb{
 			over[ nKey ] = getString( key );
 			sMap += "\n\t" + key + " => [ " + nKey + " ] = " + over[nKey];
 		}
-		DEBUGC( sMap );
+		LOG_DEBUG << sMap << endm;
 		return over;
 	}
 

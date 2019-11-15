@@ -35,7 +35,7 @@ namespace jdb{
 		static string TOKEN_STOP;
 
 		void add( string k, string v ){
-			DEBUG( classname(), "Adding [" << k << "] = " << v );
+			LOG_DEBUG << classname() << "Adding [" << k << "] = " << v << endm;
 			kv[ k ] = v;
 		}
 		void add( string k, int v ){
@@ -49,7 +49,7 @@ namespace jdb{
 		}
 
 		string first_token_at( string &s, int &index, int &len, int pos = 0 ) const {
-			// DEBUG( classname(), s << ", index=" << index << ", len=" << len << ", pos=" << pos );
+			// LOG_DEBUG << classname() << s << ", index=" << index << ", len=" << len << ", pos=" << pos << endm;
 			string rs = s;
 				
 			string &_tkstart = XmlString::TOKEN_START;
@@ -60,7 +60,7 @@ namespace jdb{
 			test.push_back(s[index+1]);
 			while( _tkstart == test && index != string::npos ){
 				int nindex = s.find( _tkstart, index+3 );
-				// DEBUG( classname(), "escaped {{ @" << index );
+				// LOG_DEBUG << classname() << "escaped {{ @" << index << endm;
 				if ( nindex < index ){
 					index = nindex;
 					break;
@@ -85,19 +85,19 @@ namespace jdb{
 			int len = -1;
 			int pos = 0;
 			string key = first_token_at( _s, index, len, pos );
-			// DEBUG( classname(), "key = " << key );
+			// LOG_DEBUG << classname() << "key = " << key << endm;
 			while ( index >= 0 ){
 
-				// DEBUG( classname(), "now : " << _s );
+				// LOG_DEBUG << classname() << "now : " << _s << endm;
 				bool replaced = replace_token( _cfg, _s, key, index, len, _clobber );
-				// DEBUG( classname(), "new : " << _s );
+				// LOG_DEBUG << classname() << "new : " << _s << endm;
 
 				pos = index;
 				if ( false == replaced ) pos++;
-				// DEBUG( classname(), "pos = " << pos );
-				// DEBUG( classname(), key );
+				// LOG_DEBUG << classname() << "pos = " << pos << endm;
+				// LOG_DEBUG << classname() << key << endm;
 				key = first_token_at( _s, index, len, pos );
-				// DEBUG( classname(), "key = " << key );
+				// LOG_DEBUG << classname() << "key = " << key << endm;
 			}
 			unescape(_s);
 			return _s;
@@ -111,12 +111,12 @@ namespace jdb{
 			while ( index >= 0 ){
 
 				bool replaced = replace_token( _s, key, index, len, _clobber );
-				// DEBUG( classname(), "new : " << _s );
+				// LOG_DEBUG << classname() << "new : " << _s << endm;
 
 				pos = index;
 				if ( false == replaced ) pos++;
-				// DEBUG( classname(), "pos = " << pos );
-				// DEBUG( classname(), key );
+				// LOG_DEBUG << classname() << "pos = " << pos << endm;
+				// LOG_DEBUG << classname() << key << endm;
 				key = first_token_at( _s, index, len, pos );
 			}
 			unescape(_s);
@@ -159,11 +159,11 @@ namespace jdb{
 				if ( n >= 1 && iToken >= n ) return tks;
 				
 				_s.replace( index, len, "" );
-				// DEBUG( classname(), "new : " << _s );
+				// LOG_DEBUG << classname() << "new : " << _s << endm;
 
 				pos = index;
-				// DEBUG( classname(), "pos = " << pos );
-				// DEBUG( classname(), key );
+				// LOG_DEBUG << classname() << "pos = " << pos << endm;
+				// LOG_DEBUG << classname() << key << endm;
 				key = first_token_at( _s, index, len, pos );
 				iToken ++;
 			}
@@ -179,11 +179,11 @@ namespace jdb{
 			while ( index >= 0 ){
 
 				_s.replace( index, len, "" );
-				// DEBUG( classname(), "new : " << _s );
+				// LOG_DEBUG << classname() << "new : " << _s << endm;
 
 				pos = index;
-				// DEBUG( classname(), "pos = " << pos );
-				// DEBUG( classname(), key );
+				// LOG_DEBUG << classname() << "pos = " << pos << endm;
+				// LOG_DEBUG << classname() << key << endm;
 				key = first_token_at( _s, index, len, pos );
 				if ( n >= 1 && iToken >= n ) return _s;
 				iToken ++;
