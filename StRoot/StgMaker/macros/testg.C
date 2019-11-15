@@ -5,9 +5,8 @@ void testg( const char* filename=0 ) {
 
   gROOT->LoadMacro("bfc.C");
   bfc(0,"fzin agml debug sti makeevent stu sdt20181215 cmudst", infile );
-  gSystem->Load("/star/simu/simu/jwebb/2019/10-09-2019-forward-tracker-integration/GenFit/lib/libgenfit2.so"); 
-  gSystem->Load("StgUtil.so");
-  gSystem->Load("StgMaker.so");
+  gSystem->Load("libgenfit2.so");
+  gSystem->Load("libStgMaker.so");
 
   if ( filename ) cout << filename << endl;
 
