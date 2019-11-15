@@ -79,7 +79,7 @@ star_add_library(pams/sim/gstar)
 
 GET_SUBDIRS(star_lib_dirs "StarVMC;StRoot")
 if(EXISTS ${PROJECT_SOURCE_DIR}/StRoot)
-	list(APPEND star_lib_dirs ${PROJECT_SOURCE_DIR}/StRoot)
+	GET_SUBDIRS(star_lib_dirs "StarVMC;StRoot;${PROJECT_SOURCE_DIR}/StRoot")
 endif()
 FILTER_LIST(star_lib_dirs EXCLUDE ${STAR_BLACKLISTED_LIB_DIRS})
 
