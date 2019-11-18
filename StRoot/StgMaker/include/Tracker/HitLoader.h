@@ -26,7 +26,7 @@ class IHitLoader {
 class McHitLoader : public IHitLoader {
 
 	public:
-	McHitLoader(  XmlConfig &_cfg ) : cfg(_cfg) {
+	McHitLoader(  jdb::XmlConfig &_cfg ) : cfg(_cfg) {
 		LOG_F( INFO, "Loading data from : %s", cfg.get<TString>( "Input:url", "../../SimHitsTuple.root").Data() );
 		fInput = new TFile( cfg.get<TString>( "Input:url", "../../SimHitsTuple.root") );
 		tree = (TTree*)fInput->Get("hits" );
@@ -108,7 +108,7 @@ class McHitLoader : public IHitLoader {
 	}
 
 	protected:
-	XmlConfig &cfg;
+	jdb::XmlConfig &cfg;
 	TFile * fInput;
 	TTree * tree;
 	
@@ -128,7 +128,7 @@ class McHitLoader : public IHitLoader {
 
 class FastSimHitLoader : public IHitLoader {
 	public:
-	FastSimHitLoader(  XmlConfig &_cfg ) : cfg(_cfg) {
+	FastSimHitLoader(  jdb::XmlConfig &_cfg ) : cfg(_cfg) {
 
 		fInput = new TFile( cfg.get<TString>( "Input:url", "../../SimHitsTuple.root") );
 		tree = (TTree*)fInput->Get("hits" );
@@ -342,7 +342,7 @@ class FastSimHitLoader : public IHitLoader {
 	}
 
 	protected:
-	XmlConfig &cfg;
+	jdb::XmlConfig &cfg;
 	TFile * fInput;
 	TTree * tree;
 	string datatype;

@@ -39,7 +39,7 @@ genfit::AbsBField* _gField = 0;
 class TrackFitter {
 
 	public:
-	TrackFitter( XmlConfig &_cfg ) : cfg(_cfg){
+	TrackFitter( jdb::XmlConfig &_cfg ) : cfg(_cfg){
 	  fTrackRep = 0;
 	  fTrack    = 0;
 	}
@@ -629,7 +629,7 @@ class TrackFitter {
 
 
 	private:
-	XmlConfig &cfg;
+	jdb::XmlConfig &cfg;
 	std::map<std::string, TH1* > hist;
 	bool MAKE_HIST = true;
 	genfit::EventDisplay* display;

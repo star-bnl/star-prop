@@ -82,7 +82,7 @@ namespace KiTrack {
 		}
 
 	  // Adopt external configuration file
-	  void setConfig( XmlConfig& _cfg ) { cfg = _cfg; }
+	  void setConfig( jdb::XmlConfig& _cfg ) { cfg = _cfg; }
 	  // Adopt external hit loader
 	  void setLoader( IHitLoader* loader ){ hitLoader = loader; }
 
@@ -568,7 +568,7 @@ namespace KiTrack {
 		float tree_x[tree_max_n], tree_y[tree_max_n], tree_z[tree_max_n], tree_pt[tree_max_n];
 
 
-		XmlConfig cfg;
+		jdb::XmlConfig cfg;
 		map<string, string> cmdLineConfig;
 		std::string configFile;
 		// event level summary histograms

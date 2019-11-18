@@ -18,7 +18,7 @@
 
 class QualityPlotter {
 public:
-	QualityPlotter( XmlConfig &_cfg ) : cfg(_cfg){
+	QualityPlotter( jdb::XmlConfig &_cfg ) : cfg(_cfg){
 
 	}
 
@@ -37,11 +37,11 @@ public:
 		hist["nHitsOnTrack"] = new TH1F( "nHitsOnTrack", ";nHit", 10, 0, 10 );
 		hist["nHitsOnTrackMc"] = new TH1F( "nHitsOnTrackMc", ";nHit", 10, 0, 10 );
 
-		HistoBins hb_InvPtRes( -5, 5, 0.01 ); // default
+		jdb::HistoBins hb_InvPtRes( -5, 5, 0.01 ); // default
 		if ( cfg.exists( "QualityPlotter.Bins.InvPtRes" ) ){
 			hb_InvPtRes.load( cfg, "QualityPlotter.Bins.InvPtRes" );
 		}
-		HistoBins hb_InvPtRes2D( -2, 2, 0.01 ); // default
+		jdb::HistoBins hb_InvPtRes2D( -2, 2, 0.01 ); // default
 		if ( cfg.exists( "QualityPlotter.Bins.InvPtRes2D" ) ){
 			hb_InvPtRes2D.load( cfg, "QualityPlotter.Bins.InvPtRes2D" );
 		} 
@@ -420,7 +420,7 @@ public:
 	}
 
 	private:
-	XmlConfig &cfg;
+	jdb::XmlConfig &cfg;
 	std::map<std::string, TH1* > hist;
 
 	vector<size_t> nTracksAfterIteration;

@@ -144,7 +144,7 @@ int StgMaker::Init() {
   // Initialize configuration file
   std::string configFile = "config.xml";
   std::map<string, string> cmdLineConfig;
-  XmlConfig _xmlconfig;
+  jdb::XmlConfig _xmlconfig;
   _xmlconfig.loadFile( configFile, cmdLineConfig );
   // Dump configuration to screen
   LOG_INFO << _xmlconfig.dump().c_str() << endm;

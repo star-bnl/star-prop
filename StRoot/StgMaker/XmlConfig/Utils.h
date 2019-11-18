@@ -219,7 +219,6 @@ namespace jdb{
 	};
 
 }
-using namespace jdb;
 
 
 #endif
