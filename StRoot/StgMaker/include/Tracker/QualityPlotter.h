@@ -141,7 +141,7 @@ public:
 		// start the timer
 		itStart = loguru::now_ns();
 	}
-	void afterIteration( size_t iteration, std::vector<KiTrack::Seed_t> acceptedTracks ){
+	void afterIteration( size_t iteration, std::vector<Seed_t> acceptedTracks ){
 
 		size_t nTracks = acceptedTracks.size();
 		nTracksAfterIteration.push_back( nTracks ); // assume that we call the iterations in order
@@ -156,7 +156,7 @@ public:
 	void statEvent(){
 		eventStart = loguru::now_ns();
 	}
-	void summarizeEvent( std::vector<KiTrack::Seed_t> foundTracks,  std::map<int, shared_ptr<KiTrack::McTrack>> &mcTrackMap, std::vector<TVector3> fitMoms, std::vector<genfit::FitStatus> fitStatus ){
+	void summarizeEvent( std::vector<Seed_t> foundTracks,  std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::vector<TVector3> fitMoms, std::vector<genfit::FitStatus> fitStatus ){
 		using namespace std;
 
 		long long duration = (loguru::now_ns() - eventStart) * 1e-6; // milliseconds
@@ -224,7 +224,7 @@ public:
 			}
 
 			for ( auto h : kv.second->hits ){
-				auto fh = static_cast<KiTrack::FwdHit*>(h);
+				auto fh = static_cast<FwdHit*>(h);
 				this->get( "McHitMap" )->Fill( abs(fh->_vid) );
 				std::string n = "McHitMapLayer" + std::to_string( fh->getLayer() );
 				this->get( n ) -> Fill( fh->getX(), fh->getY() );
@@ -243,7 +243,7 @@ public:
 
 			map<int, float> qual_map;
 			for ( auto hit : t ){
-				qual_map[ static_cast<KiTrack::FwdHit*>(hit)->_tid ]++;
+				qual_map[ static_cast<FwdHit*>(hit)->_tid ]++;
 			}
 			for ( auto &kv : qual_map ){
 				kv.second = kv.second / t.size();

@@ -89,7 +89,7 @@ public:
 
 
 //  Wrapper class around the forward tracker
-class ForwardTracker : public KiTrack::ForwardTrackMaker { 
+class ForwardTracker : public ForwardTrackMaker { 
 public:
   // Replaces original initialization.  Config file and hitloader
   // will be provided by the maker.
@@ -98,7 +98,7 @@ public:
     nEvents = 1; // only process single event
 
     // Create the forward system...
-    KiTrack::gFwdSystem = new KiTrack::FwdSystem( 7 );    
+    gFwdSystem = new FwdSystem( 7 );    
 
     // make our quality plotter
     qPlotter = new QualityPlotter( cfg );
@@ -119,7 +119,7 @@ public:
   std::map<int, std::vector<KiTrack::IHit*> > &load( unsigned long long ){    
     return _hits;
   };
-  std::map<int, shared_ptr<KiTrack::McTrack>> &getMcTrackMap() {
+  std::map<int, shared_ptr<McTrack>> &getMcTrackMap() {
     return _mctracks;
   };
 
@@ -131,7 +131,7 @@ public:
   
   // TODO, protect and add interaface for pushing hits / tracks
   std::map<int, std::vector<KiTrack::IHit*> >  _hits;
-  std::map<int, shared_ptr<KiTrack::McTrack> > _mctracks;
+  std::map<int, shared_ptr<McTrack> > _mctracks;
 };
 
 //________________________________________________________________________
@@ -187,7 +187,7 @@ int StgMaker::Make() {
 
   // I am a horrible person for doing this by reference, but at least
   // I don't use "goto" anywhere.
-  std::map<int, shared_ptr<KiTrack::McTrack> >& mcTrackMap = mForwardHitLoader->_mctracks;
+  std::map<int, shared_ptr<McTrack> >& mcTrackMap = mForwardHitLoader->_mctracks;
   std::map<int, std::vector<KiTrack::IHit*> >&  hitMap = mForwardHitLoader->_hits;
 
   // Get geant tracks
@@ -202,7 +202,7 @@ int StgMaker::Make() {
     float phi = atan2(track->p[1], track->p[0]); //track->phi;
     int   q   = track->charge;
     if ( 0 == mcTrackMap[ track_id ] ) // should always happen
-     mcTrackMap[ track_id ] = shared_ptr< KiTrack::McTrack >( new KiTrack::McTrack(pt, eta, phi, q) );    
+     mcTrackMap[ track_id ] = shared_ptr< McTrack >( new McTrack(pt, eta, phi, q) );    
   }
 
   // Add hits onto the hit loader (from rndHitCollection)
@@ -220,7 +220,7 @@ int StgMaker::Make() {
     const float& z = xyz[2];       // Position of the hit
 
     // Create the hit
-    KiTrack::FwdHit* hit = new KiTrack::FwdHit(count++, x, y, z, volume_id, track_id, mcTrackMap[track_id] );
+    FwdHit* hit = new FwdHit(count++, x, y, z, volume_id, track_id, mcTrackMap[track_id] );
 
     // Add the hit to the hit map
     hitMap[ hit->getSector() ].push_back(hit);
@@ -252,7 +252,7 @@ int StgMaker::Make() {
 
     //    LOG_INFO << "track_id=" << track_id << " volume_id=" << volume_id << " plane_id=" << plane_id << " x/y/z " << x << "/" << y << "/" << z << endm;
 
-    KiTrack::FwdHit* hit = new KiTrack::FwdHit(count++, x, y, z, -plane_id, track_id, mcTrackMap[track_id] );
+    FwdHit* hit = new FwdHit(count++, x, y, z, -plane_id, track_id, mcTrackMap[track_id] );
 
     // Add the hit to the hit map
     hitMap[ hit->getSector() ].push_back(hit);
@@ -285,7 +285,7 @@ int StgMaker::Make() {
 
     LOG_INFO << "track_id=" << track_id << " volume_id=" << volume_id << " x/y/z " << x << "/" << y << "/" << z << endm;
 
-    KiTrack::FwdHit* hit = new KiTrack::FwdHit(count++, x, y, z, volume_id, track_id, mcTrackMap[track_id] );
+    FwdHit* hit = new FwdHit(count++, x, y, z, volume_id, track_id, mcTrackMap[track_id] );
 
     // Add the hit to the hit map
     hitMap[ hit->getSector() ].push_back(hit);

@@ -254,13 +254,13 @@ class TrackFitter {
 
 		// we want to use the LAST 3 hits, since silicon doesnt have R information
 		// OK for now, since sTGC is 100% efficient so we can assume 
-		KiTrack::FwdHit * hit_closest_to_IP = static_cast<KiTrack::FwdHit *>(trackCand[0]);
+		FwdHit * hit_closest_to_IP = static_cast<FwdHit *>(trackCand[0]);
 		
 		std::map<size_t, size_t> vol_map; // maps from <key=vol_id> to <value=index in trackCand> 
 		// init the map
 		for ( size_t i = 0; i < 13; i++ ) vol_map[i] = -1;
 		for ( size_t i = 0; i < trackCand.size(); i++ ){
-			auto fwdHit = static_cast<KiTrack::FwdHit *>(trackCand[i]);
+			auto fwdHit = static_cast<FwdHit *>(trackCand[i]);
 			vol_map[ abs(fwdHit->_vid) ] = i;
 			LOG_F( INFO, "HIT _vid=%d (%f, %f, %f)", fwdHit->_vid, fwdHit->getX(), fwdHit->getY(), fwdHit->getZ() );
 
@@ -489,9 +489,9 @@ class TrackFitter {
 			// if ( skipSi0 == true && h->getSector() == 0 ) continue;
 			// if ( skipSi1 == true && h->getSector() == 1 ) continue;
 
-			// if ( static_cast<KiTrack::FwdHit*>(h)->_vid == 9 ) continue;
-			// if ( static_cast<KiTrack::FwdHit*>(h)->_vid == 10 ) continue;
-			// if ( static_cast<KiTrack::FwdHit*>(h)->_vid == 11 ) continue;
+			// if ( static_cast<FwdHit*>(h)->_vid == 9 ) continue;
+			// if ( static_cast<FwdHit*>(h)->_vid == 10 ) continue;
+			// if ( static_cast<FwdHit*>(h)->_vid == 11 ) continue;
 
 
 			TMatrixDSym hitCovMat = FakeHitCov;

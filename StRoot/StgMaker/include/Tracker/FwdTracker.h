@@ -36,13 +36,12 @@
 #include "StgMaker/XmlConfig/XmlConfig.h"
 
 
-namespace KiTrack {
 
 
   // Utility class for evaluating ID and QA truth
   struct MCTruthUtils {
      
-    static int domCon( std::vector<IHit*> hits, float& qual ) {
+    static int domCon( std::vector<KiTrack::IHit*> hits, float& qual ) {
       int numberOfHits = hits.size();
       std::map<int,int> count;
       int total = 0;
@@ -169,8 +168,8 @@ namespace KiTrack {
 		 * 
 		 * @return vector of ICriterion pointers
 		 */
-		std::vector<ICriterion*> loadCriteria( string path ) {
-			std::vector<ICriterion*> crits;
+		std::vector<KiTrack::ICriterion*> loadCriteria( string path ) {
+			std::vector<KiTrack::ICriterion*> crits;
 			auto paths = cfg.childrenOf(path);
 			for ( string p : paths ){
 				string name = cfg.get<string>( p + ":name" );
@@ -183,14 +182,14 @@ namespace KiTrack {
 				float vmin = cfg.get<float>( p + ":min", 0 );
 				float vmax = cfg.get<float>( p + ":max", 1 );
 				LOG_F( INFO, "Loading Criteria from %s (name=%s, min=%f, max=%f)", p.c_str(), name.c_str(), vmin, vmax );
-				crits.push_back(Criteria::createCriterion( name, vmin, vmax ));
+				crits.push_back(KiTrack::Criteria::createCriterion( name, vmin, vmax ));
 			}
 			return crits;
 		}
 
 		
 
-		size_t nHitsInHitMap( std::map<int, std::vector<IHit*> > &hitmap ){
+		size_t nHitsInHitMap( std::map<int, std::vector<KiTrack::IHit*> > &hitmap ){
 			size_t n = 0;
 			for ( auto kv : hitmap ){
 				n += kv.second.size();
@@ -239,14 +238,14 @@ namespace KiTrack {
 
 		Seed_t::iterator findHitById( Seed_t &track, unsigned int _id ){
 			for ( Seed_t::iterator it = track.begin(); it != track.end(); ++it ){
-				IHit * h = (*it);
+				KiTrack::IHit * h = (*it);
 				if ( static_cast<FwdHit*>(h)->_id == _id )
 					return it;
 			}
 			return  track.end();
 		}
 
-		void removeHits( std::map<int, std::vector<IHit*> > &hitmap, std::vector<Seed_t> &tracks ){
+		void removeHits( std::map<int, std::vector<KiTrack::IHit*> > &hitmap, std::vector<Seed_t> &tracks ){
 			LOG_SCOPE_FUNCTION( INFO );
 
 			for ( auto track : tracks ){
@@ -299,7 +298,7 @@ namespace KiTrack {
 			// Step 1
 			// Load and sort the hits
 			/*************************************************************/
-			std::map<int, std::vector<IHit*> > hitmap;
+			std::map<int, std::vector<KiTrack::IHit*> > hitmap;
 			
 			hitmap = hitLoader->load( iEvent );
 			std::map<int, shared_ptr<McTrack>> &mcTrackMap = hitLoader->getMcTrackMap();
@@ -347,7 +346,7 @@ namespace KiTrack {
 				Seed_t track;
 				for ( auto h : mc_track->hits ){
 					track.push_back( h );
-					uvid.insert( static_cast<KiTrack::FwdHit*>(h)->_vid );
+					uvid.insert( static_cast<FwdHit*>(h)->_vid );
 				}
 
 				if ( uvid.size() == track.size() ) // only add tracks that have one hit per volume
@@ -369,7 +368,7 @@ namespace KiTrack {
 			qPlotter->afterIteration( 0, recoTracks );
 		}
 
-		void doTrackIteration( size_t iIteration, std::map<int, std::vector<IHit*> > &hitmap ){
+		void doTrackIteration( size_t iIteration, std::map<int, std::vector<KiTrack::IHit*> > &hitmap ){
 			LOG_SCOPE_FUNCTION( INFO );
 			LOG_F( INFO, "Tracking Iteration %lu", iIteration );
 
@@ -411,10 +410,10 @@ namespace KiTrack {
 
 			// Get the segments and return an automaton object for further work
 			LOG_F( INFO, "Getting the 1 hit segments" );
-			Automaton automaton = builder.get1SegAutomaton();
+			KiTrack::Automaton automaton = builder.get1SegAutomaton();
 
 			// at any point we can get a list of tracks out like this:
-			// std::vector < std::vector< IHit* > > tracks = automaton.getTracks();
+			// std::vector < std::vector< KiTrack::IHit* > > tracks = automaton.getTracks();
 			// we can apply an optional parameter <nHits> to only get tracks with >=nHits in them
 
 			// Report the number of segments and connections after the first step
@@ -475,7 +474,7 @@ namespace KiTrack {
 				LOG_F( INFO, "Omega=%0.3f", omega );
 				LOG_F( INFO, "StableThreshold=%0.3f", stableThreshold );
 
-				SubsetHopfieldNN<Seed_t> subset;
+				KiTrack::SubsetHopfieldNN<Seed_t> subset;
 				subset.add( tracks );
 				subset.setOmega( omega );
 				subset.setLimitForStable( stableThreshold );
@@ -601,6 +600,5 @@ namespace KiTrack {
 	};
 
 
-}
 
 #endif

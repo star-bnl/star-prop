@@ -11,7 +11,6 @@
 #include "TTree.h"
 #include "TRandom3.h"
 
-namespace KiTrack {
 	class FastSim {
 		public:
 		FastSim( ULong_t seed = 1 ) {
@@ -37,7 +36,7 @@ namespace KiTrack {
 			unsigned int iGlobal = 0;
 			for ( size_t i = 0 ;i < nEvents; i++ ){
 				tree->GetEntry( i );
-				std::map< int, std::vector<IHit*> > hits_map_by_track;
+				std::map< int, std::vector<KiTrack::IHit*> > hits_map_by_track;
 
 				for ( unsigned int i = 0; i < tree_n; i++ ){
 					int vid = tree_vid[i]; // the volume id for this hit
@@ -60,14 +59,14 @@ namespace KiTrack {
 			
 		}// load
 
-		std::map<int, std::vector<IHit*> > genEvent( size_t nTracks = 1 ){
+		std::map<int, std::vector<KiTrack::IHit*> > genEvent( size_t nTracks = 1 ){
 			LOG_SCOPE_FUNCTION(INFO);
-			std::map<int, std::vector<IHit*> > hitmap;
+			std::map<int, std::vector<KiTrack::IHit*> > hitmap;
 
 
 			for ( size_t iTrack = 0; iTrack < nTracks; iTrack++ ){
 				size_t iiTrack = gRandom->Integer( buffer.size() - 1 );
-				for ( IHit * hit : buffer[iiTrack] ){
+				for ( KiTrack::IHit * hit : buffer[iiTrack] ){
 					hitmap[ hit->getSector() ].push_back( hit );
 				}
 			}// loop on nTracks
@@ -76,13 +75,12 @@ namespace KiTrack {
 			return hitmap;
 		}// genEvent
 
-		std::vector< std::vector<IHit*> > buffer;
+		std::vector< std::vector<KiTrack::IHit*> > buffer;
 		int tree_n;
 		const static unsigned int tree_max_n = 500;
 		int tree_vid[tree_max_n], tree_tid[tree_max_n];
 		float tree_x[tree_max_n], tree_y[tree_max_n], tree_z[tree_max_n];
 	};
-}
 
 
 #endif

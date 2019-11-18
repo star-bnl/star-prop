@@ -19,7 +19,7 @@ class IHitLoader {
 
 	virtual unsigned long long nEvents() = 0;
 	virtual std::map<int, std::vector<KiTrack::IHit*> > &load( unsigned long long iEvent ) = 0;
-	virtual std::map<int, shared_ptr<KiTrack::McTrack>> &getMcTrackMap() = 0;
+	virtual std::map<int, shared_ptr<McTrack>> &getMcTrackMap() = 0;
 	
 };
 
@@ -58,7 +58,6 @@ class McHitLoader : public IHitLoader {
 	}
 	std::map<int, std::vector<KiTrack::IHit*> > &load( unsigned long long iEvent ){
 		LOG_SCOPE_FUNCTION( INFO );
-		using namespace KiTrack;
 
 		tree->GetEntry( iEvent );
 
@@ -103,7 +102,7 @@ class McHitLoader : public IHitLoader {
 		return hitmap;
 	}
 
-	virtual std::map<int, shared_ptr<KiTrack::McTrack>> &getMcTrackMap() {
+	virtual std::map<int, shared_ptr<McTrack>> &getMcTrackMap() {
 		return mcTrackMap;
 	}
 
@@ -115,7 +114,7 @@ class McHitLoader : public IHitLoader {
 
 	// Data
 	std::map<int, std::vector<KiTrack::IHit*> > hitmap;
-	std::map<int, shared_ptr<KiTrack::McTrack>> mcTrackMap; // key is track id (track_p) value is McTrack
+	std::map<int, shared_ptr<McTrack>> mcTrackMap; // key is track id (track_p) value is McTrack
 	std::map< int, std::vector<KiTrack::IHit*> > hits_map_by_track; // this is used for evaluation with MC tracks
 
 	/* TTree data members */
@@ -186,7 +185,6 @@ class FastSimHitLoader : public IHitLoader {
 	}
 	std::map<int, std::vector<KiTrack::IHit*> > &load( unsigned long long iEvent ){
 		LOG_SCOPE_FUNCTION( INFO );
-		using namespace KiTrack;
 		tree->GetEntry( iEvent ); // get this events entries
 		
 		// TODO we need to clear a lot of pointers
@@ -200,7 +198,7 @@ class FastSimHitLoader : public IHitLoader {
 		// build the mc track map first
 		for ( size_t i = 0; i < mctn; i++ ){
 			size_t tid = i+1;
-			mcTrackMap[ tid ] = shared_ptr< KiTrack::McTrack >( new KiTrack::McTrack( mctpt[i], mcteta[i], mctphi[i], mctq[i] ) );
+			mcTrackMap[ tid ] = shared_ptr< McTrack >( new McTrack( mctpt[i], mcteta[i], mctphi[i], mctq[i] ) );
 		}
 
 		if ( "fastsim_mc" == datatype ){
@@ -217,7 +215,6 @@ class FastSimHitLoader : public IHitLoader {
 
 	std::map<int, std::vector<KiTrack::IHit*> > &loadMC( ){
 		LOG_SCOPE_FUNCTION( INFO );
-		using namespace KiTrack;
 		// TODO: build a reverse map key = hit id, value = hit or iterator in hitmap (for removing the hits later on and avoid the search over vector of hits)
 		LOG_F( INFO, "Loading %d hits into hitmap", mchn );
 		for ( unsigned int i = 0; i < mchn; i++ ){
@@ -294,7 +291,6 @@ class FastSimHitLoader : public IHitLoader {
 
 	std::map<int, std::vector<KiTrack::IHit*> > &loadFastSim( bool includeGhosts = false ){
 		LOG_SCOPE_FUNCTION( INFO );
-		using namespace KiTrack;
 		// TODO: build a reverse map key = hit id, value = hit or iterator in hitmap (for removing the hits later on and avoid the search over vector of hits)
 		LOG_F( INFO, "Loading %d hits into hitmap", ftsn );
 		for ( unsigned int i = 0; i < ftsn; i++ ){
@@ -337,7 +333,7 @@ class FastSimHitLoader : public IHitLoader {
 		return hitmap;
 	}
 
-	virtual std::map<int, shared_ptr<KiTrack::McTrack>> &getMcTrackMap() {
+	virtual std::map<int, shared_ptr<McTrack>> &getMcTrackMap() {
 		return mcTrackMap;
 	}
 
@@ -360,7 +356,7 @@ class FastSimHitLoader : public IHitLoader {
 	
 	// Data
 	std::map<int, std::vector<KiTrack::IHit*> > hitmap;
-	std::map<int, shared_ptr<KiTrack::McTrack>> mcTrackMap; // key is track id (track_p) value is McTrack
+	std::map<int, shared_ptr<McTrack>> mcTrackMap; // key is track id (track_p) value is McTrack
 	std::map< int, std::vector<KiTrack::IHit*> > hits_map_by_track; // this is used for evaluation with MC tracks
 	
 

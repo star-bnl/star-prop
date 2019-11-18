@@ -13,14 +13,13 @@
 
 class StHit;
 
-namespace KiTrack {
 
 	
-	class FwdSystem : public ISectorSystem {
+	class FwdSystem : public KiTrack::ISectorSystem {
 		public:
-		FwdSystem( const int ndisks ) : ISectorSystem(), _ndisks(ndisks)   {  };
+		FwdSystem( const int ndisks ) : KiTrack::ISectorSystem(), _ndisks(ndisks)   {  };
 		~FwdSystem(){ /* */ };
-		virtual unsigned int getLayer( int diskid ) const throw ( OutOfRange ) { 
+		virtual unsigned int getLayer( int diskid ) const throw ( KiTrack::OutOfRange ) { 
 			// return diskid;
 			// Have to remap disk number to layers 1-7
 			//          1,2,3,4,5,6, 7,8, 9,10, 11, 12
@@ -34,7 +33,7 @@ namespace KiTrack {
 		int _ndisks;
 		std::string getInfoOnSector( int sec ) const { return "TODO"; }
 	};
-       KiTrack::FwdSystem *gFwdSystem;
+       FwdSystem *gFwdSystem;
 	//_____________________________________________________________________________________________
 
 
@@ -53,19 +52,19 @@ namespace KiTrack {
 			_phi = phi;
 			_q = q;
 		}
-		void addHit( IHit * hit ){
+		void addHit( KiTrack::IHit * hit ){
 			hits.push_back( hit );
 		}
 
 		float _pt, _eta, _phi;
 		int _tid, _q;
 
-		std::vector<IHit*> hits;
+		std::vector<KiTrack::IHit*> hits;
 	};
 
-	class FwdHit : public IHit {
+	class FwdHit : public KiTrack::IHit {
 	public:
-		FwdHit(unsigned int id, float x, float y, float z, int vid, int tid, std::shared_ptr<McTrack> mcTrack = nullptr ) : IHit() {
+		FwdHit(unsigned int id, float x, float y, float z, int vid, int tid, std::shared_ptr<McTrack> mcTrack = nullptr ) : KiTrack::IHit() {
 			_id = id;
 			_x = x; 
 			_y = y; 
@@ -90,7 +89,7 @@ namespace KiTrack {
 			// ... looks like it is detector specific... 
 		};
 		
-		const ISectorSystem* getSectorSystem() const { return gFwdSystem; } // need to implement 
+		const KiTrack::ISectorSystem* getSectorSystem() const { return gFwdSystem; } // need to implement 
 		// StHit* _hit;
 
                 int _tid; // aka ID truth
@@ -102,9 +101,9 @@ namespace KiTrack {
 	  
 	};
 
-	using Seed_t = std::vector<IHit*>;
+	using Seed_t = std::vector<KiTrack::IHit*>;
 
-	class FwdConnector : public ISectorConnector {
+	class FwdConnector : public KiTrack::ISectorConnector {
 		public:
 	FwdConnector( unsigned int distance ) :_system(*gFwdSystem), _distance(distance) { }
 	~FwdConnector(){ /**/ };
@@ -172,7 +171,6 @@ namespace KiTrack {
 	};
 
 
-}
 
 
 #endif

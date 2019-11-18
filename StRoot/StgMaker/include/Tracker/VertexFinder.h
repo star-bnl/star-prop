@@ -13,7 +13,7 @@ class VertexFinder {
 
 	}
 
-	void findVertex( std::vector<KiTrack::Seed_t> tracks ){
+	void findVertex( std::vector<Seed_t> tracks ){
 
 		// We need a a list of points and directions vectors first build these (in a simple way for now)
 		// What I want is the first point on a track and the 
