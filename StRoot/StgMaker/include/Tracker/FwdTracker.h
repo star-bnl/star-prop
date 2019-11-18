@@ -35,23 +35,6 @@
 
 #include "StgMaker/XmlConfig/XmlConfig.h"
 
-// template <>
-// TString XmlConfig::get<TString>( string path ) const {
-// 	TString r( getString( path ) );
-// 	return r;
-// }
-
-// template <>
-// TString XmlConfig::get<TString>( string path, TString dv ) const {
-// 	if ( !exists( path ) )
-// 		return dv;
-// 	TString r( getString( path ) );
-// 	return r;
-// }
-
-
-
-
 
 namespace KiTrack {
 
