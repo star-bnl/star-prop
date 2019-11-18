@@ -42,7 +42,7 @@ protected:
   ForwardHitLoader*      mForwardHitLoader;
   StarFieldAdaptor*      mFieldAdaptor;
 
-  using Seed_t = std::vector<KiTrack::IHit*>;
+  typedef std::vector<KiTrack::IHit*> Seed_t;
 
   // Fill StEvent
   void FillEvent();
