@@ -4,9 +4,6 @@
 
 #include "St_base/StMessMgr.h"
 
-#ifdef __CINT__
-ClassImp( jdb::XmlConfig );
-#endif
 
 namespace jdb{
 
