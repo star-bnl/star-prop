@@ -10,9 +10,9 @@ namespace jdb{
 	 */
 	std::string ts( int i, int len ){
 		if ( len <= -1 )
-			return (to_string( (long long int) i));
+			return (std::to_string( (long long int) i));
 		else
-			return (to_string( (long long int) i)).substr( 0, len );
+			return (std::to_string( (long long int) i)).substr( 0, len );
 	}
 	/* Converts a double to a string
 	 * @d double to convert
@@ -21,9 +21,9 @@ namespace jdb{
 	 */
 	std::string ts( double d, int len ){
 		if ( len <= -1 )
-			return to_string( (long double) d);
+			return std::to_string( (long double) d);
 		else 
-			return (to_string( (long double) d)).substr( 0, len );
+			return (std::to_string( (long double) d)).substr( 0, len );
 	}
 	/* Converts a float to a string
 	 * @f float to convert
@@ -40,9 +40,9 @@ namespace jdb{
 	 */
 	std::string ts( unsigned int u, int len ){
 		if ( len <= -1 )
-			return to_string( (long long unsigned int) u);
+			return std::to_string( (long long unsigned int) u);
 		else 
-			return (to_string( (long long unsigned int) u)).substr( 0, len );
+			return (std::to_string( (long long unsigned int) u)).substr( 0, len );
 	}
 
 	// /* Converts a size_t to a string
@@ -52,17 +52,17 @@ namespace jdb{
 	//  */
 	// std::string ts( size_t u, int len ){
 	// 	if ( len <= -1 )
-	// 		return to_string( u);
+	// 		return std::to_string( u);
 	// 	else 
-	// 		return (to_string(u)).substr( 0, len );
+	// 		return (std::to_string(u)).substr( 0, len );
 	// }
 
 	/* Removes trailing zeros
 	 * @in string representation of a number
 	 * @return The input string with trailing zeros removed
 	 */
-	std::string trimTrailingZeros( string in ) {
-		string r = in;
+	std::string trimTrailingZeros( std::string in ) {
+		std::string r = in;
 		while ( r[ r.size() - 1 ] == '0' && r.size() > 1 && r[ r.size() - 2 ] != '.' ){
 			r = r.substr( 0, r.size() - 1 );
 		}
@@ -76,7 +76,7 @@ namespace jdb{
 		return trimTrailingZeros( ts( d ) );
 	}
 
-	std::string dtes( double d, string p ){
+	std::string dtes( double d, std::string p ){
 		std::string s = dts( d );
 		std::size_t pos = s.find( "." );
 		if ( pos != std::string::npos ){
@@ -95,9 +95,9 @@ namespace jdb{
 	}
 
 
-	std::string vts( vector<int> v ){
-	 	string str = "";
-	 	string delim = "";
+	std::string vts( std::vector<int> v ){
+	 	std::string str = "";
+	 	std::string delim = "";
 	 	for ( int i : v ){
 	 		str += delim + ts(i);
 	 		delim=", ";
@@ -105,18 +105,18 @@ namespace jdb{
 	 	return str;
 	 }
 
-	 std::string vts( vector<double> v ){
-	 	string str = "";
-	 	string delim = "";
+	 std::string vts( std::vector<double> v ){
+	 	std::string str = "";
+	 	std::string delim = "";
 	 	for ( double i : v ){
 	 		str += delim + dts(i);
 	 		delim=", ";
 	 	}
 	 	return str;
 	 }
-	std::string vts( vector<float> v ){
-		string str = "";
-		string delim = "";
+	std::string vts( std::vector<float> v ){
+		std::string str = "";
+		std::string delim = "";
 		for ( double i : v ){
 			str += delim + dts(i);
 			delim=", ";
@@ -124,10 +124,10 @@ namespace jdb{
 		return str;
 	}
 
-	std::string vts( vector<string> v ){
-		string str = "";
-		string delim = "";
-		for ( string i : v ){
+	std::string vts( std::vector<std::string> v ){
+		std::string str = "";
+		std::string delim = "";
+		for ( std::string i : v ){
 			str += delim + i;
 			delim=", ";
 		}
@@ -143,7 +143,7 @@ namespace jdb{
 
 
 	std::string indentation( int count, std::string tab ) {
-		string is = "";
+		std::string is = "";
 		for ( int i = 0; i < count; i++ )
 			is += tab;
 		return is;
@@ -173,7 +173,7 @@ namespace jdb{
 	void progressBar( int i, int nevents, int textWidth, double elapsedTime, bool skipNonTTY ){
 		
 		bool tty = isatty( fileno(stdout) );
-		string crc = "\r";
+		std::string crc = "\r";
 		if ( !tty )
 			crc = "\n";
 
@@ -197,18 +197,18 @@ namespace jdb{
 			per = round( per );
 
 			
-			cout << "[";
+			std::cout << "[";
 	    	for ( int ip = 0; ip < textWidth; ip ++ ){
 	    		if ( ip < round( (progress * (double)textWidth) ) )
-	    			cout << "=";
+	    			std::cout << "=";
 	    		else 
-	    			cout << " ";
+	    			std::cout << " ";
 	    	}
 	    	if ( true ){ 
 	    		if ( per >= 10 )
-		 	   		cout << "]" << per << "%" ;
+		 	   		std::cout << "]" << per << "%" ;
 				else 
-					cout << "] " << per << "%" ;
+					std::cout << "] " << per << "%" ;
 
 				if ( elapsedTime >= 0 ){
 					
@@ -218,7 +218,7 @@ namespace jdb{
 						nDig = ceil( log10( elapsedTime ) ) + 2;
 
 					if ( elapsedTime < 60 )
-						cout << " : " << ts(elapsedTime, nDig) << " s";
+						std::cout << " : " << ts(elapsedTime, nDig) << " s";
 					else {
 						int nh = (int)elapsedTime / 3600;
 						int nm = (int)elapsedTime / 60;
@@ -227,21 +227,21 @@ namespace jdb{
 						nDig = ceil( log10( ns ) ) + 2;
 						
 						if ( nh > 0 )
-							cout << " : " << nh << "h " << nm << "m " << ts( ns, nDig ) << "s";
+							std::cout << " : " << nh << "h " << nm << "m " << ts( ns, nDig ) << "s";
 						else 
-							cout << " : " << nm << "m " << ts( ns, nDig ) << "s";
+							std::cout << " : " << nm << "m " << ts( ns, nDig ) << "s";
 					}
 				}
-				cout << crc;
+				std::cout << crc;
 				std::cout.flush();
 				if (progress > 1 && tty ) 
-					cout << "[" << endl;
+					std::cout << "[" << std::endl;
 			}
 			//  else {
 			// 	if ( per >= 10 )
-			// 		cout << "]" << per << "%" << "\n";
+			// 		std::cout << "]" << per << "%" << "\n";
 			// 	else 
-			// 		cout << "] " << per << "%" << "\n";
+			// 		std::cout << "] " << per << "%" << "\n";
 			// }
 		}
 	}
@@ -258,7 +258,7 @@ namespace jdb{
 	 * Formats the string to be human readable
 	 * @return The amount of elapsed time
 	 */
-	string TaskTimer::elapsedTime() { 
+	std::string TaskTimer::elapsedTime() { 
 		int nDig = 3;
 		double et = elapsed();
 		if ( et >= 1 )
@@ -284,7 +284,7 @@ namespace jdb{
 	 * @sElapse Show elapsed time
 	 * 
 	 */
-	TaskProgress::TaskProgress( string title, int max, int width, bool sTitle, bool sElapse ){
+	TaskProgress::TaskProgress( std::string title, int max, int width, bool sTitle, bool sElapse ){
 		this->title = title;
 		this->max = max;
 		barWidth = width;
@@ -300,7 +300,7 @@ namespace jdb{
 		if ( 0 == i){
 			tt.start();
 			if ( showTitle )
-				cout << "Running Task : " << title << endl;
+				std::cout << "Running Task : " << title << std::endl;
 		}
 
 		if ( showElapsed )

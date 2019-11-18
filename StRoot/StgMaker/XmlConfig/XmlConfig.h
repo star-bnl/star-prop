@@ -22,6 +22,8 @@ namespace jdb {
 
 	class XmlString;
 
+	using namespace std;
+
 	class XmlConfig : public IObject
 	{
 	protected:

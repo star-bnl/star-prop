@@ -14,8 +14,6 @@
 #include <cmath>
 #include <vector>
 
-using namespace std;
-
 
 namespace jdb{
 
@@ -63,7 +61,7 @@ namespace jdb{
 	 * 
 	 * @return The input string with trailing zeros removed
 	 */
-	std::string trimTrailingZeros( string in );
+	std::string trimTrailingZeros( std::string in );
 	
 	/* Converts a double to a string and trims trailing zeros
 	 * @d double to convert
@@ -100,7 +98,7 @@ namespace jdb{
 	  *
 	  * @return string representation of vector
 	  */
-	std::string vts( vector<int> v );
+	std::string vts( std::vector<int> v );
 
 	 /* Converts vector to string
 	  * @v 		vector to convert
@@ -109,7 +107,7 @@ namespace jdb{
 	  *
 	  * @return string representation of vector
 	  */
-	std::string vts( vector<double> v );
+	std::string vts( std::vector<double> v );
 
 	/* Converts vector to string
 	  * @v 		vector to convert
@@ -118,7 +116,7 @@ namespace jdb{
 	  *
 	  * @return string representation of vector
 	  */
-	std::string vts( vector<float> v );
+	std::string vts( std::vector<float> v );
 
 	/* Converts vector to string
 	  * @v 		vector to convert
@@ -127,7 +125,7 @@ namespace jdb{
 	  *
 	  * @return string representation of vector
 	  */
-	std::string vts( vector<string> v );
+	std::string vts( std::vector<std::string> v );
 
 	/* Converts bool to string
 	  * @b 		bool to convert
@@ -165,7 +163,7 @@ namespace jdb{
 		 * 
 		 * @return The amount of elapsed time
 		 */
-		string elapsedTime();
+		std::string elapsedTime();
 	};
 	
 	/* Plain text progress bar that only updates when it needs to
@@ -192,7 +190,7 @@ namespace jdb{
 		// Show the elapsed time
 		bool showElapsed;
 		// Title of the task
-		string title;
+		std::string title;
 		// Task Timer
 		TaskTimer tt;
 
@@ -211,7 +209,7 @@ namespace jdb{
 		 * @sElapse Show elapsed time
 		 * 
 		 */
-		TaskProgress( string title, int max = 100, int width = 60, bool sTitle = true, bool sElapse = true );
+		TaskProgress( std::string title, int max = 100, int width = 60, bool sTitle = true, bool sElapse = true );
 
 		/* Called inside a loop to show the progress of the current task
 		 * @i The step in the current loop
