@@ -181,8 +181,10 @@ function(STAR_GENERATE_DICTIONARY star_lib_name star_lib_dir star_lib_dir_out)
 	# Prepare include directories to be used during ROOT dictionary generation.
 	# These directories are tied to the `star_lib_name` target via the
 	# INCLUDE_DIRECTORIES property.
-	get_target_property(target_include_dirs ${star_lib_name} INCLUDE_DIRECTORIES)
-	string(REGEX REPLACE "([^;]+)" "-I\\1" dict_include_dirs "${target_include_dirs}")
+	get_property(tgt_include_dirs TARGET ${star_lib_name} PROPERTY INCLUDE_DIRECTORIES)
+	get_property(lib_include_dirs SOURCE ${star_lib_dir}  PROPERTY INCLUDE_DIRECTORIES)
+	list(APPEND tgt_include_dirs ${lib_include_dirs})
+	string(REGEX REPLACE "([^;]+)" "-I\\1" dict_include_dirs "${tgt_include_dirs}")
 
 	# Generate `_dict_source` and `_dict_header` using the `_linkdef_file` and `_dictinc_file` files
 	add_custom_command(OUTPUT ${_dict_source} ${_dict_header}
