@@ -3,14 +3,12 @@
 
 #include "StMaker.h"
 
-#ifndef __CINT__
 #include "GenFit/Track.h"
 
 namespace KiTrack { 
   class IHit;
 };
 
-#endif
 
 class ForwardTracker;
 class ForwardHitLoader;
@@ -40,7 +38,6 @@ public:
 private:
 protected:
 
-#ifndef __CINT__
   ForwardTracker*        mForwardTracker;
   ForwardHitLoader*      mForwardHitLoader;
   StarFieldAdaptor*      mFieldAdaptor;
@@ -58,7 +55,6 @@ protected:
   void FillTrackMatches  ( StTrack*             otrack, genfit::Track* itrack );
 
 
-#endif
   
 };
 

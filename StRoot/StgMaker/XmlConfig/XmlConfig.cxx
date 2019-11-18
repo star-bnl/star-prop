@@ -84,9 +84,7 @@ namespace jdb{
 		bool exists = (stat (_filename.c_str(), &buffer) == 0);
 	
 		if ( exists ){
-			#ifndef __CINT__
 			RapidXmlWrapper rxw( _filename );
-			#endif
 			rxw.makeMap( &orderedKeys, &data );
 
 			// Apply these overrides BEFORE parsing includes -> so that you can control what gets included dynamically
