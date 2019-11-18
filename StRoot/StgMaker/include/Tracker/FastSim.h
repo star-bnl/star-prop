@@ -1,5 +1,5 @@
-#ifndef FAST_SIM_H
-#define FAST_SIM_H
+#ifndef FastSim_h
+#define FastSim_h
 
 #include "StgMaker/include/Tracker/loguru.h"
 #include "StgMaker/include/Tracker/FwdHit.h"

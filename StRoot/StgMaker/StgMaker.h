@@ -1,5 +1,5 @@
-#ifndef __StgMaker_h__
-#define __StgMaker_h__
+#ifndef StgMaker_h
+#define StgMaker_h
 
 #include "StMaker.h"
 

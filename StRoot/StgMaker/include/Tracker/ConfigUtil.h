@@ -1,5 +1,5 @@
-#ifndef CONFIG_UTIL_H
-#define CONFIG_UTIL_H
+#ifndef ConfigUtil_h
+#define ConfigUtil_h
 
 #include "XmlConfig.h"
 #include "TString.h"

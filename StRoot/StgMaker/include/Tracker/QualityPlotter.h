@@ -1,5 +1,5 @@
-#ifndef QUALITY_PLOTTER_H
-#define QUALITY_PLOTTER_H
+#ifndef QualityPlotter_h
+#define QualityPlotter_h
 
 #include <string>
 #include <map>

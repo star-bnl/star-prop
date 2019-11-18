@@ -1,5 +1,5 @@
-#ifndef FWD_HIT_H
-#define FWD_HIT_H
+#ifndef FwdHit_h
+#define FwdHit_h
 
 #include "KiTrack/IHit.h"
 #include "KiTrack/ISectorConnector.h"
