@@ -43,26 +43,12 @@ The STAR software also depends on the following external packages/libraries:
 
 # Release Notes
 
-Highlighted features of the past and planned releases.
+Highlighted features of the past releases can be found [here](https://github.com/star-bnl/star-sw/releases)
 
 __Next proposed features__
 
 - Revisit `cvs2git` scripts and move them to this repository
 - Implement basic CI based on STAR nightly tests
-
-__0.2.0__
-
-- Similar to ROOT added a script to setup current build (`thisstar.sh`)
-- Improved instructions on how to build and run event reconstruction inside
-  a docker container
-- Let the user define a list of libraries to skip from the built, i.e. black
-  listed directories
-- Dependency on generated targets is built automatically rather than being fixed
-
-__0.1.0__
-
-- Support build of all STAR libraries needed to run reconstruction and embedding
-  jobs
 
 
 # Motivation for CMake
