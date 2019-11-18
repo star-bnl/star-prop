@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+
+	<!-- url to TTree with simulated hits and tracks -->
+	<!-- <Input url="SimHitsTuple_100track_0p2_5.root" type="sim_mc" max-events="100" first-event="0" /> -->
+	<!-- <Input url="SimHitsTuple_5track_0p2_5_constBz_electrons.root" type="sim_mc" max-events="200" first-event="0" /> -->
+	<!-- <Input url="SimHitsTuple_200track_0p2_5_constBz_muons_wPt.root" type="sim_mc" max-events="2" first-event="0" /> -->
+	<Input url="SimHitsTuple_1track_0p2_5.root" type="sim_mc" max-events="200" first-event="0" si="false" />
+		
+
+	<TrackFinder nIterations="1">
+		<Iteration> <!-- Options for first iteration -->
+			<SegmentBuilder>
+				<Criteria name="Crit2_RZRatio" min="0.9" max="1.11" />
+				<Criteria name="Crit2_DeltaPhi" min="0" max="10" />	
+				<Criteria name="Crit2_DeltaRho" min="-5" max="20"/>
+				<Criteria name="Crit2_StraightTrackRatio" min="0.9" max="1.1"/>
+			</SegmentBuilder>
+
+			<ThreeHitSegments>
+				<Criteria name="Crit3_3DAngle" min="0" max="90" />
+				<Criteria name="Crit3_PT" min="0" max="100" />
+				<Criteria name="Crit3_ChangeRZRatio" min="0" max="1.01" />
+				<Criteria name="Crit3_2DAngle" min="0" max="2" />
+			</ThreeHitSegments>
+		</Iteration>
+		<Iteration> 
+			<SegmentBuilder>
+				<Criteria name="Crit2_RZRatio" min="0.99" max="1.01" />
+				<Criteria name="Crit2_DeltaPhi" min="0" max="9" />	
+				<Criteria name="Crit2_DeltaRho" min="-5" max="20"/>
+				<Criteria name="Crit2_StraightTrackRatio" min="0.9" max="1.1"/>
+			</SegmentBuilder>
+			<ThreeHitSegments>
+				<Criteria name="Crit3_2DAngle" min="0" max="20" />
+			</ThreeHitSegments>
+		</Iteration>
+		<!-- <Iteration>
+			<SegmentBuilder>
+				<Criteria name="Crit2_RZRatio" min="0.99" max="1.5" />
+				<Criteria name="Crit2_DeltaPhi" min="0" max="6" />	
+				<Criteria name="Crit2_DeltaRho" min="-5" max="20"/>
+			</SegmentBuilder>
+		</Iteration>
+
+		<Iteration>
+			<SegmentBuilder>
+				<Criteria name="Crit2_RZRatio" min="0.99" max="1.1" />
+				<Criteria name="Crit2_DeltaPhi" min="0" max="6" />	
+				<Criteria name="Crit2_DeltaRho" min="-5" max="20"/>
+			</SegmentBuilder>
+
+			<Connector distance="2" />
+
+			<SubsetNN active="true" min-hits-on-track="6" >
+				<Omega>0.99</Omega>
+				<StableThreshold>0.001</StableThreshold>
+			</SubsetNN>	
+		</Iteration> -->
+
+		<!-- These are used if not defined inside <Iteration> -->
+		<ThreeHitSegments>
+			<Criteria name="Crit3_2DAngle" min="0" max="50" />
+			<!-- <Criteria name="Crit3_PT" min="0.1" max="5" /> -->
+		</ThreeHitSegments>
+
+		<Connector distance="1"/>
+
+		<SubsetNN active="true" min-hits-on-track="4" >
+			<!-- <InitialTemp>2.1</InitialTemp> -->
+			<!-- <InfTemp>0.1</InfTemp> -->
+			<Omega>0.99</Omega>
+			<StableThreshold>0.001</StableThreshold>
+		</SubsetNN>	
+
+		<HitRemover active="true">
+		</HitRemover>
+
+	</TrackFinder>
+
+	<TrackFitter constB="true" display="false">
+		<Vertex sigmaXY="0.01" sigmaZ="1" includeInFit="false" />
+		
+		<!-- for MC only -->
+		<Hits sigmaXY="0.1" useFCM="true" />
+	</TrackFitter>
+
+	<!-- SegmentBuilder Criteria 
+		These criteria are used for the Segment Building 
+		There should be ONLY 2 hit criteria listed here
+		Possible options for "name" (available Criteria) :
+		Crit2_StraightTrackRatio, Crit2_DeltaTheta_MV, Crit2_Distance_MV, Crit2_RZRatio, Crit2_DeltaPhi, Crit2_DeltaRho
+	-->
+	<!-- Null filters, use this just to build histograms without any cuts applied -->
+	<!-- <SegmentBuilder>
+		<Criteria name="Crit2_RZRatio" min="0" max="10" />
+		<Criteria name="Crit2_DeltaPhi" min="0" max="180" />	
+		<Criteria name="Crit2_DeltaRho" min="-100" max="100"/>
+		<Criteria name="Crit2_StraightTrackRatio" min="0" max="100"/>
+	</SegmentBuilder> -->
+
+
+</config>
