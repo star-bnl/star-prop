@@ -16,6 +16,7 @@ components include
   - gcc 5.4.0, gcc 7.4.0
   - ROOT 5.34.38
   - CERNLIB 2006
+  - Eigen 3.3.7
 
 These `star-base` images (2GB) can be produced locally by running the following
 commands:

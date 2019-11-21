@@ -50,3 +50,11 @@ RUN curl https://cernlib.web.cern.ch/cernlib/download/2006_source/tar/2006_src.t
  && patch -p0 < /cern/cernlib_2006.patch \
  && ./build_cernlib.sh \
  && rm -fr /cern/2006/src /cern/2006/log /cern/2006/build
+
+# Install Eigen 3.3.7
+WORKDIR /tmp
+RUN curl https://bitbucket.org/eigen/eigen/get/3.3.7.tar.gz | tar -xz -C /tmp \
+ && mkdir /tmp/eigen-build && cd /tmp/eigen-build \
+ && cmake /tmp/eigen-eigen-323c052e1731 -DCMAKE_INSTALL_PREFIX=/usr/local \
+ && make install \
+ && rm -fr /tmp/*
