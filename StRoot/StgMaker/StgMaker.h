@@ -1,7 +1,7 @@
 #ifndef StgMaker_h
 #define StgMaker_h
 
-#include "StMaker.h"
+#include "StChain/StMaker.h"
 
 #include "GenFit/Track.h"
 
