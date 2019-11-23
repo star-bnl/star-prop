@@ -1,0 +1,26 @@
+FROM star-base:latest
+
+WORKDIR /tmp
+
+#make cmake3 default
+RUN yum install -y sudo
+RUN sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake 10 \
+	--slave /usr/local/bin/ctest ctest /usr/bin/ctest \
+	--slave /usr/local/bin/cpack cpack /usr/bin/cpack \
+	--slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake \
+	--family cmake
+RUN sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
+	--slave /usr/local/bin/ctest ctest /usr/bin/ctest3 \
+	--slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
+	--slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
+	--family cmake
+
+# Build and install STAR software
+RUN git clone https://gitlab.com/star-bnl/star-sw.git \
+ && git clone --depth 1 https://gitlab.com/star-bnl/star-cvs.git \
+ && mkdir /tmp/star-build && cd /tmp/star-build \
+ && cmake /tmp/star-sw -DSTAR_SRC=/tmp/star-cvs -DSTAR_PATCH=gcc540 -DCMAKE_INSTALL_PREFIX=/tmp/star-install -DCERNLIB_ROOT=/cern/2006 -DCMAKE_BUILD_TYPE=Release \
+ && make -j $(nproc) \
+ && make install
+
+WORKDIR /tmp/star-install

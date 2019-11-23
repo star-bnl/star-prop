@@ -1,0 +1,2 @@
+Unix.*.Root.DynamicPath:.:$(ROOTSYS)/lib:/tmp/star-install/lib
+Unix.*.Root.MacroPath:.:/tmp/star-install/StRoot/macros:$(ROOTSYS)/macros

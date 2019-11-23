@@ -12,4 +12,7 @@ RUN cmake /tmp/star-sw -DSTAR_SRC=/tmp/star-cvs -DSTAR_PATCH=gcc540 -DCMAKE_INST
  && make -j $(nproc) \
  && make install
 
+COPY rootlogon.C /tmp/star-install/rootlogon.C
+COPY .rootrc /tmp/star-install/.rootrc
+
 WORKDIR /tmp/star-install
