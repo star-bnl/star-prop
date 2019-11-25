@@ -1,0 +1,56 @@
+FROM centos:7.4.1708
+WORKDIR /tmp
+
+ENV TERM xterm
+
+ENV ROOTSYS /usr/local
+ENV PATH $ROOTSYS/bin:$PATH
+ENV PYTHONDIR $PYTHONDIR:$ROOTSYS
+ENV LD_LIBRARY_PATH $ROOTSYS/lib:$PYTHONDIR/lib:$ROOTSYS/bindings/pyroot:$LD_LIBRARY_PATH
+ENV DYLD_LIBRARY_PATH /usr/lib:$ROOTSYS/lib:$PYTHONDIR/lib:$ROOTSYS/bindings/pyroot:$DYLD_LIBRARY_PATH
+ENV PYTHONPATH $PYTHONPATH:$ROOTSYS/lib:$ROOTSYS/bindings/pyroot
+
+COPY packages-centos packages
+RUN yum -y install epel-release \
+    && yum install -y \
+    $(cat packages) \
+    && rm -rf /var/cache/* \
+    && ln -s /usr/lib64/liblapack.a /usr/lib64/liblapack3.a
+
+RUN pip install pyparsing
+
+# Install CERNLIB
+WORKDIR /cern
+COPY cernlib_2006.patch cernlib_2006.patch
+COPY build_cernlib.sh build_cernlib.sh
+RUN curl https://cernlib.web.cern.ch/cernlib/download/2006_source/tar/2006_src.tar.gz | tar -xz -C /cern \
+ && patch -p0 < /cern/cernlib_2006.patch \
+ && ./build_cernlib.sh \
+ && rm -fr /cern/2006/src /cern/2006/log /cern/2006/build
+
+
+#make cmake3 default
+RUN sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake 10 \
+    --slave /usr/local/bin/ctest ctest /usr/bin/ctest \
+    --slave /usr/local/bin/cpack cpack /usr/bin/cpack \
+    --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake \
+    --family cmake
+RUN sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
+    --slave /usr/local/bin/ctest ctest /usr/bin/ctest3 \
+    --slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
+    --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
+    --family cmake
+
+
+RUN curl https://root.cern.ch/download/root_v5.34.38.source.tar.gz | tar -xz -C /tmp \
+ && mv /tmp/root /tmp/root-5-34-38 \
+ && mkdir /tmp/root-build && cd /tmp/root-build \
+ && cmake /tmp/root-5-34-38 \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -Drpath=ON \
+    -Dtable=ON \
+    -Dpythia6=ON \
+    -Dpythia6_nolink=ON \
+    -Dvc=ON \
+ && make -j $(nproc) \
+ && make install

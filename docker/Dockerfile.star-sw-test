@@ -1,5 +1,7 @@
 FROM star-base
 
+ARG build_type=Debug
+
 WORKDIR /tmp
 
 # Get the latest STAR software
@@ -8,8 +10,12 @@ RUN git clone https://gitlab.com/star-bnl/star-sw.git \
 
 # Build and install STAR software
 WORKDIR /tmp/star-build
-RUN cmake /tmp/star-sw -DSTAR_SRC=/tmp/star-cvs -DSTAR_PATCH=gcc540 -DCMAKE_INSTALL_PREFIX=/tmp/star-install -DCERNLIB_ROOT=/cern/2006 -DCMAKE_BUILD_TYPE=Debug \
+RUN echo "Build type: ${build_type}" \
+ && cmake /tmp/star-sw -DSTAR_SRC=/tmp/star-cvs -DSTAR_PATCH=gcc540 -DCMAKE_INSTALL_PREFIX=/tmp/star-install -DCERNLIB_ROOT=/cern/2006 -DCMAKE_BUILD_TYPE=${build_type} \
  && make -j $(nproc) \
  && make install
+
+COPY rootlogon.C /tmp/star-install/rootlogon.C
+COPY .rootrc /tmp/star-install/.rootrc
 
 WORKDIR /tmp/star-install
