@@ -3,7 +3,7 @@ WORKDIR /tmp
 
 ENV TERM xterm
 
-ENV ROOTSYS /usr/local/
+ENV ROOTSYS /usr/local
 ENV PATH $ROOTSYS/bin:$PATH
 ENV PYTHONDIR $PYTHONDIR:$ROOTSYS
 ENV LD_LIBRARY_PATH $ROOTSYS/lib:$PYTHONDIR/lib:$ROOTSYS/bindings/pyroot:$LD_LIBRARY_PATH
@@ -18,31 +18,6 @@ RUN yum -y install epel-release \
     && ln -s /usr/lib64/liblapack.a /usr/lib64/liblapack3.a
 
 RUN pip install pyparsing
-
-#RUN cd /tmp/ \
-#    && wget https://github.com/root-project/root/archive/v5-34-36.tar.gz \
-#    && tar -xvf v5-34-36.tar.gz \
-#    && rm -f v5-34-36.tar.gz \
-#  	&& cd root-5-34-36/ \
-#  	&& ./configure --all --prefix=$ROOTSYS \
-#  	&& make -j$(nproc) && make && make install \
-#    && rm -rf /tmp/*
-
-# Install ROOT5
-RUN curl https://root.cern.ch/download/root_v5.34.38.source.tar.gz | tar -xz -C /tmp \
- && mv /tmp/root /tmp/root-5-34-38 \
- && mkdir /tmp/root-build && cd /tmp/root-build \
- && cmake /tmp/root-5-34-38 \
-    -DCMAKE_INSTALL_PREFIX=/usr/local \
-    -Drpath=ON \
-    -Dtable=ON \
-    -Dpythia6=ON \
-    -Dpythia6_nolink=ON \
-    -Dvc=ON \
- && make -j $(nproc) \
- && make install \
- && rm -fr /tmp/*
-
 
 # Install CERNLIB
 WORKDIR /cern
@@ -65,3 +40,17 @@ RUN sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
     --slave /usr/local/bin/cpack cpack /usr/bin/cpack3 \
     --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
     --family cmake
+
+
+RUN curl https://root.cern.ch/download/root_v5.34.38.source.tar.gz | tar -xz -C /tmp \
+ && mv /tmp/root /tmp/root-5-34-38 \
+ && mkdir /tmp/root-build && cd /tmp/root-build \
+ && cmake /tmp/root-5-34-38 \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -Drpath=ON \
+    -Dtable=ON \
+    -Dpythia6=ON \
+    -Dpythia6_nolink=ON \
+    -Dvc=ON \
+ && make -j $(nproc) \
+ && make install
