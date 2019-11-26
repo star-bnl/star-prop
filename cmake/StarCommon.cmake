@@ -660,6 +660,8 @@ function(STAR_ADD_LIBRARY_BASIC star_lib_dir)
 		set(star_lib_name ${user_lib_name})
 	endif()
 
+	set(library_type ${ARGV2})
+
 	# Deal with sources
 	GET_EXCLUDE_LIST(star_lib_exclude)
 
@@ -673,7 +675,7 @@ function(STAR_ADD_LIBRARY_BASIC star_lib_dir)
 	file(GLOB_RECURSE age_files "${star_lib_dir_abs}/*.age")
 	star_process_g("${age_files}" f_age_files)
 
-	add_library(${star_lib_name} ${f_files} ${f_g_files} ${f_age_files} ${cxx_files} ${c_files})
+	add_library(${star_lib_name} ${library_type} ${f_files} ${f_g_files} ${f_age_files} ${cxx_files} ${c_files})
 	set_target_properties(${star_lib_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
 
 	install(TARGETS ${star_lib_name}
