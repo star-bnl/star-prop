@@ -75,7 +75,7 @@ if(TARGET StgMaker)
 		PREFIX "external/"
 		URL "https://github.com/star-bnl/GenFit/archive/b496504a.tar.gz"
 		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAR_INSTALL_PREFIX} -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-			-DINCLUDE_OUTPUT_DIRECTORY=include/GenFit
+			-DINCLUDE_OUTPUT_DIRECTORY=include/GenFit -DEigen3_DIR=${Eigen3_DIR}
 	)
 
 	add_dependencies(StgMaker GenFit KiTrack St_g2t)
