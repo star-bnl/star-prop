@@ -36,16 +36,16 @@
   ((TRint*)gROOT->GetApplication())->SetPrompt( gPrompt.Data());
 
   // Load StarRoot lib.
-  if (gSystem->DynamicPathName("StarClassLibrary",kTRUE))
-    gSystem->Load("StarClassLibrary");
+  if (gSystem->DynamicPathName("libStarClassLibrary",kTRUE))
+    gSystem->Load("libStarClassLibrary");
 
   if (!strstr(gSystem->GetLibraries(),"libTable")) {
     gSystem->Load("libGeom"); gSystem->Load("libTable");
   }
 
   gSystem->Load("libPhysics");
-  gSystem->Load("libEG.so");
-  gSystem->Load("StarRoot");
+  gSystem->Load("libEG");
+  gSystem->Load("libStarRoot");
 
   if (strstr(gSystem->GetLibraries(),"libTable")) {
     gInterpreter->ProcessLine("typedef TCL              StCL;");
