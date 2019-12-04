@@ -139,5 +139,10 @@ install(DIRECTORY
 	${STAR_SRC}/StDb/servers
 	DESTINATION StDb/)
 
+install(FILES
+	${PROJECT_SOURCE_DIR}/star-aux/rootlogon.C
+	${PROJECT_SOURCE_DIR}/star-aux/rootlogoff.C
+	DESTINATION StRoot/macros)
+
 configure_file(${PROJECT_SOURCE_DIR}/scripts/thisstar.sh.in ${STAR_INSTALL_BINDIR}/thisstar.sh @ONLY NEWLINE_STYLE UNIX)
 configure_file(${PROJECT_SOURCE_DIR}/scripts/.rootrc.in ${CMAKE_INSTALL_PREFIX}/.rootrc @ONLY NEWLINE_STYLE UNIX)
