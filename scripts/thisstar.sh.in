@@ -81,3 +81,4 @@ unset -f drop_from_path
 
 export STAR_VERSION=DEV
 export STAR_LEVEL=dev
+export STAR_LIB=@STAR_INSTALL_LIBDIR@

@@ -1,0 +1,4 @@
+Rint.Logon:                @CMAKE_INSTALL_PREFIX@/StRoot/macros/rootlogon.C
+Rint.Logoff:               @CMAKE_INSTALL_PREFIX@/StRoot/macros/rootlogoff.C
+Unix.*.Root.MacroPath:     ./:@CMAKE_INSTALL_PREFIX@/StRoot/macros:$(ROOTSYS)/macros
+Unix.*.Root.DynamicPath:   ./:@STAR_INSTALL_LIBDIR@:$(ROOTSYS)/lib

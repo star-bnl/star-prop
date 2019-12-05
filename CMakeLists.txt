@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.6 FATAL_ERROR)
 
+find_program(CCACHE_EXECUTABLE ccache)
+if(CCACHE_EXECUTABLE)
+	set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ${CCACHE_EXECUTABLE})
+	set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ${CCACHE_EXECUTABLE})
+endif()
+
 project(star-sw LANGUAGES C CXX Fortran)
 
 set(STAR_SRC "$ENV{STAR}" CACHE PATH "Path to star software source code")
@@ -67,7 +73,7 @@ star_add_library_table(pams/svt)
 star_add_library_geometry(StarVMC/Geometry StarGeometry RootTGeo)
 star_add_library_geometry(StarVMC/Geometry xgeometry GeantGeo)
 star_add_library_starsim(asps/Simulation/starsim)
-star_add_library_basic(asps/Simulation/geant321)
+star_add_library_basic(asps/Simulation/geant321 "" STATIC)
 star_add_library_basic(asps/Simulation/gcalor)
 star_add_library_basic(StRoot/StarMagField StarMagFieldNoDict)
 star_add_library_basic(StarVMC/StarAgmlUtil)
@@ -139,4 +145,10 @@ install(DIRECTORY
 	${STAR_SRC}/StDb/servers
 	DESTINATION StDb/)
 
+install(FILES
+	${PROJECT_SOURCE_DIR}/star-aux/rootlogon.C
+	${PROJECT_SOURCE_DIR}/star-aux/rootlogoff.C
+	DESTINATION StRoot/macros)
+
 configure_file(${PROJECT_SOURCE_DIR}/scripts/thisstar.sh.in ${STAR_INSTALL_BINDIR}/thisstar.sh @ONLY NEWLINE_STYLE UNIX)
+configure_file(${PROJECT_SOURCE_DIR}/scripts/.rootrc.in ${CMAKE_INSTALL_PREFIX}/.rootrc @ONLY NEWLINE_STYLE UNIX)
