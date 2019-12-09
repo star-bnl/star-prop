@@ -1,14 +1,6 @@
 FROM centos:7.4.1708
+
 WORKDIR /tmp
-
-ENV TERM xterm
-
-ENV ROOTSYS /usr/local
-ENV PATH $ROOTSYS/bin:$PATH
-ENV PYTHONDIR $PYTHONDIR:$ROOTSYS
-ENV LD_LIBRARY_PATH $ROOTSYS/lib:$PYTHONDIR/lib:$ROOTSYS/bindings/pyroot:$LD_LIBRARY_PATH
-ENV DYLD_LIBRARY_PATH /usr/lib:$ROOTSYS/lib:$PYTHONDIR/lib:$ROOTSYS/bindings/pyroot:$DYLD_LIBRARY_PATH
-ENV PYTHONPATH $PYTHONPATH:$ROOTSYS/lib:$ROOTSYS/bindings/pyroot
 
 # Install system packages
 COPY packages-centos packages
