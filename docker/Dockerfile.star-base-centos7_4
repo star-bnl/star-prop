@@ -21,16 +21,6 @@ RUN yum -y install epel-release \
 # Install extra python module used by STAR software
 RUN pip install pyparsing
 
-# Install CERNLIB
-WORKDIR /cern
-COPY cernlib_2006.patch cernlib_2006.patch
-COPY build_cernlib.sh build_cernlib.sh
-RUN curl https://cernlib.web.cern.ch/cernlib/download/2006_source/tar/2006_src.tar.gz | tar -xz -C /cern \
- && patch -p0 < /cern/cernlib_2006.patch \
- && ./build_cernlib.sh \
- && rm -fr /cern/2006/src /cern/2006/log /cern/2006/build
-
-
 # Make CMake3 default
 RUN sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake 10 \
     --slave /usr/local/bin/ctest ctest /usr/bin/ctest \
@@ -57,3 +47,12 @@ RUN curl https://root.cern.ch/download/root_v5.34.38.source.tar.gz | tar -xz -C 
  && make -j $(nproc) \
  && make install \
  && rm -fr /tmp/*
+
+# Install CERNLIB
+WORKDIR /cern
+COPY cernlib_2006.patch cernlib_2006.patch
+COPY build_cernlib.sh build_cernlib.sh
+RUN curl https://cernlib.web.cern.ch/cernlib/download/2006_source/tar/2006_src.tar.gz | tar -xz -C /cern \
+ && patch -p0 < /cern/cernlib_2006.patch \
+ && ./build_cernlib.sh \
+ && rm -fr /cern/2006/src /cern/2006/log /cern/2006/build
