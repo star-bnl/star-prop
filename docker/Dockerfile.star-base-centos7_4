@@ -10,6 +10,7 @@ ENV LD_LIBRARY_PATH $ROOTSYS/lib:$PYTHONDIR/lib:$ROOTSYS/bindings/pyroot:$LD_LIB
 ENV DYLD_LIBRARY_PATH /usr/lib:$ROOTSYS/lib:$PYTHONDIR/lib:$ROOTSYS/bindings/pyroot:$DYLD_LIBRARY_PATH
 ENV PYTHONPATH $PYTHONPATH:$ROOTSYS/lib:$ROOTSYS/bindings/pyroot
 
+# Install system packages
 COPY packages-centos packages
 RUN yum -y install epel-release \
     && yum install -y \
@@ -17,6 +18,7 @@ RUN yum -y install epel-release \
     && rm -rf /var/cache/* \
     && ln -s /usr/lib64/liblapack.a /usr/lib64/liblapack3.a
 
+# Install extra python module used by STAR software
 RUN pip install pyparsing
 
 # Install CERNLIB
@@ -29,7 +31,7 @@ RUN curl https://cernlib.web.cern.ch/cernlib/download/2006_source/tar/2006_src.t
  && rm -fr /cern/2006/src /cern/2006/log /cern/2006/build
 
 
-#make cmake3 default
+# Make CMake3 default
 RUN sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake 10 \
     --slave /usr/local/bin/ctest ctest /usr/bin/ctest \
     --slave /usr/local/bin/cpack cpack /usr/bin/cpack \
@@ -41,7 +43,7 @@ RUN sudo alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
     --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 \
     --family cmake
 
-
+# Install ROOT5
 RUN curl https://root.cern.ch/download/root_v5.34.38.source.tar.gz | tar -xz -C /tmp \
  && mv /tmp/root /tmp/root-5-34-38 \
  && mkdir /tmp/root-build && cd /tmp/root-build \
@@ -53,4 +55,5 @@ RUN curl https://root.cern.ch/download/root_v5.34.38.source.tar.gz | tar -xz -C 
     -Dpythia6_nolink=ON \
     -Dvc=ON \
  && make -j $(nproc) \
- && make install
+ && make install \
+ && rm -fr /tmp/*
