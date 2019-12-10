@@ -71,5 +71,4 @@ python2-pip
 flex
 bison
 flex-devel
-sudo
 eigen3-devel
