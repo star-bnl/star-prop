@@ -4,9 +4,9 @@ WORKDIR /tmp
 
 # Install system packages
 COPY docker/packages-centos /tmp/packages
-RUN yum -y install epel-release \
-    && yum install -y \
-    $(cat packages) \
+RUN yum update -q -y \
+    && yum install -y epel-release \
+    && yum install -y $(cat packages) \
     && yum clean all \
     && rm -rf /var/cache/* \
     && ln -s /usr/lib64/liblapack.a /usr/lib64/liblapack3.a
