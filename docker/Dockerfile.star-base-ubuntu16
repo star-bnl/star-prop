@@ -3,13 +3,13 @@ FROM ubuntu:16.04
 WORKDIR /tmp
 
 # Install system packages
-COPY packages packages
+COPY docker/packages /tmp/packages
 RUN apt-get update -qq \
  && apt-get -y install $(cat packages) \
  && apt-get clean \
  && Rscript -e 'install.packages(c("RInside","Rcpp"), repos="https://cran.r-project.org")' \
  && localedef -i en_US -f UTF-8 en_US.UTF-8 \
- && rm -rf /var/lib/apt/lists/* /tmp/* /packages
+ && rm -rf /var/lib/apt/lists/* /tmp/*
 
 # Install python3.7 from a PPA and link python3 to it
 RUN apt update \
@@ -44,8 +44,8 @@ RUN curl https://root.cern.ch/download/root_v5.34.38.source.tar.gz | tar -xz -C 
 
 # Install CERNLIB
 WORKDIR /cern
-COPY cernlib_2006.patch cernlib_2006.patch
-COPY build_cernlib.sh build_cernlib.sh
+COPY docker/cernlib_2006.patch /cern/cernlib_2006.patch
+COPY docker/build_cernlib.sh /cern/build_cernlib.sh
 RUN curl https://cernlib.web.cern.ch/cernlib/download/2006_source/tar/2006_src.tar.gz | tar -xz -C /cern \
  && patch -p0 < /cern/cernlib_2006.patch \
  && ./build_cernlib.sh \

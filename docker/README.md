@@ -22,10 +22,10 @@ These `star-base` images (2GB) can be produced locally by running the following
 commands:
 
     cd /path/to/star-sw
-    docker build --rm -t star-base -f docker/Dockerfile.star-base-ubuntu16 docker/
+    docker build --rm -t star-base -f docker/Dockerfile.star-base-ubuntu16 .
 
     cd /path/to/star-sw
-    docker build --rm -t star-base -f docker/Dockerfile.star-base-ubuntu18 docker/
+    docker build --rm -t star-base -f docker/Dockerfile.star-base-ubuntu18 .
 
 **star-sw**
 
@@ -33,13 +33,13 @@ An image named `star-sw-test`(4.5GB) is appropriate for tests and can be created
 as:
 
     cd /path/to/star-sw
-    docker build --rm -t star-sw-test -f docker/Dockerfile.star-sw-test docker/
+    docker build --rm -t star-sw-test -f docker/Dockerfile.star-sw-test .
 
 A thinner image `star-sw-release` (2.3GB) would be more appropriate for a STAR
 release:
 
     cd /path/to/star-sw
-    docker build --rm -t star-sw-release -f docker/Dockerfile.star-sw-release docker/
+    docker build --rm -t star-sw-release -f docker/Dockerfile.star-sw-release .
 
 
 # Building and Running STAR Software in a Docker Container
