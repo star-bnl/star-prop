@@ -3,7 +3,7 @@ FROM centos:7.4.1708
 WORKDIR /tmp
 
 # Install system packages
-COPY docker/packages-centos /tmp/packages
+COPY docker/packages.centos /tmp/packages
 RUN yum update -q -y \
     && yum install -y epel-release \
     && yum install -y $(cat packages) \
