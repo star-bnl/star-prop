@@ -1,0 +1,39 @@
+ARG STAR_BASE_IMAGE=star-base-centos7
+
+FROM ${STAR_BASE_IMAGE} AS build-stage
+
+# Set arguments default values
+ARG STAR_SW_TAG=master
+ARG STAR_CVS_TAG=master
+ARG STAR_BUILD_TYPE=Release
+
+WORKDIR /tmp
+
+# Get STAR software
+RUN if [ "$STAR_SW_TAG" = "master" ] ; then curl -s https://api.github.com/repos/star-bnl/star-sw/git/refs/heads/master 2>&1 | tee star-sw-version.json ; fi
+RUN curl -L https://github.com/star-bnl/star-sw/archive/${STAR_SW_TAG}.tar.gz | tar -xz -C /tmp \
+ && mv /tmp/star-sw-${STAR_SW_TAG} /tmp/star-sw
+
+RUN if [ "$STAR_CVS_TAG" = "master" ] ; then curl -s https://api.github.com/repos/star-bnl/star-cvs/git/refs/heads/master 2>&1 | tee star-cvs-version.json ; fi
+RUN curl -L https://github.com/star-bnl/star-cvs/archive/${STAR_CVS_TAG}.tar.gz | tar -xz -C /tmp \
+ && mv /tmp/star-cvs-${STAR_CVS_TAG} /tmp/star-cvs
+
+# Build STAR software
+WORKDIR /tmp/star-build
+
+RUN cmake /tmp/star-sw -DSTAR_SRC=/tmp/star-cvs -DSTAR_PATCH=gcc540 -DCMAKE_INSTALL_PREFIX=/tmp/star-install -DCERNLIB_ROOT=/cern/2006 -DCMAKE_BUILD_TYPE=${star_build_type}
+RUN make -j $(nproc) && make install
+
+# Install additional packages for interactive work
+RUN yum update -q -y \
+ && yum install -y emacs vim \
+ && yum clean all \
+ && rm -rf /var/cache/*
+
+# Get rid of source and build artifacts and only keep installed STAR software
+FROM ${STAR_BASE_IMAGE}
+COPY --from=build-stage /tmp/star-install /tmp/star-install
+WORKDIR /tmp/star-install
+
+ENTRYPOINT ["/tmp/star-install/.entrypoint.sh"]
+CMD ["/bin/bash"]
