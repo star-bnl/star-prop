@@ -49,8 +49,8 @@ ENV STAR_LEVEL=${STAR_CVS_TAG}
 ENV STAR_VERSION=${STAR_CVS_TAG}
 ENV STAR_SYS=x8664_sl7
 
-ENV PATH=$STAR_MGR:$STAR_SCRIPTS:$STAR_CGI:.${STAR_HOST_SYS}/bin:${CERN_ROOT}/bin:$PATH
-ENV LD_LIBRARY_PATH=.${STAR_HOST_SYS}/lib:/usr/local/lib
+ENV PATH=.:${STAR_BIN}:$STAR_MGR:$STAR_SCRIPTS:$STAR_CGI:${CERN_ROOT}/bin:${PATH}
+ENV LD_LIBRARY_PATH=${STAR_LIB}:/usr/local/lib:${LD_LIBRARY_PATH}
 
 # With this patch we don't force mysql static libraries to be linked into the
 # root4star executable. Instead the shared ones are picked up from the system
