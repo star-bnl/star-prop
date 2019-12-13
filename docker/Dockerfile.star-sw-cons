@@ -1,0 +1,92 @@
+ARG STAR_BASE_IMAGE=starbnl/star-base-centos7
+
+FROM ${STAR_BASE_IMAGE} AS build-stage
+
+# Set arguments default values
+ARG STAR_CVS_TAG=master
+ARG STAR_BUILD_TYPE=Release
+
+WORKDIR /tmp
+
+RUN yum install -y blas-static byacc perl-Env perl-Digest-MD5 && yum clean all
+RUN cd /cern/2006/lib && ln -s /usr/lib64/libblas.a libblas.a \
+ && ln -s /usr/lib64/liblapack.a liblapack3.a && cd /cern && ln -s 2006 pro
+
+# Get STAR software
+ADD https://api.github.com/repos/star-bnl/star-cvs/commits/${STAR_CVS_TAG} star-cvs-ref.json
+RUN curl -s -L https://github.com/star-bnl/star-cvs/archive/${STAR_CVS_TAG}.tar.gz | tar -xz -C /tmp \
+ && mkdir -p /tmp/star-cvs \
+ && mv /tmp/star-cvs-${STAR_CVS_TAG} /tmp/star-cvs/${STAR_CVS_TAG}
+
+# Build STAR software
+WORKDIR /tmp/star-cvs/${STAR_CVS_TAG}
+
+ENV CERN=/cern
+ENV CERN_ROOT=/cern/pro
+ENV CERN_LEVEL=pro
+
+ENV ROOTSYS=/usr/local
+ENV ROOT_LEVEL=5.34.38
+
+ENV USE_64BITS=1
+ENV SITE=generic
+ENV OPTSTAR=/usr/local
+
+ENV STARCMPL=gcc
+ENV STARCMPLC=gcc
+ENV STAR_HOST_SYS=sl74_gcc485
+ENV STAR_BASE_PATH=
+ENV STAR_PATH=/tmp/star-cvs
+ENV STAR=/tmp/star-cvs/${STAR_CVS_TAG}
+ENV STAR_LIB=${STAR}/.${STAR_HOST_SYS}/lib
+ENV STAR_BIN=${STAR}/.${STAR_HOST_SYS}/bin
+ENV STAR_SCRIPTS=${STAR}/scripts
+ENV STAR_CGI=${STAR}/cgi
+ENV STAR_MGR=${STAR}/mgr
+ENV STAR_PAMS=${STAR}/pams
+ENV STAR_LEVEL=${STAR_CVS_TAG}
+ENV STAR_VERSION=${STAR_CVS_TAG}
+ENV STAR_SYS=x8664_sl7
+
+ENV PATH=$STAR_MGR:$STAR_SCRIPTS:$STAR_CGI:.${STAR_HOST_SYS}/bin:${CERN_ROOT}/bin:$PATH
+ENV LD_LIBRARY_PATH=.${STAR_HOST_SYS}/lib:/usr/local/lib
+
+# With this patch we don't force mysql static libraries to be linked into the
+# root4star executable. Instead the shared ones are picked up from the system
+# location.
+RUN cat > patch <<<$'\
+diff --git a/asps/rexe/Conscript b/asps/rexe/Conscript \n\
+--- a/asps/rexe/Conscript \n\
++++ b/asps/rexe/Conscript \n\
+@@ -79,9 +79,7 @@ \n\
+ } \n\
+ $LIBS .= " -lgeant321 -lgcalor"; \n\
+ $LIBS  .= " " . $env->{CERNLIBS};\n\
+-$LIBS  .= $env->{LDALL};\n\
+ $LIBS  .= " " . $env->{Packages}->{MYSQL}->{LIBS};\n\
+-$LIBS  .= $env->{LDNONE};\n\
+ $LIBS  .= " " . $FLIBS . " " . $env->{CLIBS};#   " " . $env->{SYSLIBS} ;\n\
+ if ($STAR_SYS =~ /^sun4x_5.$/) {\n\
+     if ($LIBPATH) { $LIBPATH .= $main::PATH_SEPARATOR; }\n' \
+ && patch -p1 < patch
+
+RUN mkdir -p ${STAR_BIN} && mkdir -p ${STAR_LIB} \
+ && mkdir -p ${STAR}/.${STAR_HOST_SYS}/include \
+ && cd ${STAR}/.${STAR_HOST_SYS} \
+ && ln -s bin BIN \
+ && ln -s lib LIB
+
+RUN cons +asps/staf +asps/Simulation/agetof
+RUN cons +StarVMC/Geometry
+RUN cons %StEbyePool %StEbyePool %StHighptPool %StAngleCorrMaker %StSpinMaker \
+         %StEbyeScaTagsMaker %StEbye2ptMaker %StDaqClfMaker %StFtpcV0Maker \
+         %StStrangePool %GeoTestMaker %StSpinPool %StFgtPool %StShadowMaker \
+         %Kinematics %OnlTools %StShadowMaker %g2r %StJetFinder
+
+# Install typical setup scripts for ROOT
+COPY star-aux/rootlogon.C star-aux/rootlogoff.C StRoot/macros/
+RUN cat > .rootrc <<<$'\
+Rint.Logon:                $(STAR)/StRoot/macros/rootlogon.C\n\
+Rint.Logoff:               $(STAR)/StRoot/macros/rootlogoff.C\n\
+Unix.*.Root.MacroPath:     ./:$(STAR)/StRoot/macros:$(ROOTSYS)/macros\n\
+Unix.*.Root.DynamicPath:   ./:$(STAR_LIB):$(ROOTSYS)/lib\n'
