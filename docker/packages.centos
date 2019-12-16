@@ -8,7 +8,6 @@ ftgl-devel
 gcc
 gcc-c++
 gcc-gfortran
-git
 glew-devel
 gsl-devel
 imake

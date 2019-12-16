@@ -4,7 +4,6 @@ g++
 gcc
 gfal2
 gfortran
-git
 graphviz-dev
 libavahi-compat-libdnssd-dev
 libcfitsio-dev
