@@ -23,8 +23,8 @@ RUN apt update \
 RUN pip install pyparsing
 
 # Install newer version of CMake
-RUN curl https://cmake.org/files/v3.15/cmake-3.15.2.tar.gz | tar -xz -C /tmp \
- && cd /tmp/cmake-3.15.2 && ./bootstrap && make -j $(nproc) && make install \
+RUN curl https://cmake.org/files/v3.15/cmake-3.14.6.tar.gz | tar -xz -C /tmp \
+ && cd /tmp/cmake-3.14.6 && ./bootstrap && make -j $(nproc) && make install \
  && rm -fr /tmp/*
 
 # Install ROOT5
@@ -51,10 +51,10 @@ RUN curl https://cernlib.web.cern.ch/cernlib/download/2006_source/tar/2006_src.t
  && ./build_cernlib.sh \
  && rm -fr /cern/2006/src /cern/2006/log /cern/2006/build
 
-# Install Eigen 3.3.7
+# Install Eigen 3.3.4
 WORKDIR /tmp
-RUN curl https://bitbucket.org/eigen/eigen/get/3.3.7.tar.gz | tar -xz -C /tmp \
+RUN curl https://bitbucket.org/eigen/eigen/get/3.3.4.tar.gz | tar -xz -C /tmp \
  && mkdir /tmp/eigen-build && cd /tmp/eigen-build \
- && cmake /tmp/eigen-eigen-323c052e1731 -DCMAKE_INSTALL_PREFIX=/usr/local \
+ && cmake /tmp/eigen-eigen-5a0156e40feb -DCMAKE_INSTALL_PREFIX=/usr/local \
  && make install \
  && rm -fr /tmp/*
