@@ -5,7 +5,7 @@ ARG build_type=Debug
 WORKDIR /tmp
 
 # Get the latest STAR software
-RUN git clone https://gitlab.com/star-bnl/star-sw.git \
+RUN git clone https://gitlab.com/jdbrice/star-sw.git \
  && git clone https://gitlab.com/star-bnl/star-cvs.git
 
 # Build and install STAR software
