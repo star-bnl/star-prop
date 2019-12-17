@@ -10,11 +10,11 @@ ARG STAR_BUILD_TYPE=Release
 WORKDIR /tmp
 
 # Get STAR software
-ADD https://github.com/star-bnl/star-sw/archive/${STAR_SW_TAG}.tar.gz /tmp
-ADD https://github.com/star-bnl/star-cvs/archive/${STAR_CVS_TAG}.tar.gz /tmp
+ADD https://api.github.com/repos/star-bnl/star-sw/commits/${STAR_SW_TAG} star-sw-ref.json
+RUN curl -s -L https://github.com/star-bnl/star-sw/archive/${STAR_SW_TAG}.tar.gz  | tar -xz -C /tmp
 
-RUN tar -xzf /tmp/${STAR_SW_TAG}.tar.gz \
- && tar -xzf /tmp/${STAR_CVS_TAG}.tar.gz
+ADD https://api.github.com/repos/star-bnl/star-cvs/commits/${STAR_CVS_TAG} star-cvs-ref.json
+RUN curl -s -L https://github.com/star-bnl/star-cvs/archive/${STAR_CVS_TAG}.tar.gz | tar -xz -C /tmp
 
 # Build STAR software
 WORKDIR /tmp/star-build
