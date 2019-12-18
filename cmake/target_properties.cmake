@@ -66,16 +66,14 @@ if(TARGET StgMaker)
 	ExternalProject_Add(
 		KiTrack
 		PREFIX "external/"
-		GIT_REPOSITORY "https://github.com/star-bnl/KiTrack.git"
-		GIT_TAG "efd317b8"
+		URL "https://github.com/star-bnl/KiTrack/archive/efd317b8.tar.gz"
 		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAR_INSTALL_PREFIX} -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
 	)
 
 	ExternalProject_Add(
 		GenFit
 		PREFIX "external/"
-		GIT_REPOSITORY "https://github.com/star-bnl/GenFit.git"
-		GIT_TAG "b496504a"
+		URL "https://github.com/star-bnl/GenFit/archive/b496504a.tar.gz"
 		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAR_INSTALL_PREFIX} -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
 			-DINCLUDE_OUTPUT_DIRECTORY=include/GenFit
 	)
