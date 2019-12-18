@@ -105,3 +105,14 @@ cmd="docker build --rm -t ${DOCKER_ID_NAMESPACE}star-sw:${STAR_IMAGE_TAG} \
 echo
 echo $ $cmd
 $cmd
+
+cmd="docker build --rm -t ${DOCKER_ID_NAMESPACE}star-sw-cons:${STAR_IMAGE_TAG} \
+    -f ${STAR_SW_DIR}/docker/Dockerfile.star-sw-cons \
+    --build-arg STAR_CVS_TAG=${STAR_CVS_TAG} \
+    --build-arg STAR_BUILD_TYPE=${STAR_BUILD_TYPE} \
+    --build-arg STAR_BASE_IMAGE=${DOCKER_ID_NAMESPACE}star-base-${STAR_BASE_IMAGE} \
+    ${STAR_SW_DIR}
+"
+echo
+echo $ $cmd
+$cmd
