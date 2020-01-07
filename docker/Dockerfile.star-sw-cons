@@ -3,7 +3,7 @@ ARG STAR_BASE_IMAGE=starbnl/star-base-centos7
 FROM ${STAR_BASE_IMAGE} AS build-stage
 
 # Set arguments default values
-ARG STAR_CVS_TAG=master
+ARG STAR_CVS_REF=master
 ARG STAR_BUILD_TYPE=Release
 
 WORKDIR /tmp
@@ -13,13 +13,13 @@ RUN cd /cern/2006/lib && ln -s /usr/lib64/libblas.a libblas.a \
  && ln -s /usr/lib64/liblapack.a liblapack3.a && cd /cern && ln -s 2006 pro
 
 # Get STAR software
-ADD https://api.github.com/repos/star-bnl/star-cvs/commits/${STAR_CVS_TAG} star-cvs-ref.json
-RUN curl -s -L https://github.com/star-bnl/star-cvs/archive/${STAR_CVS_TAG}.tar.gz | tar -xz -C /tmp \
+ADD https://api.github.com/repos/star-bnl/star-cvs/commits/${STAR_CVS_REF} star-cvs-ref.json
+RUN curl -s -L https://github.com/star-bnl/star-cvs/archive/${STAR_CVS_REF}.tar.gz | tar -xz -C /tmp \
  && mkdir -p /tmp/star-cvs \
- && mv /tmp/star-cvs-${STAR_CVS_TAG} /tmp/star-cvs/${STAR_CVS_TAG}
+ && mv /tmp/star-cvs-${STAR_CVS_REF} /tmp/star-cvs/${STAR_CVS_REF}
 
 # Build STAR software
-WORKDIR /tmp/star-cvs/${STAR_CVS_TAG}
+WORKDIR /tmp/star-cvs/${STAR_CVS_REF}
 
 ENV CERN=/cern
 ENV CERN_ROOT=/cern/pro
@@ -38,15 +38,15 @@ ENV STARCMPLC=gcc
 ENV STAR_HOST_SYS=sl74_gcc485
 ENV STAR_BASE_PATH=
 ENV STAR_PATH=/tmp/star-cvs
-ENV STAR=/tmp/star-cvs/${STAR_CVS_TAG}
+ENV STAR=/tmp/star-cvs/${STAR_CVS_REF}
 ENV STAR_LIB=${STAR}/.${STAR_HOST_SYS}/lib
 ENV STAR_BIN=${STAR}/.${STAR_HOST_SYS}/bin
 ENV STAR_SCRIPTS=${STAR}/scripts
 ENV STAR_CGI=${STAR}/cgi
 ENV STAR_MGR=${STAR}/mgr
 ENV STAR_PAMS=${STAR}/pams
-ENV STAR_LEVEL=${STAR_CVS_TAG}
-ENV STAR_VERSION=${STAR_CVS_TAG}
+ENV STAR_LEVEL=${STAR_CVS_REF}
+ENV STAR_VERSION=${STAR_CVS_REF}
 ENV STAR_SYS=x8664_sl7
 
 ENV PATH=.:${STAR_BIN}:$STAR_MGR:$STAR_SCRIPTS:$STAR_CGI:${CERN_ROOT}/bin:${PATH}
