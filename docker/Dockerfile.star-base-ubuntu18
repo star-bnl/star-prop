@@ -40,6 +40,7 @@ RUN curl https://root.cern.ch/download/root_v5.34.38.source.tar.gz | tar -xz -C 
     -Dpythia6=ON \
     -Dpythia6_nolink=ON \
     -Dvc=ON \
+    -Dkrb5=OFF \
  && make -j $(nproc) \
  && make install \
  && rm -fr /tmp/*
