@@ -1,4 +1,4 @@
-ARG STAR_BASE_IMAGE=starbnl/star-base-centos7
+ARG STAR_BASE_IMAGE=starbnl/star-base:centos7
 
 FROM ${STAR_BASE_IMAGE} AS build-stage
 
