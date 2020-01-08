@@ -4,7 +4,7 @@
 : ${STAR_CVS_REF:="master"}
 : ${STAR_BUILD_TYPE:="Release"}
 : ${STAR_BUILD_32BIT:=""}
-: ${STAR_BASE_IMAGE:="centos7"}
+: ${STAR_BASE_OS:="centos7"}
 : ${STAR_SW_DIR:="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"}
 : ${STAR_SW_REF:="master"}
 : ${DOCKER_ID_NAMESPACE:="starbnl/"}
@@ -42,7 +42,7 @@ while true; do
 			STAR_BUILD_32BIT="Yes" ;
 			shift 1 ;;
 		-b)
-			STAR_BASE_IMAGE="$2" ;
+			STAR_BASE_OS="$2" ;
 			shift 2 ;;
 		-p)
 			STAR_SW_DIR="$2" ;
@@ -67,24 +67,29 @@ echo "The following variables are set:"
 echo -e "\t STAR_CVS_REF:          \"$STAR_CVS_REF\""
 echo -e "\t STAR_BUILD_TYPE:       \"$STAR_BUILD_TYPE\""
 echo -e "\t STAR_BUILD_32BIT:      \"$STAR_BUILD_32BIT\""
-echo -e "\t STAR_BASE_IMAGE:       \"$STAR_BASE_IMAGE\""
+echo -e "\t STAR_BASE_OS:          \"$STAR_BASE_OS\""
 echo -e "\t STAR_SW_DIR:           \"$STAR_SW_DIR\""
 echo -e "\t STAR_SW_REF:           \"$STAR_SW_REF\""
 echo -e "\t DOCKER_ID_NAMESPACE:   \"$DOCKER_ID_NAMESPACE\""
 
-# Format image name as star-sw:$STAR_CVS_REF-$STAR_BUILD_TYPE-sw-$STAR_SW_REF
-STAR_BASE_IMAGE_TAG="$STAR_BASE_IMAGE"
+# Format base image name as star-base:$STAR_BASE_OS[-m32]
+STAR_BASE_IMAGE_TAG="$STAR_BASE_OS"
 STAR_BASE_IMAGE_TAG+=$([ -z "$STAR_BUILD_32BIT" ] && echo "" || echo "-m32")
 
-# Format image name as star-sw:$STAR_CVS_REF-$STAR_BUILD_TYPE-sw-$STAR_SW_REF
+STAR_BASE_IMAGE_NAME=${DOCKER_ID_NAMESPACE}star-base:${STAR_BASE_IMAGE_TAG}
+
+# Format image tag as star-sw:$STAR_CVS_REF[-$STAR_BUILD_TYPE][-$STAR_BASE_OS][-m32][-sw-$STAR_SW_REF]
 STAR_IMAGE_TAG=$([ "$STAR_CVS_REF" = "master" ] && echo "latest" || echo "$STAR_CVS_REF")
 STAR_IMAGE_TAG+=$([ "$STAR_BUILD_TYPE" = "Release" ] && echo "" || echo "-$STAR_BUILD_TYPE")
-STAR_IMAGE_TAG+=$([ "$STAR_BASE_IMAGE_TAG" = "centos7" ] && echo "" || echo "-$STAR_BASE_IMAGE_TAG")
+STAR_IMAGE_TAG+=$([ "$STAR_BASE_OS" = "centos7" ] && echo "" || echo "-$STAR_BASE_OS")
+STAR_IMAGE_TAG+=$([ -z "$STAR_BUILD_32BIT" ] && echo "" || echo "-m32")
 STAR_IMAGE_TAG+=$([ "$STAR_SW_REF"  = "master" ] && echo "" || echo "-sw-$STAR_SW_REF")
 
+STAR_IMAGE_NAME=${DOCKER_ID_NAMESPACE}star-sw:${STAR_IMAGE_TAG}
+
 echo
-echo -e "\t STAR_BASE_IMAGE_TAG:   \"$STAR_BASE_IMAGE_TAG\""
-echo -e "\t STAR_IMAGE_TAG:        \"$STAR_IMAGE_TAG\""
+echo -e "\t STAR_BASE_IMAGE_NAME:   \"$STAR_BASE_IMAGE_NAME\""
+echo -e "\t STAR_IMAGE_NAME:        \"$STAR_IMAGE_NAME\""
 
 cmd="docker build --rm -t ${DOCKER_ID_NAMESPACE}star-base:${STAR_BASE_IMAGE_TAG} \
     -f ${STAR_SW_DIR}/docker/Dockerfile.star-base-${STAR_BASE_IMAGE} \
