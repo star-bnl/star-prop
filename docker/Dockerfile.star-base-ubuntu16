@@ -19,7 +19,7 @@ RUN apt update \
  && apt install -y python3.7 \
  && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 1
 
-# Install python module used by STAR software
+# Install extra python modules used by the STAR software
 RUN pip install pyparsing && pip3 install requests
 
 # Install newer version of CMake
@@ -44,15 +44,13 @@ RUN curl https://root.cern.ch/download/root_v5.34.38.source.tar.gz | tar -xz -C 
  && rm -fr /tmp/*
 
 # Install CERNLIB
-WORKDIR /cern
-COPY patch/cernlib_2006.patch /cern/cernlib_2006.patch
-COPY scripts/build_cernlib.sh /cern/build_cernlib.sh
-COPY scripts/gdrive.py /cern/gdrive.py
-RUN (curl -s -f https://cernlib.web.cern.ch/cernlib/download/2006_source/tar/2006_src.tar.gz || \
-     python3 gdrive.py 10eu5fwq_jDMrl0ludu2keQwamBam0dc7) | tar -xz -C /cern \
- && patch -p0 < /cern/cernlib_2006.patch \
- && ./build_cernlib.sh \
- && rm -fr /cern/2006/src /cern/2006/log /cern/2006/build
+COPY patch/cernlib_2006.patch scripts/build_cernlib.sh scripts/gdrive.py /tmp/
+RUN mkdir /cern && cd /cern \
+ && (curl -s -f https://cernlib.web.cern.ch/cernlib/download/2006_source/tar/2006_src.tar.gz || \
+     python3 /tmp/gdrive.py 10eu5fwq_jDMrl0ludu2keQwamBam0dc7) | tar -xz -C /cern \
+ && patch -p0 < /tmp/cernlib_2006.patch \
+ && /tmp/build_cernlib.sh \
+ && rm -fr /cern/2006/src /cern/2006/log /cern/2006/build /tmp/*
 
 # Install Eigen 3.3.4
 WORKDIR /tmp

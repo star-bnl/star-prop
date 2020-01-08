@@ -138,8 +138,7 @@ install(DIRECTORY
 install(DIRECTORY
 	${STAR_SRC}/StarDb/Calibrations
 	DESTINATION StarDb/
-	REGEX "tpcDriftVelocity.20000" EXCLUDE
-	)
+	REGEX "tpcDriftVelocity.20000" EXCLUDE)
 
 install(DIRECTORY
 	${STAR_SRC}/StDb/servers

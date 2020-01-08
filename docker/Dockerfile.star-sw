@@ -21,8 +21,9 @@ WORKDIR /tmp/star-build
 
 RUN cmake /tmp/star-sw-${STAR_SW_REF} -DSTAR_SRC=/tmp/star-cvs-${STAR_CVS_REF} \
     -DSTAR_PATCH=gcc540 -DCMAKE_INSTALL_PREFIX=/tmp/star-install \
-    -DCERNLIB_ROOT=/cern/2006 -DCMAKE_BUILD_TYPE=${STAR_BUILD_TYPE}
-RUN make -j $(nproc) && make install
+    -DCERNLIB_ROOT=/cern/2006 -DCMAKE_BUILD_TYPE=${STAR_BUILD_TYPE} \
+ && make -j $(nproc) \
+ && make install
 
 # Install additional packages for interactive work
 RUN yum update -q -y \
