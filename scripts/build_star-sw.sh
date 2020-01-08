@@ -109,7 +109,6 @@ echo $ $cmd
 $cmd
 
 cmd="docker build --rm -t ${STAR_IMAGE_NAME}-build \
-	-f ${STAR_SW_DIR}/docker/Dockerfile.star-sw \
 	--build-arg STAR_CVS_REF=${STAR_CVS_REF} \
 	--build-arg STAR_BUILD_TYPE=${STAR_BUILD_TYPE} \
 	--build-arg STAR_BASE_IMAGE=${STAR_BASE_IMAGE_NAME} \
@@ -122,7 +121,6 @@ echo $ $cmd
 $cmd
 
 cmd="docker build --rm -t ${STAR_IMAGE_NAME} \
-	-f ${STAR_SW_DIR}/docker/Dockerfile.star-sw \
 	--build-arg STAR_CVS_REF=${STAR_CVS_REF} \
 	--build-arg STAR_BUILD_TYPE=${STAR_BUILD_TYPE} \
 	--build-arg STAR_BASE_IMAGE=${STAR_BASE_IMAGE_NAME} \
