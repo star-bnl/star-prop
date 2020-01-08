@@ -91,47 +91,47 @@ echo
 echo -e "\t STAR_BASE_IMAGE_NAME:   \"$STAR_BASE_IMAGE_NAME\""
 echo -e "\t STAR_IMAGE_NAME:        \"$STAR_IMAGE_NAME\""
 
-cmd="docker build --rm -t ${DOCKER_ID_NAMESPACE}star-base:${STAR_BASE_IMAGE_TAG} \
-    -f ${STAR_SW_DIR}/docker/Dockerfile.star-base-${STAR_BASE_IMAGE} \
-    --build-arg STAR_BUILD_32BIT=${STAR_BUILD_32BIT} \
-    ${STAR_SW_DIR}
+cmd="docker build --rm -t ${STAR_BASE_IMAGE_NAME} \
+	-f ${STAR_SW_DIR}/docker/Dockerfile.star-base-${STAR_BASE_OS} \
+	--build-arg STAR_BUILD_32BIT=${STAR_BUILD_32BIT} \
+	${STAR_SW_DIR}
 "
 echo
 echo $ $cmd
 $cmd
 
-cmd="docker build --rm -t ${DOCKER_ID_NAMESPACE}star-sw-build:${STAR_IMAGE_TAG} \
-    -f ${STAR_SW_DIR}/docker/Dockerfile.star-sw \
-    --build-arg STAR_CVS_REF=${STAR_CVS_REF} \
-    --build-arg STAR_BUILD_TYPE=${STAR_BUILD_TYPE} \
-    --build-arg STAR_BASE_IMAGE=${DOCKER_ID_NAMESPACE}star-base:${STAR_BASE_IMAGE_TAG} \
-    --build-arg STAR_SW_REF=${STAR_SW_REF} \
-    --target build-stage \
-    ${STAR_SW_DIR}
+cmd="docker build --rm -t ${STAR_IMAGE_NAME}-build \
+	-f ${STAR_SW_DIR}/docker/Dockerfile.star-sw \
+	--build-arg STAR_CVS_REF=${STAR_CVS_REF} \
+	--build-arg STAR_BUILD_TYPE=${STAR_BUILD_TYPE} \
+	--build-arg STAR_BASE_IMAGE=${STAR_BASE_IMAGE_NAME} \
+	--build-arg STAR_SW_REF=${STAR_SW_REF} \
+	--target build-stage \
+	${STAR_SW_DIR}
 "
 echo
 echo $ $cmd
 $cmd
 
-cmd="docker build --rm -t ${DOCKER_ID_NAMESPACE}star-sw:${STAR_IMAGE_TAG} \
-    -f ${STAR_SW_DIR}/docker/Dockerfile.star-sw \
-    --build-arg STAR_CVS_REF=${STAR_CVS_REF} \
-    --build-arg STAR_BUILD_TYPE=${STAR_BUILD_TYPE} \
-    --build-arg STAR_BASE_IMAGE=${DOCKER_ID_NAMESPACE}star-base:${STAR_BASE_IMAGE_TAG} \
-    --build-arg STAR_SW_REF=${STAR_SW_REF} \
-    ${STAR_SW_DIR}
+cmd="docker build --rm -t ${STAR_IMAGE_NAME} \
+	-f ${STAR_SW_DIR}/docker/Dockerfile.star-sw \
+	--build-arg STAR_CVS_REF=${STAR_CVS_REF} \
+	--build-arg STAR_BUILD_TYPE=${STAR_BUILD_TYPE} \
+	--build-arg STAR_BASE_IMAGE=${STAR_BASE_IMAGE_NAME} \
+	--build-arg STAR_SW_REF=${STAR_SW_REF} \
+	${STAR_SW_DIR}
 "
 echo
 echo $ $cmd
 $cmd
 
-cmd="docker build --rm -t ${DOCKER_ID_NAMESPACE}star-sw-cons:${STAR_IMAGE_TAG} \
-    -f ${STAR_SW_DIR}/docker/Dockerfile.star-sw-cons \
-    --build-arg STAR_CVS_REF=${STAR_CVS_REF} \
-    --build-arg STAR_BUILD_TYPE=${STAR_BUILD_TYPE} \
-    --build-arg STAR_BUILD_32BIT=${STAR_BUILD_32BIT} \
-    --build-arg STAR_BASE_IMAGE=${DOCKER_ID_NAMESPACE}star-base:${STAR_BASE_IMAGE_TAG} \
-    ${STAR_SW_DIR}
+cmd="docker build --rm -t ${STAR_IMAGE_NAME}-cons \
+	-f ${STAR_SW_DIR}/docker/Dockerfile.star-sw-cons \
+	--build-arg STAR_CVS_REF=${STAR_CVS_REF} \
+	--build-arg STAR_BUILD_TYPE=${STAR_BUILD_TYPE} \
+	--build-arg STAR_BUILD_32BIT=${STAR_BUILD_32BIT} \
+	--build-arg STAR_BASE_IMAGE=${STAR_BASE_IMAGE_NAME} \
+	${STAR_SW_DIR}
 "
 echo
 echo $ $cmd
