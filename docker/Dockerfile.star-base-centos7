@@ -1,9 +1,16 @@
 FROM centos:7.4.1708
 
+ARG STAR_BUILD_32BIT
+
+# Set preferred pkg-config search paths for 32-bit libs
+ENV PKG_CONFIG_PATH=${STAR_BUILD_32BIT:+"/usr/share/pkgconfig:/usr/lib/pkgconfig"}
+ENV SUFFIX_BUILD_32BIT=${STAR_BUILD_32BIT:+"-m32"}
+ENV ROOT_BUILD_32BIT=${STAR_BUILD_32BIT:+"-Dbuild_32bit=ON"}
+
 WORKDIR /tmp
 
 # Install system packages
-COPY docker/packages.centos /tmp/packages
+COPY docker/packages.centos${SUFFIX_BUILD_32BIT} /tmp/packages
 RUN yum update -q -y \
     && yum install -y epel-release \
     && yum install -y $(cat packages) \
@@ -26,8 +33,10 @@ RUN alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 20 \
     --family cmake
 
 # Install ROOT5
+COPY patch/root_v5.34.38${SUFFIX_BUILD_32BIT}.patch /tmp/root_v5.34.38.patch
 RUN curl https://root.cern.ch/download/root_v5.34.38.source.tar.gz | tar -xz -C /tmp \
- && mv /tmp/root /tmp/root-5-34-38 \
+ && mv /tmp/root /tmp/root-5-34-38 && cd /tmp/root-5-34-38 \
+ && patch -p1 < /tmp/root_v5.34.38.patch \
  && mkdir /tmp/root-build && cd /tmp/root-build \
  && cmake /tmp/root-5-34-38 \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
@@ -37,15 +46,16 @@ RUN curl https://root.cern.ch/download/root_v5.34.38.source.tar.gz | tar -xz -C 
     -Dpythia6_nolink=ON \
     -Dvc=ON \
     -Dkrb5=OFF \
+    ${ROOT_BUILD_32BIT} \
  && make -j $(nproc) \
  && make install \
  && rm -fr /tmp/*
 
 # Install CERNLIB
-COPY patch/cernlib_2006.patch scripts/build_cernlib.sh scripts/gdrive.py /tmp/
+COPY patch/cernlib_2006${SUFFIX_BUILD_32BIT}.patch scripts/build_cernlib.sh scripts/gdrive.py /tmp/
 RUN mkdir /cern && cd /cern \
  && (curl -s -f https://cernlib.web.cern.ch/cernlib/download/2006_source/tar/2006_src.tar.gz || \
      python3 /tmp/gdrive.py 10eu5fwq_jDMrl0ludu2keQwamBam0dc7) | tar -xz -C /cern \
- && patch -p0 < /tmp/cernlib_2006.patch \
+ && patch -p0 < /tmp/cernlib_2006${SUFFIX_BUILD_32BIT}.patch \
  && /tmp/build_cernlib.sh \
  && rm -fr /cern/2006/src /cern/2006/log /cern/2006/build /tmp/*

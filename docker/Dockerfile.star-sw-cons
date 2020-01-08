@@ -5,12 +5,20 @@ FROM ${STAR_BASE_IMAGE}
 # Set arguments default values
 ARG STAR_CVS_REF=master
 ARG STAR_BUILD_TYPE=Release
+ARG STAR_BUILD_32BIT
+
+ENV PREFIX_LIB_32BIT=${STAR_BUILD_32BIT:+"/usr/lib"}
+ENV PREFIX_LIB_32BIT=${PREFIX_LIB_32BIT:-"/usr/lib64"}
 
 WORKDIR /tmp
 
-RUN yum install -y blas-static byacc perl-Env perl-Digest-MD5 && yum clean all
-RUN cd /cern/2006/lib && ln -s /usr/lib64/libblas.a libblas.a \
- && ln -s /usr/lib64/liblapack.a liblapack3.a && cd /cern && ln -s 2006 pro
+RUN yum install -y blas-static blas-static.i686 byacc perl-Env perl-Digest-MD5 \
+ && yum clean all \
+ && cd /cern/2006/lib \
+ && ln -s ${PREFIX_LIB_32BIT}/libblas.a libblas.a \
+ && ln -s ${PREFIX_LIB_32BIT}/liblapack.a liblapack3.a \
+ && cd /cern \
+ && ln -s 2006 pro
 
 # Get STAR software
 ADD https://api.github.com/repos/star-bnl/star-cvs/commits/${STAR_CVS_REF} star-cvs-ref.json
@@ -29,7 +37,6 @@ ENV ROOTSYS=/usr/local
 ENV ROOT_LEVEL=5.34.38
 
 ENV NODEBUG=yes
-ENV USE_64BITS=1
 ENV SITE=generic
 ENV OPTSTAR=/usr/local
 
@@ -77,9 +84,10 @@ RUN mkdir -p ${STAR_BIN} && mkdir -p ${STAR_LIB} \
  && ln -s bin BIN \
  && ln -s lib LIB
 
-RUN cons +asps/staf +asps/Simulation/agetof
-RUN cons +StarVMC/Geometry
-RUN cons %StEbyePool %StEbyePool %StHighptPool %StAngleCorrMaker %StSpinMaker \
+RUN if [ -z ${STAR_BUILD_32BIT} ]; then export USE_64BITS=1; fi \
+ && cons +asps/staf +asps/Simulation/agetof \
+ && cons +StarVMC/Geometry \
+ && cons %StEbyePool %StEbyePool %StHighptPool %StAngleCorrMaker %StSpinMaker \
          %StEbyeScaTagsMaker %StEbye2ptMaker %StDaqClfMaker %StFtpcV0Maker \
          %StStrangePool %GeoTestMaker %StSpinPool %StFgtPool %StShadowMaker \
          %Kinematics %OnlTools %StShadowMaker %g2r %StJetFinder
