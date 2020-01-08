@@ -9,14 +9,22 @@
 : ${STAR_SW_REF:="master"}
 : ${DOCKER_ID_NAMESPACE:="starbnl/"}
 
+read -r -d '' HELP_MSG << EOF
+Usage: $(basename $0) [<star-cvs_ref>] [OPTIONS]
+Options:
+ <star-cvs_ref> [=master]               Any commit reference in star-cvs repo (branch, tag, or hash)
+ -t Debug|Release|RelWithDebInfo [=Release]
+                                        A valid value for CMAKE_BUILD_TYPE
+ -m                                     Force 32-bit builds on a 64-bit platform
+ -b <star_base_os> [=centos7]           For available bases see docker files in star-sw/docker
+ -p <path_to_star-sw> [=$STAR_SW_DIR]
+                                        Defaults to this script location but can be set to anything
+ -s <star-sw_ref> [=master]             Any commit reference in star-sw repo (branch, tag, or hash)
+ -h                                     Print this help message
+EOF
 
 function print_usage() {
-	echo "Usage: $0 [<star-cvs_branch_or_tag [=master]> ]" \
-	              " [-t Debug|Release|RelWithDebInfo [=Release]]" \
-	              " [-m [Force 32-bit builds on 64-bit platform]]" \
-	              " [-b <star_base_image [=centos7]>]" \
-	              " [-p <path_to_star-sw [=$STAR_SW_DIR]>]" \
-	              " [-s <star-sw_branch_or_tag [=master]>]" 1>&2;
+	echo "$HELP_MSG"
 	exit 1;
 }
 
@@ -34,7 +42,7 @@ while true; do
 		-t)
 			STAR_BUILD_TYPE="$2" ;
 			[[ ! $STAR_BUILD_TYPE =~ Debug|Release|RelWithDebInfo ]] && {
-				echo "Incorrect value provided for -t"
+				echo -e "Error: Incorrect value provided for -t option\n"
 				print_usage
 			}
 			shift 2 ;;
