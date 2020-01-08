@@ -83,6 +83,7 @@ echo -e "\t DOCKER_ID_NAMESPACE:   \"$DOCKER_ID_NAMESPACE\""
 # Format base image name as star-base:$STAR_BASE_OS[-m32]
 STAR_BASE_IMAGE_TAG="$STAR_BASE_OS"
 STAR_BASE_IMAGE_TAG+=$([ -z "$STAR_BUILD_32BIT" ] && echo "" || echo "-m32")
+STAR_BASE_IMAGE_TAG+=$([ "$STAR_SW_REF"  = "master" ] && echo "" || echo "-$STAR_SW_REF")
 
 STAR_BASE_IMAGE_NAME=${DOCKER_ID_NAMESPACE}star-base:${STAR_BASE_IMAGE_TAG}
 
