@@ -3,6 +3,7 @@
 # Set default values for primary parameters
 : ${STAR_CVS_REF:="master"}
 : ${STAR_BUILD_TYPE:="Release"}
+: ${STAR_BUILD_32BIT:=""}
 : ${STAR_BASE_IMAGE:="centos7"}
 : ${STAR_SW_DIR:="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"}
 : ${STAR_SW_REF:="master"}
@@ -12,6 +13,7 @@
 function print_usage() {
 	echo "Usage: $0 [<star-cvs_branch_or_tag [=master]> ]" \
 	              " [-t Debug|Release|RelWithDebInfo [=Release]]" \
+	              " [-m [Force 32-bit builds on 64-bit platform]]" \
 	              " [-b <star_base_image [=centos7]>]" \
 	              " [-p <path_to_star-sw [=$STAR_SW_DIR]>]" \
 	              " [-s <star-sw_branch_or_tag [=master]>]" 1>&2;
@@ -20,7 +22,7 @@ function print_usage() {
 
 
 # Process options and their values
-options=$(getopt -o "ht:b:p:s:" -n "$0" -- "$@")
+options=$(getopt -o "ht:mb:p:s:" -n "$0" -- "$@")
 [ $? -eq 0 ] || print_usage
 eval set -- "$options"
 
@@ -36,6 +38,9 @@ while true; do
 				print_usage
 			}
 			shift 2 ;;
+		-m)
+			STAR_BUILD_32BIT="Yes" ;
+			shift 1 ;;
 		-b)
 			STAR_BASE_IMAGE="$2" ;
 			shift 2 ;;
@@ -61,6 +66,7 @@ fi
 echo "The following variables are set:"
 echo -e "\t STAR_CVS_REF:          \"$STAR_CVS_REF\""
 echo -e "\t STAR_BUILD_TYPE:       \"$STAR_BUILD_TYPE\""
+echo -e "\t STAR_BUILD_32BIT:      \"$STAR_BUILD_32BIT\""
 echo -e "\t STAR_BASE_IMAGE:       \"$STAR_BASE_IMAGE\""
 echo -e "\t STAR_SW_DIR:           \"$STAR_SW_DIR\""
 echo -e "\t STAR_SW_REF:           \"$STAR_SW_REF\""
@@ -75,6 +81,7 @@ STAR_IMAGE_TAG+=$([ "$STAR_SW_REF"  = "master" ] && echo "" || echo "-sw-$STAR_S
 
 cmd="docker build --rm -t ${DOCKER_ID_NAMESPACE}star-base-${STAR_BASE_IMAGE} \
     -f ${STAR_SW_DIR}/docker/Dockerfile.star-base-${STAR_BASE_IMAGE} \
+    --build-arg STAR_BUILD_32BIT=${STAR_BUILD_32BIT} \
     ${STAR_SW_DIR}
 "
 echo
@@ -110,6 +117,7 @@ cmd="docker build --rm -t ${DOCKER_ID_NAMESPACE}star-sw-cons:${STAR_IMAGE_TAG} \
     -f ${STAR_SW_DIR}/docker/Dockerfile.star-sw-cons \
     --build-arg STAR_CVS_REF=${STAR_CVS_REF} \
     --build-arg STAR_BUILD_TYPE=${STAR_BUILD_TYPE} \
+    --build-arg STAR_BUILD_32BIT=${STAR_BUILD_32BIT} \
     --build-arg STAR_BASE_IMAGE=${DOCKER_ID_NAMESPACE}star-base-${STAR_BASE_IMAGE} \
     ${STAR_SW_DIR}
 "
