@@ -87,12 +87,12 @@ STAR_BASE_IMAGE_TAG+=$([ "$STAR_SW_REF"  = "master" ] && echo "" || echo "-$STAR
 
 STAR_BASE_IMAGE_NAME=${DOCKER_ID_NAMESPACE}star-base:${STAR_BASE_IMAGE_TAG}
 
-# Format image tag as star-sw:$STAR_CVS_REF[-$STAR_BUILD_TYPE][-$STAR_BASE_OS][-m32][-sw-$STAR_SW_REF]
+# Format image tag as star-sw:$STAR_CVS_REF[-$STAR_BUILD_TYPE][-$STAR_BASE_OS][-m32][-$STAR_SW_REF]
 STAR_IMAGE_TAG=$([ "$STAR_CVS_REF" = "master" ] && echo "latest" || echo "$STAR_CVS_REF")
 STAR_IMAGE_TAG+=$([ "$STAR_BUILD_TYPE" = "Release" ] && echo "" || echo "-$STAR_BUILD_TYPE")
 STAR_IMAGE_TAG+=$([ "$STAR_BASE_OS" = "centos7" ] && echo "" || echo "-$STAR_BASE_OS")
 STAR_IMAGE_TAG+=$([ -z "$STAR_BUILD_32BIT" ] && echo "" || echo "-m32")
-STAR_IMAGE_TAG+=$([ "$STAR_SW_REF"  = "master" ] && echo "" || echo "-sw-$STAR_SW_REF")
+STAR_IMAGE_TAG+=$([ "$STAR_SW_REF"  = "master" ] && echo "" || echo "-$STAR_SW_REF")
 
 STAR_IMAGE_NAME=${DOCKER_ID_NAMESPACE}star-sw:${STAR_IMAGE_TAG}
 
