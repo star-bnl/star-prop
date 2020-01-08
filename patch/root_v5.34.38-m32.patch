@@ -1,0 +1,100 @@
+From 1e75d4a34431d1e967d9e66260231a4cd5145608 Mon Sep 17 00:00:00 2001
+From: Dmitri Smirnov <d.s@plexoos.com>
+Date: Tue, 7 Jan 2020 13:11:24 -0500
+Subject: [PATCH] Add option to force 32-bit builds on 64-bit platforms
+
+Use the new option in the command line as usual:
+
+    cmake ... -Dbuild_32bit=ON ...
+---
+ CMakeLists.txt                              | 5 +++++
+ cmake/modules/RootBuildOptions.cmake        | 1 +
+ cmake/modules/RootConfiguration.cmake       | 2 ++
+ cmake/modules/SearchInstalledSoftware.cmake | 4 +++-
+ cmake/modules/SetUpLinux.cmake              | 7 +++++++
+ 5 files changed, 18 insertions(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 52044b9f81..9cf8eafacf 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -33,6 +33,11 @@ include(RootNewMacros)
+ include(CheckCompiler)
+ include(MacroEnsureVersion)
+ 
++# CMake should search for 32-bit dependencies if 32-bit build is requested by the user
++if(build_32bit)
++  set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS FALSE)
++endif()
++
+ #---Enable CTest package -----------------------------------------------------------------------
+ #include(CTest)
+ if(testing)
+diff --git a/cmake/modules/RootBuildOptions.cmake b/cmake/modules/RootBuildOptions.cmake
+index bbfb231dc3..fba149ab07 100644
+--- a/cmake/modules/RootBuildOptions.cmake
++++ b/cmake/modules/RootBuildOptions.cmake
+@@ -66,6 +66,7 @@ ROOT_BUILD_OPTION(alien ON "AliEn support, requires libgapiUI from ALICE")
+ ROOT_BUILD_OPTION(asimage ON "Image processing support, requires libAfterImage")
+ ROOT_BUILD_OPTION(astiff ON "Include tiff support in image processing")
+ ROOT_BUILD_OPTION(bonjour ON "Bonjour support, requires libdns_sd and/or Avahi")
++ROOT_BUILD_OPTION(build_32bit OFF "Force build 32-bit libraries, e.g. on a x86_64 platform. Requires multilib support")
+ ROOT_BUILD_OPTION(builtin_afterimage ON "Built included libAfterImage, or use system libAfterImage")
+ ROOT_BUILD_OPTION(builtin_ftgl ON "Built included libFTGL, or use system libftgl")
+ ROOT_BUILD_OPTION(builtin_freetype OFF "Built included libfreetype, or use system libfreetype")
+diff --git a/cmake/modules/RootConfiguration.cmake b/cmake/modules/RootConfiguration.cmake
+index 9354a91d81..b13a4047fa 100644
+--- a/cmake/modules/RootConfiguration.cmake
++++ b/cmake/modules/RootConfiguration.cmake
+@@ -117,6 +117,8 @@ endif()
+ 
+ set(LibSuffix ${SOEXT})
+ 
++set(build32bit ${value${build_32bit}})
++
+ set(buildx11 ${value${x11}})
+ set(x11libdir -L${X11_LIBRARY_DIR})
+ set(xpmlibdir -L${X11_LIBRARY_DIR})
+diff --git a/cmake/modules/SearchInstalledSoftware.cmake b/cmake/modules/SearchInstalledSoftware.cmake
+index 01033204af..8ff488acf7 100644
+--- a/cmake/modules/SearchInstalledSoftware.cmake
++++ b/cmake/modules/SearchInstalledSoftware.cmake
+@@ -108,6 +108,8 @@ if(builtin_lzma)
+     elseif( CMAKE_CXX_COMPILER_ID STREQUAL Intel)
+       set(LZMA_CFLAGS "-wd188 -wd181 -wd1292 -wd10006 -wd10156 -wd2259 -wd981 -wd128 -wd3179 -wd2102")
+     endif()
++    # Make sure this external project compiles with same "bitness" as ROOT itself
++    set(LZMA_CFLAGS "${LZMA_CFLAGS} ${BIT_ENVIRONMENT}")
+     ExternalProject_Add(
+       LZMA
+       URL ${CMAKE_SOURCE_DIR}/core/lzma/src/xz-${lzma_version}.tar.gz 
+@@ -166,7 +168,7 @@ if(builtin_lz4)
+       URL_MD5 c9610c5ce97eb431dddddf0073d919b9
+       INSTALL_DIR ${CMAKE_BINARY_DIR}
+       CONFIGURE_COMMAND  /bin/sh -c "PREFIX=<INSTALL_DIR> make cmake"
+-      BUILD_COMMAND /bin/sh -c "PREFIX=<INSTALL_DIR> MOREFLAGS=-fPIC make"
++      BUILD_COMMAND /bin/sh -c "PREFIX=<INSTALL_DIR> MOREFLAGS='-fPIC ${BIT_ENVIRONMENT}' make"
+       INSTALL_COMMAND /bin/sh -c "PREFIX=<INSTALL_DIR> make install"
+       LOG_DOWNLOAD 1 LOG_CONFIGURE 1 LOG_BUILD 1 LOG_INSTALL 1 BUILD_IN_SOURCE 1
+     )
+diff --git a/cmake/modules/SetUpLinux.cmake b/cmake/modules/SetUpLinux.cmake
+index 1c811a6d9f..f0f065c87d 100644
+--- a/cmake/modules/SetUpLinux.cmake
++++ b/cmake/modules/SetUpLinux.cmake
+@@ -35,6 +35,13 @@ else()
+   endif()
+ endif()
+ 
++# Overwrite BIT_ENVIRONMENT if requested by user
++# ROOT_ARCHITECTURE is used in the root-config.in template
++if(build_32bit)
++  set(BIT_ENVIRONMENT "-m32")
++  set(ROOT_ARCHITECTURE linux)
++endif()
++
+ set(SYSLIBS "-lm -ldl ${CMAKE_THREAD_LIBS_INIT} -rdynamic")
+ set(XLIBS "${XPMLIBDIR} ${XPMLIB} ${X11LIBDIR} -lXext -lX11")
+ set(CILIBS "-lm -ldl -rdynamic")
+-- 
+2.16.1
+
