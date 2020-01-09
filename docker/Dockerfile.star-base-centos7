@@ -15,7 +15,7 @@ RUN yum update -q -y \
     && yum install -y epel-release \
     && yum install -y $(cat packages) \
     && yum clean all \
-    && rm -rf /var/cache/* /tmp/*
+    && rm -rf /tmp/*
 
 # Install extra python modules used by the STAR software
 RUN pip install pyparsing && pip3 install requests
