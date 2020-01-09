@@ -1,0 +1,4 @@
+FROM alpine:3.7
+
+COPY . /star-test-data
+WORKDIR /star-test-data

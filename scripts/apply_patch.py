@@ -13,7 +13,7 @@ args = parser.parse_args()
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 
-patch_files = " ".join(glob.glob(f'{script_dir}/../patch/{args.star_patch}/*.patch'))
+patch_files = " ".join(glob.glob(f'{script_dir}/../patches/{args.star_patch}/*.patch'))
 
 subprocess.run('git checkout -- .'.split(), cwd=args.star_src)
 

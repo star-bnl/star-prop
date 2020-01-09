@@ -4,7 +4,6 @@ g++
 gcc
 gfal2
 gfortran
-git
 graphviz-dev
 libavahi-compat-libdnssd-dev
 libcfitsio-dev
@@ -52,6 +51,7 @@ gawk
 vim
 cfortran
 python-pip
+python3-pip
 xutils-dev
 libmotif-dev
 libcurl4-openssl-dev

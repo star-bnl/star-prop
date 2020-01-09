@@ -138,8 +138,7 @@ install(DIRECTORY
 install(DIRECTORY
 	${STAR_SRC}/StarDb/Calibrations
 	DESTINATION StarDb/
-	REGEX "tpcDriftVelocity.20000" EXCLUDE
-	)
+	REGEX "tpcDriftVelocity.20000" EXCLUDE)
 
 install(DIRECTORY
 	${STAR_SRC}/StDb/servers
@@ -152,3 +151,4 @@ install(FILES
 
 configure_file(${PROJECT_SOURCE_DIR}/scripts/thisstar.sh.in ${STAR_INSTALL_BINDIR}/thisstar.sh @ONLY NEWLINE_STYLE UNIX)
 configure_file(${PROJECT_SOURCE_DIR}/scripts/.rootrc.in ${CMAKE_INSTALL_PREFIX}/.rootrc @ONLY NEWLINE_STYLE UNIX)
+configure_file(${PROJECT_SOURCE_DIR}/scripts/entrypoint.sh.in ${CMAKE_INSTALL_PREFIX}/.entrypoint.sh @ONLY NEWLINE_STYLE UNIX)
