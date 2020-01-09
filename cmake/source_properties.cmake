@@ -15,3 +15,4 @@ foreach(f_file ${f_files})
 endforeach()
 
 set_property(SOURCE "${STAR_SRC}/pams/sim/g2t/g2r_get.F" PROPERTY AGETOF_ADDITIONAL_OPTIONS )
+set_property(SOURCE "${PROJECT_SOURCE_DIR}/StRoot/StgMaker" PROPERTY INCLUDE_DIRECTORIES "${STAR_INSTALL_INCLUDEDIR}")

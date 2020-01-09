@@ -60,6 +60,32 @@ if(TARGET StGenericVertexMaker)
 	add_dependencies(StGenericVertexMakerNoSti StDb_Tables geometry_Tables sim_Tables)
 endif()
 
+if(TARGET StgMaker)
+	include(ExternalProject)
+
+	ExternalProject_Add(
+			KiTrack
+			PREFIX "external/"
+			GIT_REPOSITORY "https://github.com/star-bnl/KiTrack.git"
+			GIT_TAG "efd317b86ce2a174e50ebe183582b36102385bb1"
+			CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAR_INSTALL_PREFIX} -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+	)
+
+	ExternalProject_Add(
+			GenFit
+			PREFIX "external/"
+			GIT_REPOSITORY "https://github.com/star-bnl/GenFit.git"
+			GIT_TAG "b496504a"
+			CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAR_INSTALL_PREFIX} -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+					-DINCLUDE_OUTPUT_DIRECTORY=include/GenFit
+	)
+
+	add_dependencies(StgMaker GenFit KiTrack St_g2t)
+	target_include_directories(StgMaker PRIVATE "${STAR_INSTALL_INCLUDEDIR}"
+												   "${PROJECT_SOURCE_DIR}/StRoot")
+endif()
+
+
 if(TARGET StIstRawHitMaker)
 	target_include_directories(StIstRawHitMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src" "${STAR_SRC}/StRoot/RTS/include")
 endif()
@@ -95,7 +121,7 @@ endif()
 
 if(TARGET St_g2t)
 	target_include_directories(St_g2t PRIVATE "${STAR_SRC}/asps/Simulation/geant321/include"
-	                                          "${STAR_SRC}/asps/Simulation/starsim/include")
+											  "${STAR_SRC}/asps/Simulation/starsim/include")
 endif()
 
 if(TARGET StarAgmlUtil)
@@ -141,8 +167,8 @@ endif()
 # CPP_DATE, CPP_TIME, CPP_TITLE_CH, and CPP_VERS are used by gcalor library
 if(TARGET gcalor)
 	target_include_directories(gcalor PRIVATE "${STAR_SRC}/asps/Simulation/gcalor/include"
-	                                          "${STAR_SRC}/asps/Simulation/geant321/include"
-	                                          "${STAR_SRC}/asps/Simulation/starsim/include")
+											  "${STAR_SRC}/asps/Simulation/geant321/include"
+											  "${STAR_SRC}/asps/Simulation/starsim/include")
 	target_compile_options(gcalor PRIVATE
 		-DCPP_DATE=${STAR_BUILD_DATE} -DCPP_TIME=${STAR_BUILD_TIME} -DCPP_TITLE_CH="gcalor" -DCPP_VERS="W")
 endif()
@@ -151,7 +177,7 @@ endif()
 # CERNLIB_COMIS is used by asps/Simulation/geant321/gxint/gxcs.F
 if(TARGET geant321)
 	target_include_directories(geant321 PRIVATE "${STAR_SRC}/asps/Simulation/starsim/include"
-	                                            "${STAR_SRC}/asps/Simulation/geant321/include")
+												"${STAR_SRC}/asps/Simulation/geant321/include")
 	target_compile_options(geant321 PRIVATE
 		-DCERNLIB_BSLASH
 		-DCERNLIB_CG
