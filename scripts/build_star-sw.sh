@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Requires docker engine version with inline cache support, i.e. 19.03.0 or higher
+
 # Set default values for primary parameters
 : ${STAR_CVS_REF:="master"}
 : ${STAR_BUILD_TYPE:="Release"}
@@ -100,9 +102,12 @@ echo
 echo -e "\t STAR_BASE_IMAGE_NAME:   \"$STAR_BASE_IMAGE_NAME\""
 echo -e "\t STAR_IMAGE_NAME:        \"$STAR_IMAGE_NAME\""
 
+export DOCKER_BUILDKIT=1
+
 cmd="docker build --rm -t ${STAR_BASE_IMAGE_NAME} \
 	-f ${STAR_SW_DIR}/docker/Dockerfile.star-base-${STAR_BASE_OS} \
 	--build-arg STAR_BUILD_32BIT=${STAR_BUILD_32BIT} \
+	--build-arg BUILDKIT_INLINE_CACHE=1 \
 	${STAR_SW_DIR}
 "
 echo
@@ -114,6 +119,7 @@ cmd="docker build --rm -t ${STAR_IMAGE_NAME}-build \
 	--build-arg STAR_BUILD_TYPE=${STAR_BUILD_TYPE} \
 	--build-arg STAR_BASE_IMAGE=${STAR_BASE_IMAGE_NAME} \
 	--build-arg STAR_SW_REF=${STAR_SW_REF} \
+	--build-arg BUILDKIT_INLINE_CACHE=1 \
 	--target build-stage \
 	${STAR_SW_DIR}
 "
@@ -126,6 +132,7 @@ cmd="docker build --rm -t ${STAR_IMAGE_NAME} \
 	--build-arg STAR_BUILD_TYPE=${STAR_BUILD_TYPE} \
 	--build-arg STAR_BASE_IMAGE=${STAR_BASE_IMAGE_NAME} \
 	--build-arg STAR_SW_REF=${STAR_SW_REF} \
+	--build-arg BUILDKIT_INLINE_CACHE=1 \
 	${STAR_SW_DIR}
 "
 echo
@@ -138,6 +145,7 @@ cmd="docker build --rm -t ${STAR_IMAGE_NAME}-cons \
 	--build-arg STAR_BUILD_TYPE=${STAR_BUILD_TYPE} \
 	--build-arg STAR_BUILD_32BIT=${STAR_BUILD_32BIT} \
 	--build-arg STAR_BASE_IMAGE=${STAR_BASE_IMAGE_NAME} \
+	--build-arg BUILDKIT_INLINE_CACHE=1 \
 	${STAR_SW_DIR}
 "
 echo
