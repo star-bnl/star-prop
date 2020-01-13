@@ -32,15 +32,12 @@ function print_usage() {
 
 
 # Process options and their values
-options=$(getopt -o "ht:mb:p:s:d" -n "$0" -- "$@")
+options=$(getopt -o "t:mb:p:s:dh" -n "$0" -- "$@")
 [ $? -eq 0 ] || print_usage
 eval set -- "$options"
 
 while true; do
 	case "$1" in
-		-h)
-			print_usage ;
-			shift ;;
 		-t)
 			STAR_BUILD_TYPE="$2" ;
 			[[ ! $STAR_BUILD_TYPE =~ Debug|Release|RelWithDebInfo ]] && {
@@ -63,6 +60,9 @@ while true; do
 		-d)
 			DRY_RUN="Yes" ;
 			shift 1 ;;
+		-h)
+			print_usage ;
+			shift ;;
 		--)
 			shift ;
 			break ;;
@@ -70,8 +70,7 @@ while true; do
 done
 
 # Process the only positional argument
-if [ -n "$1" ]
-then
+if [ -n "$1" ]; then
 	STAR_CVS_REF=$1
 fi
 
