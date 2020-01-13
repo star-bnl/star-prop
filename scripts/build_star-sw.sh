@@ -8,6 +8,7 @@
 : ${STAR_SW_DIR:="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"}
 : ${STAR_SW_REF:="master"}
 : ${DOCKER_ID_NAMESPACE:="starbnl/"}
+: ${DRY_RUN:=""}
 
 read -r -d '' HELP_MSG << EOF
 Usage: $(basename $0) [<star-cvs_ref>] [OPTIONS]
@@ -20,6 +21,7 @@ Options:
  -p <path_to_star-sw> [=$STAR_SW_DIR]
                                         Defaults to this script location but can be set to anything
  -s <star-sw_ref> [=master]             Any commit reference in star-sw repo (branch, tag, or hash)
+ -d                                     Print commands but do not execute them
  -h                                     Print this help message
 EOF
 
@@ -30,7 +32,7 @@ function print_usage() {
 
 
 # Process options and their values
-options=$(getopt -o "ht:mb:p:s:" -n "$0" -- "$@")
+options=$(getopt -o "ht:mb:p:s:d" -n "$0" -- "$@")
 [ $? -eq 0 ] || print_usage
 eval set -- "$options"
 
@@ -58,6 +60,9 @@ while true; do
 		-s)
 			STAR_SW_REF="$2" ;
 			shift 2 ;;
+		-d)
+			DRY_RUN="Yes" ;
+			shift 1 ;;
 		--)
 			shift ;
 			break ;;
@@ -107,7 +112,7 @@ cmd="docker build -t ${STAR_BASE_IMAGE_NAME} \
 "
 echo
 echo $ $cmd
-$cmd
+[ -z "$DRY_RUN" ] && eval "$cmd"
 
 cmd="docker build -t ${STAR_IMAGE_NAME}-build \
 	--build-arg STAR_CVS_REF=${STAR_CVS_REF} \
@@ -119,7 +124,7 @@ cmd="docker build -t ${STAR_IMAGE_NAME}-build \
 "
 echo
 echo $ $cmd
-$cmd
+[ -z "$DRY_RUN" ] && eval "$cmd"
 
 cmd="docker build -t ${STAR_IMAGE_NAME} \
 	--build-arg STAR_CVS_REF=${STAR_CVS_REF} \
@@ -130,7 +135,7 @@ cmd="docker build -t ${STAR_IMAGE_NAME} \
 "
 echo
 echo $ $cmd
-$cmd
+[ -z "$DRY_RUN" ] && eval "$cmd"
 
 cmd="docker build -t ${STAR_IMAGE_NAME}-cons \
 	-f ${STAR_SW_DIR}/docker/Dockerfile.star-sw-cons \
@@ -142,4 +147,4 @@ cmd="docker build -t ${STAR_IMAGE_NAME}-cons \
 "
 echo
 echo $ $cmd
-$cmd
+[ -z "$DRY_RUN" ] && eval "$cmd"
