@@ -347,7 +347,9 @@ public:
 					this->get( "FitChi2Ndf" )->Fill( rchi2 );
 					this->get( "FitNFailedHits" )->Fill( nFailedHits );
 
-					this->get( "QMatrix" )->Fill( mcq, rcq );
+					if ( abs(rcq) == 1 ){
+						this->get( "QMatrix" )->Fill( mcq, rcq );
+					}
 
 					if ( mcq == rcq )
 						this->get( "RightQVsMcPt" )->Fill( mcpt * mcq );
@@ -400,7 +402,8 @@ public:
 
 	void finish()
 	{
-		this->get( "QMatrix" )->Scale( 1.0 / this->get( "QMatrix" )->GetEntries() );
+		hist[ "NQMatrix" ] = (TH2*)this->get( "QMatrix" )->Clone( "NQMatrix" );
+		this->get( "NQMatrix" )->Scale( 1.0 / this->get( "NQMatrix" )->GetEntries() );
 
 		this->hist[ "EffVsMcPt" ] = (TH1 *)this->get( "McPtFound" )->Clone( "EffVsMcPt" );
 		this->get( "EffVsMcPt" ) -> Divide( this->get( "McPt" ) );
