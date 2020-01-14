@@ -104,9 +104,17 @@ echo
 echo -e "\t STAR_BASE_IMAGE_NAME:   \"$STAR_BASE_IMAGE_NAME\""
 echo -e "\t STAR_IMAGE_NAME:        \"$STAR_IMAGE_NAME\""
 
+# Set default attributes for the files copied into the containers
+# Having same attributes ensures reproducibility of layer hashes and therefore,
+# reuse of cache even when containers are built on different hosts
+touch -d "@0" docker/packages.* patches/*.patch
+chmod 644 docker/packages.* patches/*.patch
+
+
 cmd="docker build -t ${STAR_BASE_IMAGE_NAME} \
 	-f ${STAR_SW_DIR}/docker/Dockerfile.star-base-${STAR_BASE_OS} \
 	--build-arg STAR_BUILD_32BIT=${STAR_BUILD_32BIT} \
+	--cache-from ${STAR_BASE_IMAGE_NAME} \
 	${STAR_SW_DIR}
 "
 echo
