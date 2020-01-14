@@ -385,6 +385,11 @@ public:
 			doTrackIteration( iIteration, hitmap );
 		}
 
+		if ( cfg.get<bool>( "TrackFitter:refitSi", true ) ){
+			addSiHits();
+
+		}
+
 
 		qPlotter->summarizeEvent( recoTracks, mcTrackMap, fitMoms, fitStatus );
 	} // doEvent
@@ -654,6 +659,75 @@ public:
 		}
 	} // doTrackIteration
 
+
+	void addSiHits(  ){
+		LOG_SCOPE_FUNCTION( INFO );
+
+
+		
+		std::map<int, std::vector<KiTrack::IHit *> > hitmap = hitLoader -> loadSi( 0 );
+
+		LOG_F( INFO, "hitmap size = %lu (should be 3)", hitmap.size() );
+
+		// loop on global tracks
+		for ( size_t i = 0; i < _globalTracks.size(); i++ ){
+
+
+
+			if ( _globalTracks[i]->getFitStatus( _globalTracks[i]->getCardinalRep() )->isFitConverged() == false ){
+				LOG_F( WARNING, "Original Track fit did not converge, skipping" );
+				return;
+			}
+
+			auto msp2 = trackFitter->projectTo( 2, _globalTracks[i] );
+			auto msp1 = trackFitter->projectTo( 1, _globalTracks[i] );
+			auto msp0 = trackFitter->projectTo( 0, _globalTracks[i] );
+
+			// now look for Si hits near these
+			auto hits_near_disk2 = findSiHitsNearMe( hitmap[2], msp2 );
+			auto hits_near_disk1 = findSiHitsNearMe( hitmap[1], msp1 );
+			auto hits_near_disk0 = findSiHitsNearMe( hitmap[0], msp0 );
+
+			LOG_F( INFO, "There are (%lu, %lu, %lu) hits near the track on Si disks 0, 1, 2", hits_near_disk0.size(), hits_near_disk1.size(), hits_near_disk2.size() );
+			LOG_F( INFO, "Track already has %lu points", _globalTracks[i]->getNumPoints() );
+			vector<KiTrack::IHit *> hits_to_add;
+
+			// This is the simplest/best case
+			if ( hits_near_disk0.size() == 1 && hits_near_disk1.size() == 1 && hits_near_disk2.size() == 1 ){
+				LOG_F( INFO, "Found one-to-one matching on all three Si disks, do REFIT" );
+				hits_to_add.push_back( hits_near_disk0[0] );
+				hits_to_add.push_back( hits_near_disk1[0] );
+				hits_to_add.push_back( hits_near_disk2[0] );
+				TVector3 p = trackFitter->refitTrackWithSiHits( _globalTracks[i], hits_to_add );
+
+				LOG_F( INFO, "Global track now has: %lu point", _globalTracks[i]->getNumPoints() );
+				fitMoms[ i ] = p;
+
+			}
+
+
+		}
+
+	}
+
+	std::vector<KiTrack::IHit *> findSiHitsNearMe( std::vector<KiTrack::IHit *> &available_hits, genfit::MeasuredStateOnPlane &msp, double dphi = 0.1 ){
+		LOG_SCOPE_FUNCTION( INFO );
+		double probe_phi = TMath::ATan2( msp.getPos().Y(), msp.getPos().X() );
+		double probe_r = sqrt( pow(msp.getPos().X(), 2) + pow(msp.getPos().Y(), 2) );
+
+		std::vector<KiTrack::IHit *> found_hits;
+
+		for ( auto h : available_hits ){
+			double h_phi = TMath::ATan2( h->getY(), h->getX() );
+			double h_r = sqrt( pow( h->getX(), 2 ) + pow( h->getY(), 2 ) );
+
+			if ( fabs( h_phi - probe_phi ) < dphi ) {// handle 2pi edge
+				found_hits.push_back( h );
+			}
+		}
+
+		return found_hits;
+	}
 
 protected:
 	FastSim *fastSim;
