@@ -62,10 +62,16 @@ public:
       hits.push_back( hit );
    }
 
+   void addFSIHit( KiTrack::IHit *hit )
+   {
+      fsi_hits.push_back( hit );
+   }
+
    float _pt, _eta, _phi;
    int _tid, _q;
 
    std::vector<KiTrack::IHit *> hits;
+   std::vector<KiTrack::IHit *> fsi_hits;
 };
 
 class FwdHit : public KiTrack::IHit
@@ -82,7 +88,7 @@ public:
       _mcTrack = mcTrack;
       _hit = 0;
 
-      int _map[] = {0, 0, 0, 0, 0, 1, 2, 0, 0, 3, 4,  5, 6}; // ftsref6a
+      int _map[] = {0, 0, 0, 0, 0, 1, 2, 0, 0, 3, 4, 5, 6}; // ftsref6a
 
       if ( vid > 0 )
          _sector = _map[vid];

@@ -18,8 +18,13 @@ class StarFieldAdaptor;
 class StRnDHitCollection;
 class StTrack;
 class StTrackDetectorInfo;
+namespace jdb{
+   class XmlConfig;
+}
 
 #include <vector>
+#include <map>
+#include <string>
 
 class StgMaker : public StMaker
 {
@@ -45,7 +50,11 @@ protected:
    ForwardHitLoader      *mForwardHitLoader;
    StarFieldAdaptor      *mFieldAdaptor;
 
+   jdb::XmlConfig *_pxmlconfig;
+
    typedef std::vector<KiTrack::IHit *> Seed_t;
+
+   std::map< std::string, TH1 * > histograms;
 
    // Fill StEvent
    void FillEvent();
