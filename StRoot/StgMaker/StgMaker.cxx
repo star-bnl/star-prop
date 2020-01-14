@@ -144,6 +144,10 @@ public:
    {
       return _hits;
    };
+   std::map<int, std::vector<KiTrack::IHit *> > &loadSi( unsigned long long )
+   {
+      return _fsi_hits;
+   };
    std::map<int, shared_ptr<McTrack>> &getMcTrackMap()
    {
       return _mctracks;
@@ -153,6 +157,7 @@ public:
    void clear()
    {
       _hits.clear();
+      _fsi_hits.clear();
       _mctracks.clear();
    }
 
@@ -402,6 +407,8 @@ int StgMaker::Make()
 
    // Process single event
    mForwardTracker -> doEvent();
+
+   // mForwardTracker -> addSiHits();
 
    StEvent *event = static_cast<StEvent *>(GetInputDS("StEvent"));
 
