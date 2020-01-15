@@ -60,6 +60,29 @@ if(TARGET StGenericVertexMaker)
 	add_dependencies(StGenericVertexMakerNoSti StDb_Tables geometry_Tables sim_Tables)
 endif()
 
+if(TARGET StgMaker)
+	include(ExternalProject)
+
+	ExternalProject_Add(
+		KiTrack
+		PREFIX "external/"
+		URL "https://github.com/star-bnl/KiTrack/archive/efd317b8.tar.gz"
+		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAR_INSTALL_PREFIX} -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+	)
+
+	ExternalProject_Add(
+		GenFit
+		PREFIX "external/"
+		URL "https://github.com/star-bnl/GenFit/archive/b496504a.tar.gz"
+		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAR_INSTALL_PREFIX} -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+			-DINCLUDE_OUTPUT_DIRECTORY=include/GenFit
+	)
+
+	add_dependencies(StgMaker GenFit KiTrack St_g2t)
+	target_include_directories(StgMaker PRIVATE "${STAR_INSTALL_INCLUDEDIR}"
+	                                            "${PROJECT_SOURCE_DIR}/StRoot")
+endif()
+
 if(TARGET StIstRawHitMaker)
 	target_include_directories(StIstRawHitMaker PRIVATE "${STAR_SRC}/StRoot/RTS/src" "${STAR_SRC}/StRoot/RTS/include")
 endif()
