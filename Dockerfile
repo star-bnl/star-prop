@@ -27,7 +27,7 @@ RUN cmake /tmp/star-sw-${STAR_SW_REF} -DSTAR_SRC=/tmp/star-cvs-${STAR_CVS_REF} \
 
 # Install additional packages for interactive work
 RUN yum update -q -y \
- && yum install -y emacs vim \
+ && yum install -y emacs vim-minimal \
  && yum clean all
 
 # Get rid of source and build artifacts and only keep installed STAR software
