@@ -127,6 +127,7 @@ cmd="docker build -t ${STAR_IMAGE_NAME}-build \
 	--build-arg STAR_BASE_IMAGE=${STAR_BASE_IMAGE_NAME} \
 	--build-arg STAR_SW_REF=${STAR_SW_REF} \
 	--target build-stage \
+	--cache-from ${STAR_IMAGE_NAME}-build \
 	${STAR_SW_DIR}
 "
 echo
@@ -138,6 +139,7 @@ cmd="docker build -t ${STAR_IMAGE_NAME} \
 	--build-arg STAR_BUILD_TYPE=${STAR_BUILD_TYPE} \
 	--build-arg STAR_BASE_IMAGE=${STAR_BASE_IMAGE_NAME} \
 	--build-arg STAR_SW_REF=${STAR_SW_REF} \
+	--cache-from ${STAR_IMAGE_NAME} \
 	${STAR_SW_DIR}
 "
 echo
@@ -150,6 +152,7 @@ cmd="docker build -t ${STAR_IMAGE_NAME}-cons \
 	--build-arg STAR_BUILD_TYPE=${STAR_BUILD_TYPE} \
 	--build-arg STAR_BUILD_32BIT=${STAR_BUILD_32BIT} \
 	--build-arg STAR_BASE_IMAGE=${STAR_BASE_IMAGE_NAME} \
+	--cache-from ${STAR_IMAGE_NAME}-cons \
 	${STAR_SW_DIR}
 "
 echo
