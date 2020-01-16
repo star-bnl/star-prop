@@ -1,5 +1,6 @@
 binutils
 bison
+ccache
 cmake3
 eigen3-devel
 flex
