@@ -138,6 +138,10 @@ public:
    {
       return _hits;
    };
+   std::map<int, std::vector<KiTrack::IHit *> > &loadSi( unsigned long long )
+   {
+      return _fsi_hits;
+   };
    std::map<int, shared_ptr<McTrack>> &getMcTrackMap()
    {
       return _mctracks;
@@ -147,11 +151,13 @@ public:
    void clear()
    {
       _hits.clear();
+      _fsi_hits.clear();
       _mctracks.clear();
    }
 
    // TODO, protect and add interaface for pushing hits / tracks
    std::map<int, std::vector<KiTrack::IHit *> >  _hits;
+   std::map<int, std::vector<KiTrack::IHit *> >  _fsi_hits;
    std::map<int, shared_ptr<McTrack> > _mctracks;
 };
 
@@ -236,17 +242,11 @@ int StgMaker::Make()
    const double z_hcal[] = { 740.0 }; // TODO: get correct value
 
 
-   StEvent *event = static_cast<StEvent *>(GetInputDS("StEvent"));
-
-   if ( 0 == event ) {
-      LOG_INFO << "No event, punt on forward tracking." << endm; assert(0);
-      return kStWarn;
-   }
-
    // I am a horrible person for doing this by reference, but at least
    // I don't use "goto" anywhere.
    std::map<int, shared_ptr<McTrack> > &mcTrackMap = mForwardHitLoader->_mctracks;
    std::map<int, std::vector<KiTrack::IHit *> >  &hitMap = mForwardHitLoader->_hits;
+   std::map<int, std::vector<KiTrack::IHit *> >  &fsiHitMap = mForwardHitLoader->_fsi_hits;
 
    // Get geant tracks
    St_g2t_track *g2t_track = (St_g2t_track *) GetDataSet("geant/g2t_track"); //  if (!g2t_track)    return kStWarn;
@@ -350,28 +350,42 @@ int StgMaker::Make()
       //return kStErr;
    }
    else {
-      g2t_fsi_hits->GetNRows();
+      nfsi = g2t_fsi_hits->GetNRows();
    }
 
-   for ( int i = 0; i < -nfsi; i++ ) { // yes, negative... because are skipping Si in initial tests
+   histograms[ "nHitsFSI" ]->Fill( nfsi );
+   LOG_INFO << "# fsi hits = " << nfsi << endm;
+
+   for ( int i = 0; i < nfsi; i++ ) { // yes, negative... because are skipping Si in initial tests
 
       g2t_fts_hit_st *git = (g2t_fts_hit_st *)g2t_fsi_hits->At(i); if (0 == git) continue; // geant hit
       int   track_id  = git->track_p;
-      int   volume_id = git->volume_id;
-      int   plane_id  = volume_id;
-      float x         = git->x[0];
-      float y         = git->x[1];
-      float z         = git->x[2];
+      int   volume_id = git->volume_id; // 4, 5, 6
+      int   plane_id  = volume_id - 4;
+      float x         = git->x[0] + gRandom->Gaus( 0, 0.0001 );
+      float y         = git->x[1] + gRandom->Gaus( 0, 0.0001 );
+      float z         = git->x[2] + gRandom->Gaus( 0, 0.0001 );
 
-      LOG_INFO << "track_id=" << track_id << " volume_id=" << volume_id << " x/y/z " << x << "/" << y << "/" << z << endm;
+
+      
+      LOG_F( INFO, "FSI Hit: volume_id=%d, plane_id=%d, (%f, %f, %f)", volume_id, plane_id, x, y, z );
+      histograms[ "fsi_volume_id" ] ->Fill( volume_id );
+      // LOG_INFO << "track_id=" << track_id << " volume_id=" << volume_id << " x/y/z " << x << "/" << y << "/" << z << endm;
+      
+      if ( plane_id < 3 && plane_id >= 0 ){
+         histograms[ TString::Format("fsi%dHitMap", plane_id).Data() ] -> Fill( x, y );
+      } else {
+         LOG_F( ERROR, "Out of bounds FSI plane_id!" );
+         continue;
+      }
 
       FwdHit *hit = new FwdHit(count++, x, y, z, volume_id, track_id, mcTrackMap[track_id] );
 
       // Add the hit to the hit map
-      hitMap[ hit->getSector() ].push_back(hit);
+      fsiHitMap[ hit->getSector() ].push_back(hit);
 
       // Add hit pointer to the track
-      if ( mcTrackMap[ track_id ] )    mcTrackMap[ track_id ]->addHit( hit );
+      // if ( mcTrackMap[ track_id ] )    mcTrackMap[ track_id ]->addHit( hit );
 
    }
 
