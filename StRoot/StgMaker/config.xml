@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
 
-	
-	<Input url="SimHitsTuple_1track_0p2_5.root" type="sim_mc" max-events="200" first-event="0" si="false" />
 	<Output url="results.root" />
 
 	<TrackFinder nIterations="1">
@@ -48,7 +46,4 @@
 		<!-- for MC only -->
 		<Hits sigmaXY="0.01" useFCM="true" sigmaSiXY="0.01" />
 	</TrackFitter>
-
-
-
 </config>

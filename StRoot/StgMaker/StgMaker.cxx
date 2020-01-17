@@ -191,26 +191,16 @@ int StgMaker::Init()
    std::map<string, string> cmdLineConfig;
    jdb::XmlConfig _xmlconfig;
    _xmlconfig.loadFile( configFile, cmdLineConfig );
-   // Dump configuration to screen
-   // LOG_INFO << _xmlconfig.dump().c_str() << endm;
-
-   // Initialize debugging
-   // int argc=1;
-   // char* argv[]={"StgMaker",""}; // deprecated, g++ warns...
-   // loguru::init(argc, argv );
+   
+   // setup the loguru log file
    loguru::add_file("everything.log", loguru::Truncate, loguru::Verbosity_2);
    loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
-
-   // Create instance of the criteria histograms  (is this optional?)
-   //  CritHisto::Instance();
 
    mForwardTracker = new ForwardTracker();
    mForwardTracker->setConfig( _xmlconfig );
 
    mForwardHitLoader = new ForwardHitLoader();
    mForwardTracker->setLoader( mForwardHitLoader );
-
-
    mForwardTracker->initialize();
 
    // create histograms
@@ -246,12 +236,15 @@ int StgMaker::Make()
 
    // I am a horrible person for doing this by reference, but at least
    // I don't use "goto" anywhere.
-   std::map<int, shared_ptr<McTrack> > &mcTrackMap = mForwardHitLoader->_mctracks;
-   std::map<int, std::vector<KiTrack::IHit *> >  &hitMap = mForwardHitLoader->_hits;
+   std::map<int, shared_ptr<McTrack> > &mcTrackMap          = mForwardHitLoader->_mctracks;
+   std::map<int, std::vector<KiTrack::IHit *> >  &hitMap    = mForwardHitLoader->_hits;
    std::map<int, std::vector<KiTrack::IHit *> >  &fsiHitMap = mForwardHitLoader->_fsi_hits;
 
    // Get geant tracks
-   St_g2t_track *g2t_track = (St_g2t_track *) GetDataSet("geant/g2t_track"); //  if (!g2t_track)    return kStWarn;
+   St_g2t_track *g2t_track = (St_g2t_track *) GetDataSet("geant/g2t_track"); 
+
+   if (!g2t_track)
+      return kStWarn;
 
    LOG_INFO << "# mc tracks = " << g2t_track->GetNRows() << endm;
    histograms[ "nMcTracks" ]->Fill( g2t_track->GetNRows() );
@@ -274,43 +267,23 @@ int StgMaker::Make()
    // Add hits onto the hit loader (from rndHitCollection)
    int count = 0;
 
-#if 0
-
-   for ( auto h : event->rndHitCollection()->hits() ) { // TODO: exend RnD hit collection w/ begin/end
-
-      int volume_id = h->layer(); // MC volume ID [not positive about this mapping]
-      int track_id = h->idTruth();  // MC truth
-
-      const StThreeVectorF &xyz = h->position();
-      const float &x = xyz[0];       // Position of the hit
-      const float &y = xyz[1];       // Position of the hit
-      const float &z = xyz[2];       // Position of the hit
-
-      // Create the hit
-      FwdHit *hit = new FwdHit(count++, x, y, z, volume_id, track_id, mcTrackMap[track_id] );
-
-      // Add the hit to the hit map
-      hitMap[ hit->getSector() ].push_back(hit);
-
-      // Add hit pointer to the track
-      if ( mcTrackMap[ track_id ] )    mcTrackMap[ track_id ]->addHit( hit );
-
-   }
-
-#else
    //
    // Use geant hits directly
    //
+
+   /************************************************************/
+   // STGC Hits
    St_g2t_fts_hit *g2t_stg_hits = (St_g2t_fts_hit *) GetDataSet("geant/g2t_stg_hit");
 
+   int nstg = 0;
    if ( g2t_stg_hits == nullptr ) {
       LOG_INFO << "g2t_stg_hits is null" << endm;
-      return kStErr;
+   } else {
+      nstg = g2t_stg_hits->GetNRows();
    }
 
-   int nstg = g2t_stg_hits->GetNRows();
+   LOG_INFO << "# stg hits= " << nstg << endm;
    histograms[ "nHitsSTGC" ]->Fill( nstg );
-    LOG_INFO << "# stg hits= " << nstg << endm;
    for ( int i = 0; i < nstg; i++ ) {
 
       g2t_fts_hit_st *git = (g2t_fts_hit_st *)g2t_stg_hits->At(i); if (0 == git) continue; // geant hit
@@ -332,7 +305,6 @@ int StgMaker::Make()
          continue;
       }
 
-      // LOG_INFO << "track_id=" << track_id << " volume_id=" << volume_id << " plane_id=" << plane_id << " x/y/z " << x << "/" << y << "/" << z << endm;
       FwdHit *hit = new FwdHit(count++, x, y, z, -plane_id, track_id, mcTrackMap[track_id] );
 
       // Add the hit to the hit map
@@ -343,13 +315,13 @@ int StgMaker::Make()
 
    }
 
-
+   /************************************************************/
+   // FSI Hits
    int nfsi = 0;
    St_g2t_fts_hit *g2t_fsi_hits = (St_g2t_fts_hit *) GetDataSet("geant/g2t_fsi_hit");
 
    if ( g2t_fsi_hits == nullptr) {
       LOG_INFO << "g2t_fsi_hits is null" << endm;
-      //return kStErr;
    }
    else {
       nfsi = g2t_fsi_hits->GetNRows();
@@ -368,11 +340,8 @@ int StgMaker::Make()
       float y         = git->x[1] + gRandom->Gaus( 0, 0.0001 );
       float z         = git->x[2] + gRandom->Gaus( 0, 0.0001 );
 
-
-      
       LOG_F( INFO, "FSI Hit: volume_id=%d, plane_id=%d, (%f, %f, %f)", volume_id, plane_id, x, y, z );
       histograms[ "fsi_volume_id" ] ->Fill( volume_id );
-      // LOG_INFO << "track_id=" << track_id << " volume_id=" << volume_id << " x/y/z " << x << "/" << y << "/" << z << endm;
       
       if ( plane_id < 3 && plane_id >= 0 ){
          histograms[ TString::Format("fsi%dHitMap", plane_id).Data() ] -> Fill( x, y );
@@ -385,13 +354,7 @@ int StgMaker::Make()
 
       // Add the hit to the hit map
       fsiHitMap[ hit->getSector() ].push_back(hit);
-
-      // Add hit pointer to the track
-      // if ( mcTrackMap[ track_id ] )    mcTrackMap[ track_id ]->addHit( hit );
-
    }
-
-#endif
 
    LOG_INFO << "mForwardTracker -> doEvent()" << endm;
 
