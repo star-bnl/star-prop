@@ -430,7 +430,7 @@ int StgMaker::Make()
 //________________________________________________________________________
 void StgMaker::Clear( const Option_t *opts )
 {
-   // mForwardHitLoader->clear();
+   mForwardHitLoader->clear();
 }
 //________________________________________________________________________
 void StgMaker::FillEvent()
