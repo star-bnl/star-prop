@@ -121,6 +121,12 @@ public:
       trackFitter->setup( cfg.get<bool>("TrackFitter:display") );
    }
 
+   void finish() {
+      LOG_SCOPE_FUNCTION( INFO);
+      qPlotter->finish();
+      writeEventHistograms();
+   }
+
 };
 
 // Wrapper around the hit load.
@@ -154,6 +160,20 @@ StgMaker::StgMaker() : StMaker("stg"), mForwardTracker(0), mForwardHitLoader(0),
 {
 
 };
+
+int StgMaker::Finish(){
+   LOG_SCOPE_FUNCTION(INFO);
+
+   mForwardTracker->finish();
+   gDirectory->mkdir( "StgMaker" );
+   gDirectory->cd("StgMaker");
+   for (auto nh : histograms ) {
+      nh.second->Write();
+   }
+
+   return kStOk;
+}
+
 //________________________________________________________________________
 int StgMaker::Init()
 {
@@ -164,14 +184,14 @@ int StgMaker::Init()
    jdb::XmlConfig _xmlconfig;
    _xmlconfig.loadFile( configFile, cmdLineConfig );
    // Dump configuration to screen
-   LOG_INFO << _xmlconfig.dump().c_str() << endm;
+   // LOG_INFO << _xmlconfig.dump().c_str() << endm;
 
    // Initialize debugging
    // int argc=1;
    // char* argv[]={"StgMaker",""}; // deprecated, g++ warns...
    // loguru::init(argc, argv );
    loguru::add_file("everything.log", loguru::Truncate, loguru::Verbosity_2);
-   loguru::g_stderr_verbosity = 1;
+   loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
 
    // Create instance of the criteria histograms  (is this optional?)
    //  CritHisto::Instance();
@@ -185,11 +205,30 @@ int StgMaker::Init()
 
    mForwardTracker->initialize();
 
+   // create histograms
+   histograms[ "nMcTracks" ] = new TH1I( "nMcTracks", ";# MC Tracks/Event", 1000, 0, 1000 );
+   histograms[ "nHitsSTGC" ] = new TH1I( "nHitsSTGC", ";# STGC Hits/Event", 1000, 0, 1000 );
+   histograms[ "nHitsFSI" ] = new TH1I( "nHitsFSI", ";# FSIT Hits/Event", 1000, 0, 1000 );
+   
+   histograms[ "stgc_volume_id" ] = new TH1I( "stgc_volume_id", ";stgc_volume_id", 50, 0, 50 );
+   histograms[ "fsi_volume_id" ] = new TH1I( "fsi_volume_id", ";fsi_volume_id", 50, 0, 50 );
+
+   // there are 4 stgc stations
+   for ( int i = 0; i < 4; i++ ){
+      histograms[ TString::Format("stgc%dHitMap", i).Data() ] = new TH2F( TString::Format("stgc%dHitMap", i), TString::Format("STGC Layer %d; x (cm); y(cm)"), 200, -100, 100, 200, -100, 100 );
+   }
+
+   // There are 3 silicon stations
+   for ( int i = 0; i < 3; i++ ){
+      histograms[ TString::Format("fsi%dHitMap", i).Data() ] = new TH2F( TString::Format("fsi%dHitMap", i), TString::Format("FSI Layer %d; x (cm); y(cm)"), 200, -100, 100, 200, -100, 100 );
+   }
+
    return kStOK;
 };
 //________________________________________________________________________
 int StgMaker::Make()
 {
+   LOG_INFO << "StgMaker::Make()   " << endm;
 
    const double z_fst[]  = { 93.3, 140.0, 186.6 };
    const double z_stgc[] = { 280.9, 303.7, 326.6, 349.4 };
@@ -212,6 +251,8 @@ int StgMaker::Make()
    // Get geant tracks
    St_g2t_track *g2t_track = (St_g2t_track *) GetDataSet("geant/g2t_track"); //  if (!g2t_track)    return kStWarn;
 
+   LOG_INFO << "# mc tracks = " << g2t_track->GetNRows() << endm;
+   histograms[ "nMcTracks" ]->Fill( g2t_track->GetNRows() );
    if ( g2t_track ) for ( int irow = 0; irow < g2t_track->GetNRows(); irow++ ) {
          g2t_track_st *track = (g2t_track_st *)g2t_track->At(irow);
 
@@ -266,20 +307,30 @@ int StgMaker::Make()
    }
 
    int nstg = g2t_stg_hits->GetNRows();
-
-   //  LOG_INFO << "nstg = " << nstg << endm;
+   histograms[ "nHitsSTGC" ]->Fill( nstg );
+    LOG_INFO << "# stg hits= " << nstg << endm;
    for ( int i = 0; i < nstg; i++ ) {
 
       g2t_fts_hit_st *git = (g2t_fts_hit_st *)g2t_stg_hits->At(i); if (0 == git) continue; // geant hit
       int   track_id  = git->track_p;
       int   volume_id = git->volume_id;
-      int   plane_id  = volume_id / 4 ;//+ 9; // four chambers/station, offset by 9 for reasons
-      float x         = git->x[0] + 0.001 * gRandom->Gaus();
-      float y         = git->x[1];
-      float z         = git->x[2];
+      int   plane_id  = (volume_id - 1) / 4 ;// from 1 - 16. four chambers per station
+      float x         = git->x[0] + gRandom->Gaus( 0, 0.01 );
+      float y         = git->x[1] + gRandom->Gaus( 0, 0.01 );
+      float z         = git->x[2] + gRandom->Gaus( 0, 0.01 );
 
-      //    LOG_INFO << "track_id=" << track_id << " volume_id=" << volume_id << " plane_id=" << plane_id << " x/y/z " << x << "/" << y << "/" << z << endm;
+      LOG_F( INFO, "STGC Hit: volume_id=%d, plane_id=%d, (%f, %f, %f)", volume_id, plane_id, x, y, z );
+      histograms[ "stgc_volume_id" ] ->Fill( volume_id );
 
+      if ( plane_id < 4 && plane_id >= 0 ){
+         histograms[ TString::Format("stgc%dHitMap", plane_id).Data() ] -> Fill( x, y );
+      }
+      else {
+         LOG_F( ERROR, "Out of bounds STGC plane_id!" );
+         continue;
+      }
+
+      // LOG_INFO << "track_id=" << track_id << " volume_id=" << volume_id << " plane_id=" << plane_id << " x/y/z " << x << "/" << y << "/" << z << endm;
       FwdHit *hit = new FwdHit(count++, x, y, z, -plane_id, track_id, mcTrackMap[track_id] );
 
       // Add the hit to the hit map
@@ -331,6 +382,15 @@ int StgMaker::Make()
 
    // Process single event
    mForwardTracker -> doEvent();
+
+   // mForwardTracker -> addSiHits();
+
+   StEvent *event = static_cast<StEvent *>(GetInputDS("StEvent"));
+
+   if ( 0 == event ) {
+      LOG_INFO << "No event, punt on forward tracking." << endm;
+      return kStOk;
+   }
 
    // Now fill StEvent
    FillEvent();
