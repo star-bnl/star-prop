@@ -20,6 +20,7 @@ public:
 
    virtual unsigned long long nEvents() = 0;
    virtual std::map<int, std::vector<KiTrack::IHit *> > &load( unsigned long long iEvent ) = 0;
+   virtual std::map<int, std::vector<KiTrack::IHit *> > &loadSi( unsigned long long iEvent ){};
    virtual std::map<int, shared_ptr<McTrack>> &getMcTrackMap() = 0;
 
 };
