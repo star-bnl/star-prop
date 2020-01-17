@@ -119,6 +119,8 @@ public:
       // initialize the track fitter
       trackFitter = new TrackFitter( cfg );
       trackFitter->setup( cfg.get<bool>("TrackFitter:display") );
+
+      ForwardTrackMaker::initialize();
    }
 
    void finish() {
