@@ -3,6 +3,7 @@
 # included paths start with '+ '
 # excluded paths start with '- '
 
+- /.backup
 - /Cons
 - /CVSROOT
 - /cgi

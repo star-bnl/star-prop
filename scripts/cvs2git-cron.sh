@@ -36,7 +36,7 @@ echo $ $cmd
 $cmd
 
 mkdir -p "${LOCAL_CVSROOT_DIR}/cvs"
-cmd="rsync -a --omit-dir-times --chmod=Dug=rwx,Do=rx,Fug+rw,Fo+r --delete --delete-excluded --exclude-from=${SCRIPT_DIR}/cvs2git-paths.txt -R ${CVS_DIR}/./* ${LOCAL_CVSROOT_DIR}/cvs"
+cmd="rsync -a --omit-dir-times --chmod=Dug=rwx,Do=rx,Fug+rw,Fo+r --delete --delete-excluded --exclude-from=${SCRIPT_DIR}/cvs2git-paths.txt -R ${CVS_DIR}/./ ${LOCAL_CVSROOT_DIR}/cvs"
 echo
 echo ---\> Updating local CVS modules in ${LOCAL_CVSROOT_DIR}/cvs
 echo $ $cmd
