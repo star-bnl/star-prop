@@ -4,7 +4,7 @@
 # remote Git repository github.com:star-bnl/star-cvs.git. For example, the
 # following command can be added to the crontab:
 # 
-# 0 2,8,20 * * * CVS_HOST="rcas6010:" /path/to/sync-star-cvs2git-cron.sh &> /path/to/sync-star-cvs2git-cron.log
+# 0 2,8,20 * * * CVS_HOST="rcas6010:" /path/to/cvs2git_cron.sh &> /path/to/cvs2git_cron.log
 #
 # In order to push to the remote server the star-bnl-bot account should be set
 # up to authenticate with an SSH key.
@@ -36,7 +36,7 @@ echo $ $cmd
 $cmd
 
 mkdir -p "${LOCAL_CVSROOT_DIR}/cvs"
-cmd="rsync -a --omit-dir-times --chmod=Dug=rwx,Do=rx,Fug+rw,Fo+r --delete --delete-excluded --exclude-from=${SCRIPT_DIR}/cvs2git-paths.txt -R ${CVS_DIR}/./ ${LOCAL_CVSROOT_DIR}/cvs"
+cmd="rsync -a --omit-dir-times --chmod=Dug=rwx,Do=rx,Fug+rw,Fo+r --delete --delete-excluded --exclude-from=${SCRIPT_DIR}/cvs2git_paths.txt -R ${CVS_DIR}/./ ${LOCAL_CVSROOT_DIR}/cvs"
 echo
 echo ---\> Updating local CVS modules in ${LOCAL_CVSROOT_DIR}/cvs
 echo $ $cmd
@@ -58,7 +58,7 @@ echo -- Step 2. Creating Git blob files from the local CVS repository
 cvs2git --fallback-encoding=ascii --use-rcs --co=/usr/local/bin/co --force-keyword-mode=kept \
         --blobfile=${PREFIX}/git-blob.dat \
         --dumpfile=${PREFIX}/git-dump.dat \
-        --username=cvs2git ${LOCAL_CVSROOT_DIR}/cvs &> ${PREFIX}/cvs2git-cron-step2.log
+        --username=cvs2git ${LOCAL_CVSROOT_DIR}/cvs &> ${PREFIX}/cvs2git_cron_step2.log
 echo -- Done
 
 
