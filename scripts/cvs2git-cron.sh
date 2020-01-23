@@ -29,7 +29,7 @@ echo
 echo -- Step 1. Updating local copy of CVS repository in ${LOCAL_CVSROOT_DIR}
 
 mkdir -p "${LOCAL_CVSROOT_DIR}"
-cmd="rsync -a --omit-dir-times --chmod=Dug=rwx,Do=rx,Fug+rw,Fo+r --delete --delete-excluded -R ${CVS_DIR}/./CVSROOT ${LOCAL_CVSROOT_DIR}/"
+cmd="rsync -a --omit-dir-times --chmod=Dug=rwx,Do=rx,Fug+rw,Fo+r --delete -R ${CVS_DIR}/./CVSROOT ${LOCAL_CVSROOT_DIR}/"
 echo
 echo ---\> Updating local CVSROOT in ${LOCAL_CVSROOT_DIR}
 echo $ $cmd
