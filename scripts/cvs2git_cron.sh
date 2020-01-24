@@ -74,8 +74,7 @@ cat ${PREFIX}/git-blob.dat ${PREFIX}/git-dump.dat | git fast-import
 git checkout
 java -jar ${PREFIX}/bfg-1.13.0.jar --delete-folders .git --delete-files .git --no-blob-protection ./
 git remote add origin git@github.com:star-bnl/star-cvs.git
-git push --all
-git push --tags
+git push --mirror
 echo -- Done
 
 echo
