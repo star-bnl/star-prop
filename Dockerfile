@@ -11,15 +11,17 @@ WORKDIR /tmp
 
 # Get STAR software
 ADD https://api.github.com/repos/star-bnl/star-sw/commits/${STAR_SW_REF} star-sw-ref.json
-RUN curl -s -L https://github.com/star-bnl/star-sw/archive/${STAR_SW_REF}.tar.gz  | tar -xz -C /tmp
+RUN curl -s -L https://github.com/star-bnl/star-sw/archive/${STAR_SW_REF}.tar.gz  | tar -xz -C /tmp \
+ && ln -s /tmp/star-sw-${STAR_SW_REF} /tmp/star-sw
 
 ADD https://api.github.com/repos/star-bnl/star-cvs/commits/${STAR_CVS_REF} star-cvs-ref.json
-RUN curl -s -L https://github.com/star-bnl/star-cvs/archive/${STAR_CVS_REF}.tar.gz | tar -xz -C /tmp
+RUN curl -s -L https://github.com/star-bnl/star-cvs/archive/${STAR_CVS_REF}.tar.gz | tar -xz -C /tmp \
+ && ln -s /tmp/star-cvs-${STAR_CVS_REF} /tmp/star-cvs
 
 # Build STAR software
 WORKDIR /tmp/star-build
 
-RUN cmake /tmp/star-sw-${STAR_SW_REF} -DSTAR_SRC=/tmp/star-cvs-${STAR_CVS_REF} \
+RUN cmake /tmp/star-sw -DSTAR_SRC=/tmp/star-cvs \
     -DSTAR_PATCH=gcc540 -DCMAKE_INSTALL_PREFIX=/tmp/star-install \
     -DCERNLIB_ROOT=/cern/2006 -DCMAKE_BUILD_TYPE=${STAR_BUILD_TYPE} \
  && make -j $(nproc) \
