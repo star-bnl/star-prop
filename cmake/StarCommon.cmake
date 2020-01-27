@@ -622,7 +622,9 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 			"atmain/sterror.age"
 			"atmain/traceq.age"
 		)
-		list(SORT _all_files)
+		if(_all_files)
+			list(SORT _all_files)
+		endif()
 
 		foreach(_source_file ${_all_files})
 			get_filename_component(_source_file_ext ${_source_file} EXT)
