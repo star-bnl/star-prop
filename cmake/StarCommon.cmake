@@ -77,10 +77,34 @@ endforeach()
 # Applies patches found in `patch` subdirectory only to $STAR_SRC code checked
 # out from a git repository.
 function(STAR_APPLY_PATCH)
-	if(NOT STAR_PATCH STREQUAL STAR_PATCH_APPLIED)
-		execute_process(COMMAND ${PROJECT_SOURCE_DIR}/scripts/apply_patch.py ${STAR_SRC} ${STAR_PATCH} OUTPUT_FILE patch.out ERROR_FILE patch.out)
-		set(STAR_PATCH_APPLIED "${STAR_PATCH}" CACHE STRING "Applied patch ID" FORCE)
+	# Do nothing if STAR_PATCH is not set (default value is NO)
+	if(NOT STAR_PATCH)
+		return()
 	endif()
+
+	file(GLOB _patch_files "${PROJECT_SOURCE_DIR}/patches/${STAR_PATCH}/*.patch")
+
+	if(NOT _patch_files)
+		message(WARNING "StarCommon: Patch set ${STAR_PATCH} not found")
+		return()
+	endif()
+
+	foreach(_patch_file ${_patch_files})
+		message(STATUS "StarCommon: Applying patch from ${STAR_PATCH}: ${_patch_file}")
+		execute_process(COMMAND patch -p1 -d "${STAR_SRC}"
+			INPUT_FILE "${_patch_file}" RESULT_VARIABLE _result OUTPUT_VARIABLE _output)
+		if(_result EQUAL 0)
+			message(STATUS "StarCommon: Patch succesfully applied")
+		else() # distinguish between failed patch and already applied one
+			execute_process(COMMAND patch -p1 -d "${STAR_SRC}" --reverse --dry-run
+				INPUT_FILE "${_patch_file}" RESULT_VARIABLE _result OUTPUT_VARIABLE _output)
+			if(_result EQUAL 0)
+				message(WARNING "StarCommon: Patch from ${STAR_PATCH} already applied: ${_patch_file}")
+			else()
+				message(FATAL_ERROR "StarCommon: Failed to apply patch from ${STAR_PATCH}: ${_patch_file}")
+			endif()
+		endif()
+	endforeach()
 endfunction()
 
 
