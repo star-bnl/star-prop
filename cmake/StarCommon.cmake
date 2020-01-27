@@ -743,16 +743,11 @@ function(STAR_ADD_LIBRARY_VERTEXNOSTI star_lib_dir)
 
 	GET_ROOT_DICT_FILE_NAMES(_linkdef_file _dictinc_file _dict_source _dict_header)
 
-	add_library(StGenericVertexMakerNoSti
-		${star_lib_dir_abs}/StCtbUtility.cxx
-		${star_lib_dir_abs}/StFixedVertexFinder.cxx
-		${star_lib_dir_abs}/StGenericVertexFinder.cxx
-		${star_lib_dir_abs}/StGenericVertexMaker.cxx
-		${star_lib_dir_abs}/StppLMVVertexFinder.cxx
-		${star_lib_dir_abs}/VertexFinderOptions.cxx
-		${star_lib_dir_abs}/Minuit/StMinuitVertexFinder.cxx
-		${star_lib_dir_abs}/Minuit/St_VertexCutsC.cxx
-		${_dict_source})
+	file(GLOB_RECURSE _cxx_files "${star_lib_dir_abs}/*.cxx")
+	# Remove source files coming from the following subdirectories
+	FILTER_LIST(_cxx_files EXCLUDE "StiPPVertex/" "StvPPVertex/" "macros/")
+
+	add_library(StGenericVertexMakerNoSti ${_cxx_files} ${_dict_source})
 	# Output the library to the respecitve subdirectory in the binary directory
 	set_target_properties(StGenericVertexMakerNoSti PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
 
