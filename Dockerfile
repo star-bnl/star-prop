@@ -33,6 +33,9 @@ RUN yum update -q -y \
  && yum install -y emacs vim-minimal \
  && yum clean all
 
+ENTRYPOINT ["/tmp/star-install/.entrypoint.sh"]
+CMD ["/bin/bash"]
+
 # Get rid of source and build artifacts and only keep installed STAR software
 FROM ${STAR_BASE_IMAGE}
 COPY --from=build-stage /tmp/star-install /tmp/star-install
