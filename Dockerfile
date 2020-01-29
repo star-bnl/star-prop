@@ -6,6 +6,7 @@ FROM ${STAR_BASE_IMAGE} AS build-stage
 ARG STAR_SW_REF=master
 ARG STAR_CVS_REF=master
 ARG STAR_BUILD_TYPE=Release
+ARG STAR_PATCH="precmake"
 
 WORKDIR /tmp
 
@@ -22,7 +23,7 @@ RUN curl -s -L https://github.com/star-bnl/star-cvs/archive/${STAR_CVS_REF}.tar.
 WORKDIR /tmp/star-build
 
 RUN cmake /tmp/star-sw -DSTAR_SRC=/tmp/star-cvs \
-    -DCMAKE_INSTALL_PREFIX=/tmp/star-install \
+    -DSTAR_PATCH=${STAR_PATCH} -DCMAKE_INSTALL_PREFIX=/tmp/star-install \
     -DCERNLIB_ROOT=/cern/2006 -DCMAKE_BUILD_TYPE=${STAR_BUILD_TYPE} \
  && make -j $(nproc) \
  && make install

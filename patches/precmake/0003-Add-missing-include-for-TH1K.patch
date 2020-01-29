@@ -1,0 +1,24 @@
+From 3017dc9eafa90d8e197b6a22c0d23bffa36f0dd3 Mon Sep 17 00:00:00 2001
+From: Dmitri Smirnov <dmixsmi@gmail.com>
+Date: Mon, 27 Jan 2020 16:11:15 -0500
+Subject: [PATCH 3/3] Add missing include for TH1K
+
+---
+ StRoot/StiMaker/StKFVertexMaker.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/StRoot/StiMaker/StKFVertexMaker.h b/StRoot/StiMaker/StKFVertexMaker.h
+index a9aea84e09..2d97ec62f0 100644
+--- a/StRoot/StiMaker/StKFVertexMaker.h
++++ b/StRoot/StiMaker/StKFVertexMaker.h
+@@ -21,6 +21,7 @@
+ #include "Math/GSLMinimizer1D.h"
+ #include "StEnumerations.h"
+ #include "TCanvas.h"
++#include "TH1K.h"
+ class StPrimaryVertex;
+ class StEvent;
+ class StDcaGeometry;
+-- 
+2.16.1
+
