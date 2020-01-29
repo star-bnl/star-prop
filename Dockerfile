@@ -12,11 +12,11 @@ WORKDIR /tmp
 # Get STAR software
 ADD https://api.github.com/repos/star-bnl/star-sw/commits/${STAR_SW_REF} star-sw-ref.json
 RUN curl -s -L https://github.com/star-bnl/star-sw/archive/${STAR_SW_REF}.tar.gz  | tar -xz -C /tmp \
- && ln -s /tmp/star-sw-${STAR_SW_REF} /tmp/star-sw
+ && TOP_DIR=`ls -d /tmp/star-sw*/` && ln -s $TOP_DIR star-sw
 
 ADD https://api.github.com/repos/star-bnl/star-cvs/commits/${STAR_CVS_REF} star-cvs-ref.json
 RUN curl -s -L https://github.com/star-bnl/star-cvs/archive/${STAR_CVS_REF}.tar.gz | tar -xz -C /tmp \
- && ln -s /tmp/star-cvs-${STAR_CVS_REF} /tmp/star-cvs
+ && TOP_DIR=`ls -d /tmp/star-cvs*/` && ln -s $TOP_DIR star-cvs
 
 # Build STAR software
 WORKDIR /tmp/star-build
