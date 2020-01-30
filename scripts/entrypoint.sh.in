@@ -3,4 +3,6 @@
 . @STAR_INSTALL_BINDIR@/thisstar.sh 
 . @ROOTSYS@/bin/thisroot.sh 
 
+ln -s @STAR_INSTALL_PREFIX@/.rootrc $HOME/
+
 exec "$@"
