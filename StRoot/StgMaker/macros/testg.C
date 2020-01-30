@@ -35,7 +35,6 @@ void testg( size_t n_events = 1000, const char *filename = 0 )
    // And initialize it, since we have already initialized the chain
    gmk->Init();
 
-
    // Do an ls to be sure
    chain->ls(3);
 
@@ -57,40 +56,6 @@ void testg( size_t n_events = 1000, const char *filename = 0 )
       stat =    chain->Make();
 
       if (stat) break;
-
-      // // Get StEvent
-      // StEvent* event = (StEvent* )chain->GetDataSet("StEvent");
-      // assert(event);
-
-      // //    event->statistics();
-
-      // int nnodes = event->trackNodes().size();
-
-      // cout << "EVENT EVENT EVENT EVENT EVENT EVENT EVENT EVENT EVENT EVENT EVENT " << endl;
-      // cout << "nnodes = " << nnodes << endl;
-      // for ( int i=0;i<nnodes; i++ ) {
-
-      //   const StTrackNode* node = event->trackNodes()[i];
-      //   StGlobalTrack* track = node->track(global);
-      //   StTrackGeometry* geometry = track->geometry();
-
-      //   StThreeVectorF origin = geometry->origin();
-      //   StThreeVectorF momentum = geometry->momentum();
-
-      //   cout << "-------------------------------------------------------------------------------" << endl;
-      //   cout << "Track # " << i << endl;
-      //   cout << "inner: Track origin: " << origin << " momentum: " << momentum << " pt=" << momentum.perp() << " eta=" << momentum.pseudoRapidity() << endl;
-
-      //   StDcaGeometry* dca = track->dcaGeometry();
-      //   origin = dca->origin();
-      //   momentum = dca->momentum();
-      //   cout << "d c a: Track origin: " << origin << " momentum: " << momentum << " pt=" << momentum.perp() << " eta=" << momentum.pseudoRapidity() << endl;
-
-
-
-      // }
-      //   cout << "-------------------------------------------------------------------------------" << endl;
-
 
    }
 
