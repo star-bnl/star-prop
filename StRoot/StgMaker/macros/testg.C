@@ -1,5 +1,5 @@
 TString infile = "testg.fzd";
-void testg( const char *filename = 0 )
+void testg( size_t n_events = 1000, const char *filename = 0 )
 {
 
    if (filename) infile = filename;
@@ -39,12 +39,12 @@ void testg( const char *filename = 0 )
    // Do an ls to be sure
    chain->ls(3);
 
-   int count = 0;
+   size_t count = 0;
 
    // Loop over all events in the file...
    int stat = 0;
 
-   while (stat == 0) {
+   while (stat == 0 && count < n_events) {
 
       cout << "===============================================================================" << endl;
       cout << "===============================================================================" << endl;
