@@ -1,5 +1,5 @@
-#ifndef HIT_LOADER_H
-#define HIT_LOADER_H
+#ifndef HitLoader_h
+#define HitLoader_h
 
 #include <map>
 

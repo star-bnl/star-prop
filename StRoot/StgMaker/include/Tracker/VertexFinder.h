@@ -1,5 +1,5 @@
-#ifndef VERTEX_FINDER_H
-#define VERTEX_FINDER_H
+#ifndef VertexFinder_h
+#define VertexFinder_h
 
 #include "StgMaker/include/Tracker/FwdHit.h"
 

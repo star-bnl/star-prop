@@ -1,5 +1,5 @@
-#ifndef TRACK_FITTER_H
-#define TRACK_FITTER_H
+#ifndef TrackFitter_h
+#define TrackFitter_h
 
 #include "GenFit/ConstField.h"
 #include "GenFit/Exception.h"

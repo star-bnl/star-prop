@@ -1,5 +1,5 @@
-#ifndef FWD_TRACKER_H
-#define FWD_TRACKER_H
+#ifndef FwdTracker_h
+#define FwdTracker_h
 
 #include "TTree.h"
 #include "TFile.h"

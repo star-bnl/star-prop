@@ -5,7 +5,7 @@ void testg( size_t n_events = 1000, const char *filename = 0 )
    if (filename) infile = filename;
 
    gROOT->LoadMacro("bfc.C");
-   bfc(0, "fzin agml debug sti makeevent stu sdt20181215 cmudst", infile );
+   bfc(0, "fzin agml debug vfmce mcevent makeevent stu sdt20181215 cmudst", infile );
    gSystem->Load("libgenfit2.so");
    gSystem->Load("libKiTrack.so");
    gSystem->Load("libStgMaker.so");
