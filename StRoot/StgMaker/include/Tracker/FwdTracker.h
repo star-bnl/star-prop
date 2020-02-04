@@ -23,11 +23,11 @@
 #include "StgMaker/include/Tracker/VertexFinder.h"
 #include "StgMaker/include/Tracker/TrackFitter.h"
 
-#include "KiTrack/SegmentBuilder.h"
 #include "KiTrack/Automaton.h"
+#include "KiTrack/SegmentBuilder.h"
+#include "KiTrack/SubsetHopfieldNN.h"
 #include "Criteria/Criteria.h"
 #include "Criteria/ICriterion.h"
-#include "KiTrack/SubsetHopfieldNN.h"
 
 #include "GenFit/FitStatus.h"
 
@@ -811,7 +811,5 @@ public:
   const std::vector<genfit::Track *> &globalTracks() const { return _globalTracks; }
 
 };
-
-
 
 #endif

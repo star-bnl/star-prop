@@ -23,9 +23,6 @@ class StTrackDetectorInfo;
 
 class StgMaker : public StMaker
 {
-
-  ClassDef(StgMaker, 0);
-
 public:
 
   StgMaker();
@@ -39,7 +36,6 @@ public:
   enum { kInnerGeometry,       kOuterGeometry };
 
 private:
-protected:
 
   ForwardTracker        *mForwardTracker;
   ForwardHitLoader      *mForwardHitLoader;
@@ -59,8 +55,7 @@ protected:
   void FillTrackFitTraits( StTrack             *otrack, genfit::Track *itrack );
   void FillTrackMatches  ( StTrack             *otrack, genfit::Track *itrack );
 
-
-
+  ClassDef(StgMaker, 0);
 };
 
 #endif

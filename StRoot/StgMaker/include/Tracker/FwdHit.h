@@ -14,7 +14,6 @@
 class StHit;
 
 
-
 class FwdSystem : public KiTrack::ISectorSystem
 {
 public:
@@ -35,14 +34,15 @@ public:
   int _ndisks;
   std::string getInfoOnSector( int sec ) const { return "TODO"; }
 };
+
 FwdSystem *gFwdSystem;
-//_____________________________________________________________________________________________
 
 
 // small class to store Mc Track information
 class McTrack
 {
 public:
+
   McTrack()
   {
     _pt = -999;
@@ -50,6 +50,7 @@ public:
     _phi = -999;
     _q = 0;
   }
+
   McTrack( float pt, float eta = -999, float phi = -999, int q = 0 )
   {
     _pt = pt;
@@ -57,6 +58,7 @@ public:
     _phi = phi;
     _q = q;
   }
+
   void addHit( KiTrack::IHit *hit )
   {
     hits.push_back( hit );
@@ -73,6 +75,7 @@ public:
   std::vector<KiTrack::IHit *> hits;
   std::vector<KiTrack::IHit *> fsi_hits;
 };
+
 
 class FwdHit : public KiTrack::IHit
 {
@@ -100,7 +103,6 @@ public:
 
     //gFwdSystem->getLayer(diskid);
 
-
     // Need also to set _3DAngle, _phiMV and _thetaMV (and understand their definitions...)
     // ... looks like it is detector specific...
   };
@@ -114,14 +116,16 @@ public:
   std::shared_ptr<McTrack> _mcTrack;
 
   StHit *_hit;
-
 };
 
+
 using Seed_t = std::vector<KiTrack::IHit *>;
+
 
 class FwdConnector : public KiTrack::ISectorConnector
 {
 public:
+
   FwdConnector( unsigned int distance ) : _system(*gFwdSystem), _distance(distance) { }
   ~FwdConnector() { /**/ };
 
@@ -156,7 +160,6 @@ public:
   };
 
 private:
-protected:
 
   const FwdSystem _system;   // numbering system
   unsigned int  _distance; // number of layers forward to search
@@ -168,6 +171,7 @@ class SeedQual
 public:
   inline double operator()( Seed_t s ) { return double(s.size()) / 7.0; }
 };
+
 
 class SeedCompare
 {
