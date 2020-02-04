@@ -331,27 +331,29 @@ int StgMaker::Make()
   // Get geant tracks
   St_g2t_track *g2t_track = (St_g2t_track *) GetDataSet("geant/g2t_track");
 
-  if (!g2t_track)
+  if (!g2t_track) {
+    LOG_WARN << "No simulated Geant tracks found. Skipping Stg tracking..." << endm;
     return kStWarn;
+  }
 
   LOG_INFO << "# mc tracks = " << g2t_track->GetNRows() << endm;
   histograms[ "nMcTracks" ]->Fill( g2t_track->GetNRows() );
 
-  if ( g2t_track ) for ( int irow = 0; irow < g2t_track->GetNRows(); irow++ ) {
-      g2t_track_st *track = (g2t_track_st *)g2t_track->At(irow);
+  for ( int irow = 0; irow < g2t_track->GetNRows(); irow++ ) {
+    g2t_track_st *track = (g2t_track_st *)g2t_track->At(irow);
 
-      if ( 0 == track ) continue;
+    if (!track) continue;
 
-      int track_id = track->id;
-      float pt2 = track->p[0] * track->p[0] + track->p[1] * track->p[1];
-      float pt = sqrt(pt2);
-      float eta = track->eta;
-      float phi = atan2(track->p[1], track->p[0]); //track->phi;
-      int   q   = track->charge;
+    int track_id = track->id;
+    float pt2 = track->p[0] * track->p[0] + track->p[1] * track->p[1];
+    float pt = sqrt(pt2);
+    float eta = track->eta;
+    float phi = atan2(track->p[1], track->p[0]); //track->phi;
+    int   q   = track->charge;
 
-      if ( 0 == mcTrackMap[ track_id ] ) // should always happen
-        mcTrackMap[ track_id ] = shared_ptr< McTrack >( new McTrack(pt, eta, phi, q) );
-    }
+    if ( 0 == mcTrackMap[ track_id ] ) // should always happen
+      mcTrackMap[ track_id ] = shared_ptr< McTrack >( new McTrack(pt, eta, phi, q) );
+  }
 
   // Add hits onto the hit loader (from rndHitCollection)
   int count = 0;
