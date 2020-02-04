@@ -24,40 +24,40 @@ class StTrackDetectorInfo;
 class StgMaker : public StMaker
 {
 
-   ClassDef(StgMaker, 0);
+  ClassDef(StgMaker, 0);
 
 public:
 
-   StgMaker();
-   ~StgMaker() { /* nada */ };
+  StgMaker();
+  ~StgMaker() { /* nada */ };
 
-   int  Init();
-   int Finish();
-   int  Make();
-   void Clear( const Option_t *opts = "" );
+  int  Init();
+  int Finish();
+  int  Make();
+  void Clear( const Option_t *opts = "" );
 
-   enum { kInnerGeometry,       kOuterGeometry };
+  enum { kInnerGeometry,       kOuterGeometry };
 
 private:
 protected:
 
-   ForwardTracker        *mForwardTracker;
-   ForwardHitLoader      *mForwardHitLoader;
-   StarFieldAdaptor      *mFieldAdaptor;
+  ForwardTracker        *mForwardTracker;
+  ForwardHitLoader      *mForwardHitLoader;
+  StarFieldAdaptor      *mFieldAdaptor;
 
-   typedef std::vector<KiTrack::IHit *> Seed_t;
+  typedef std::vector<KiTrack::IHit *> Seed_t;
 
-   std::map< std::string, TH1 * > histograms;
+  std::map< std::string, TH1 * > histograms;
 
-   // Fill StEvent
-   void FillEvent();
-   void FillDetectorInfo  ( StTrackDetectorInfo *info,   genfit::Track *track, bool increment );
-   void FillTrack         ( StTrack             *otrack, genfit::Track *itrack, const Seed_t &iseed, StTrackDetectorInfo *info );
-   void FillTrackFlags    ( StTrack             *otrack, genfit::Track *itrack );
-   void FillTrackGeometry ( StTrack             *otrack, genfit::Track *itrack, double zplane, int io );
-   void FillTrackDcaGeometry ( StTrack             *otrack, genfit::Track *itrack );
-   void FillTrackFitTraits( StTrack             *otrack, genfit::Track *itrack );
-   void FillTrackMatches  ( StTrack             *otrack, genfit::Track *itrack );
+  // Fill StEvent
+  void FillEvent();
+  void FillDetectorInfo  ( StTrackDetectorInfo *info,   genfit::Track *track, bool increment );
+  void FillTrack         ( StTrack             *otrack, genfit::Track *itrack, const Seed_t &iseed, StTrackDetectorInfo *info );
+  void FillTrackFlags    ( StTrack             *otrack, genfit::Track *itrack );
+  void FillTrackGeometry ( StTrack             *otrack, genfit::Track *itrack, double zplane, int io );
+  void FillTrackDcaGeometry ( StTrack             *otrack, genfit::Track *itrack );
+  void FillTrackFitTraits( StTrack             *otrack, genfit::Track *itrack );
+  void FillTrackMatches  ( StTrack             *otrack, genfit::Track *itrack );
 
 
 
