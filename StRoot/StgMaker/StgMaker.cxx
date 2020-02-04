@@ -459,9 +459,9 @@ int StgMaker::Make()
 
   StEvent *stEvent = static_cast<StEvent *>(GetInputDS("StEvent"));
 
-  if ( 0 == stEvent ) {
-    LOG_INFO << "No event, punt on forward tracking." << endm;
-    return kStOk;
+  if (!stEvent) {
+    LOG_WARN << "No StEvent found. Stg tracks will not be saved" << endm;
+    return kStWarn;
   }
 
   if ( IAttr("fillEvent") ) {
@@ -518,7 +518,6 @@ void StgMaker::Clear( const Option_t *opts )
 void StgMaker::FillEvent()
 {
   StEvent *stEvent = static_cast<StEvent *>(GetInputDS("StEvent"));
-  assert(stEvent); // we warned ya
 
   LOG_INFO << "Filling StEvent w/ results from genfit tracker" << endm;
 
