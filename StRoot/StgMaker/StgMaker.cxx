@@ -457,13 +457,12 @@ int StgMaker::Make()
 
   // mForwardTracker -> addSiHits();
 
-  StEvent *event = static_cast<StEvent *>(GetInputDS("StEvent"));
+  StEvent *stEvent = static_cast<StEvent *>(GetInputDS("StEvent"));
 
-  if ( 0 == event ) {
+  if ( 0 == stEvent ) {
     LOG_INFO << "No event, punt on forward tracking." << endm;
     return kStOk;
   }
-
 
   if ( IAttr("fillEvent") ) {
 
@@ -471,11 +470,11 @@ int StgMaker::Make()
     FillEvent();
 
     // Now loop over the tracks and do printout
-    int nnodes = event->trackNodes().size();
+    int nnodes = stEvent->trackNodes().size();
 
     for ( int i = 0; i < nnodes; i++ ) {
 
-      const StTrackNode *node = event->trackNodes()[i];
+      const StTrackNode *node = stEvent->trackNodes()[i];
       StGlobalTrack *track = (StGlobalTrack *)node->track(global);
       StTrackGeometry *geometry = track->geometry();
       
@@ -518,8 +517,8 @@ void StgMaker::Clear( const Option_t *opts )
 
 void StgMaker::FillEvent()
 {
-  StEvent *event = static_cast<StEvent *>(GetInputDS("StEvent"));
-  assert(event); // we warned ya
+  StEvent *stEvent = static_cast<StEvent *>(GetInputDS("StEvent"));
+  assert(stEvent); // we warned ya
 
   LOG_INFO << "Filling StEvent w/ results from genfit tracker" << endm;
 
@@ -529,16 +528,16 @@ void StgMaker::FillEvent()
   const auto &glob_tracks = mForwardTracker -> globalTracks();
 
   // Clear up somethings... (but does this interfere w/ Sti and/or Stv?)
-  StEventHelper::Remove(event, "StSPtrVecTrackNode");
-  StEventHelper::Remove(event, "StSPtrVecPrimaryVertex");
+  StEventHelper::Remove(stEvent, "StSPtrVecTrackNode");
+  StEventHelper::Remove(stEvent, "StSPtrVecPrimaryVertex");
 
   LOG_INFO << "  number of tracks      = " << glob_tracks.size() << endm;
   LOG_INFO << "  number of track seeds = " << seed_tracks.size() << endm;
 
   // StiStEventFiller fills track nodes and detector infos by reference... there
   // has got to be a cleaner way to do this, but for now follow along.
-  auto &trackNodes         = event->trackNodes();
-  auto &trackDetectorInfos = event->trackDetectorInfo();
+  auto &trackNodes         = stEvent->trackNodes();
+  auto &trackDetectorInfos = stEvent->trackDetectorInfo();
 
   int track_count_total  = 0;
   int track_count_accept = 0;
@@ -939,11 +938,11 @@ void StgMaker::FillTrackDcaGeometry( StTrack *otrack_, genfit::Track *itrack )
 {
 
   // We will need the event
-  StEvent *event = static_cast<StEvent *>(GetInputDS("StEvent"));
-  assert(event); // we warned ya
+  StEvent *stEvent = static_cast<StEvent *>(GetInputDS("StEvent"));
+  assert(stEvent); // we warned ya
 
   // And the primary vertex
-  const StPrimaryVertex* primaryVertex = event->primaryVertex(0);
+  const StPrimaryVertex* primaryVertex = stEvent->primaryVertex(0);
  
   // Recast to global track
   StGlobalTrack *otrack = dynamic_cast<StGlobalTrack *>(otrack_);
