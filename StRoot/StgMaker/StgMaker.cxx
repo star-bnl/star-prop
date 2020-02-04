@@ -12,7 +12,9 @@
 
 #include <limits>
 #include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "StEvent/StEvent.h"
 #include "StEvent/StRnDHitCollection.h"
