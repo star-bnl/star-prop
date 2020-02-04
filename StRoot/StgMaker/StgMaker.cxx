@@ -17,8 +17,6 @@
 #include <vector>
 
 #include "StEvent/StEvent.h"
-#include "StEvent/StRnDHitCollection.h"
-#include "StEvent/StRnDHit.h"
 #include "StEvent/StTrack.h"
 #include "StEvent/StTrackNode.h"
 #include "StEvent/StGlobalTrack.h"
@@ -355,7 +353,6 @@ int StgMaker::Make()
       mcTrackMap[ track_id ] = shared_ptr< McTrack >( new McTrack(pt, eta, phi, q) );
   }
 
-  // Add hits onto the hit loader (from rndHitCollection)
   int count = 0;
 
   //
