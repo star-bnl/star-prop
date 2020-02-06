@@ -869,10 +869,8 @@ void StgMaker::FillTrackGeometry( StTrack *otrack, genfit::Track *itrack, double
     cardinal->extrapolateToPlane( measuredState, detectorPlane, false, true );
   }
   catch ( genfit::Exception &e ) {
-    std::cerr << e.what() << std::endl;
-    std::cerr << "Extraploation to inner/outer geometry point failed" << endl;
-    //    assert(0);
-    // extrapolation failed
+    LOG_WARN << e.what() << endm;
+    LOG_WARN << "Extraploation to inner/outer geometry point failed" << endm;
     return;
   }
 
@@ -971,9 +969,9 @@ void StgMaker::FillTrackDcaGeometry( StTrack *otrack_, genfit::Track *itrack )
     cardinal->extrapolateToLine(  measuredState, vertex, direct, false, true );
   }
   catch ( genfit::Exception &e ) {
-    std::cerr << e.what() << std::endl;
-    std::cerr << "Extrapolation to beamline (DCA) failed." << std::endl;
-    std::cerr << "... vertex " << x << " " << y << "  " << z << std::endl;
+    LOG_WARN << e.what() << "\n"
+             << "Extrapolation to beamline (DCA) failed." << "\n"
+             << "... vertex " << x << " " << y << "  " << z << endm;
     return;
   }
 
