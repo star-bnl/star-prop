@@ -565,6 +565,7 @@ void StgMaker::FillEvent()
 
     // Fill the track with the good stuff
     FillTrack( globalTrack, track, seed, detectorInfo );
+    FillTrackDcaGeometry( globalTrack, track );
     trackNode->addTrack( globalTrack );
 
     // On successful fill (and I don't see why we wouldn't be) add detector info to the list
@@ -645,9 +646,6 @@ void StgMaker::FillTrack( StTrack *otrack, genfit::Track *itrack, const Seed_t &
 
   // Fill the track flags
   FillTrackFlags( otrack, itrack );
-
-  // If the track is a global track, fill the DCA geometry
-  if ( global == otrack->type() ) FillTrackDcaGeometry( otrack, itrack );
 
   //covM[k++] = M(0,5); covM[k++] = M(1,5); covM[k++] = M(2,5); covM[k++] = M(3,5); covM[k++] = M(4,5); covM[k++] = M(5,5);
 }
@@ -930,9 +928,8 @@ void StgMaker::FillTrackGeometry( StTrack *otrack, genfit::Track *itrack, double
 }
 
 
-void StgMaker::FillTrackDcaGeometry( StTrack *otrack_, genfit::Track *itrack )
+void StgMaker::FillTrackDcaGeometry( StGlobalTrack *otrack, genfit::Track *itrack )
 {
-
   // We will need the event
   StEvent *stEvent = static_cast<StEvent *>(GetInputDS("StEvent"));
   assert(stEvent); // we warned ya
@@ -940,11 +937,6 @@ void StgMaker::FillTrackDcaGeometry( StTrack *otrack_, genfit::Track *itrack )
   // And the primary vertex
   const StPrimaryVertex* primaryVertex = stEvent->primaryVertex(0);
  
-  // Recast to global track
-  StGlobalTrack *otrack = dynamic_cast<StGlobalTrack *>(otrack_);
-
-  if (0 == otrack) return;
-
   // Obtain fitted state from genfit track
   genfit::MeasuredStateOnPlane measuredState = itrack->getFittedState(1);
 
