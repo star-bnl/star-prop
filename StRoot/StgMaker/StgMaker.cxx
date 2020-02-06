@@ -523,13 +523,13 @@ void StgMaker::FillEvent()
   // Track seeds
   const auto &seed_tracks = mForwardTracker -> getRecoTracks();
   // Reconstructed globals
-  const auto &glob_tracks = mForwardTracker -> globalTracks();
+  const auto &genfitTracks = mForwardTracker -> globalTracks();
 
   // Clear up somethings... (but does this interfere w/ Sti and/or Stv?)
   StEventHelper::Remove(stEvent, "StSPtrVecTrackNode");
   StEventHelper::Remove(stEvent, "StSPtrVecPrimaryVertex");
 
-  LOG_INFO << "  number of tracks      = " << glob_tracks.size() << endm;
+  LOG_INFO << "  number of tracks      = " << genfitTracks.size() << endm;
   LOG_INFO << "  number of track seeds = " << seed_tracks.size() << endm;
 
   // StiStEventFiller fills track nodes and detector infos by reference... there
@@ -540,7 +540,7 @@ void StgMaker::FillEvent()
   int track_count_total  = 0;
   int track_count_accept = 0;
 
-  for ( auto *track : mForwardTracker->globalTracks() ) {
+  for ( auto *genfitTrack : genfitTracks ) {
 
     // Get the track seed
     const auto &seed = seed_tracks[track_count_total];
@@ -549,13 +549,13 @@ void StgMaker::FillEvent()
     track_count_total++;
 
     // Check to see if the track passes cuts (it should, for now)
-    if ( 0 == accept(track) ) continue;
+    if ( 0 == accept(genfitTrack) ) continue;
 
     track_count_accept++;
 
     // Create a detector info object to be filled
     StTrackDetectorInfo *detectorInfo = new StTrackDetectorInfo;
-    FillDetectorInfo( detectorInfo, track, true );
+    FillDetectorInfo( detectorInfo, genfitTrack, true );
 
     // Create a new track node (on which we hang a global and, maybe, primary track)
     StTrackNode *trackNode = new StTrackNode;
@@ -564,8 +564,8 @@ void StgMaker::FillEvent()
     StGlobalTrack *globalTrack = new StGlobalTrack;
 
     // Fill the track with the good stuff
-    FillTrack( globalTrack, track, seed, detectorInfo );
-    FillTrackDcaGeometry( globalTrack, track );
+    FillTrack( globalTrack, genfitTrack, seed, detectorInfo );
+    FillTrackDcaGeometry( globalTrack, genfitTrack );
     trackNode->addTrack( globalTrack );
 
     // On successful fill (and I don't see why we wouldn't be) add detector info to the list
