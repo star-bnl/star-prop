@@ -134,6 +134,7 @@ public:
 	void writeHistograms()
 	{
 		for (auto nh : hist ) {
+			nh.second->SetDirectory( gDirectory );
 			nh.second->Write();
 		}
 	}

@@ -20,6 +20,9 @@ class StTrack;
 class StTrackDetectorInfo;
 
 #include <vector>
+#include "TTree.h"
+#include "TNtuple.h"
+
 
 class StgMaker : public StMaker
 {
@@ -48,6 +51,11 @@ protected:
    typedef std::vector<KiTrack::IHit *> Seed_t;
 
    std::map< std::string, TH1 * > histograms;
+   TFile * mlFile;
+   TTree *mlTree;
+   
+   float mlt_x[10000], mlt_y[10000], mlt_z[10000];
+   int mlt_n, mlt_tid[10000], mlt_vid[10000];
 
    // Fill StEvent
    void FillEvent();

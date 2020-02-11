@@ -37,6 +37,8 @@
 #include "StarClassLibrary/StPhysicalHelix.hh"
 #include "St_base/StMessMgr.h"
 
+#include "TROOT.h"
+
 
 //_______________________________________________________________________________________
 // For now, accept anything we are passed, no matter what it is or how bad it is
@@ -173,11 +175,22 @@ int StgMaker::Finish(){
    LOG_SCOPE_FUNCTION(INFO);
 
    mForwardTracker->finish();
+   
    gDirectory->mkdir( "StgMaker" );
    gDirectory->cd("StgMaker");
    for (auto nh : histograms ) {
+      nh.second->SetDirectory( gDirectory );
       nh.second->Write();
    }
+
+   // gDirectory->cd();
+   gDirectory->Write();
+
+   mlTree->Print();
+   mlFile->cd();
+   mlTree->Write();
+   mlFile->Write();
+   
 
    return kStOk;
 }
@@ -195,6 +208,17 @@ int StgMaker::Init()
    // setup the loguru log file
    loguru::add_file("everything.log", loguru::Truncate, loguru::Verbosity_2);
    loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
+
+   mlFile = new TFile( "mltree.root", "RECREATE" );
+   mlTree = new TTree( "Stg", "stg hits" );
+   mlTree->Branch( "n", &mlt_n, "n/I" );
+   mlTree->Branch( "x", mlt_x, "x[n]/F" );
+   mlTree->Branch( "y", mlt_y, "y[n]/F" );
+   mlTree->Branch( "z", mlt_z, "z[n]/F" );
+   mlTree->Branch( "tid", &mlt_tid, "tid[n]/I" );
+   mlTree->Branch( "vid", &mlt_vid, "vid[n]/I" );
+   // mlTree->Branch( "tid", &mlt_tid, "tid/I" );
+   mlTree->SetAutoFlush(0);
 
    mForwardTracker = new ForwardTracker();
    mForwardTracker->setConfig( _xmlconfig );
@@ -220,6 +244,7 @@ int StgMaker::Init()
    for ( int i = 0; i < 3; i++ ){
       histograms[ TString::Format("fsi%dHitMap", i).Data() ] = new TH2F( TString::Format("fsi%dHitMap", i), TString::Format("FSI Layer %d; x (cm); y(cm)"), 200, -100, 100, 200, -100, 100 );
    }
+
 
    return kStOK;
 };
@@ -284,15 +309,24 @@ int StgMaker::Make()
 
    LOG_INFO << "# stg hits= " << nstg << endm;
    histograms[ "nHitsSTGC" ]->Fill( nstg );
+   mlt_n = 0;
    for ( int i = 0; i < nstg; i++ ) {
 
       g2t_fts_hit_st *git = (g2t_fts_hit_st *)g2t_stg_hits->At(i); if (0 == git) continue; // geant hit
       int   track_id  = git->track_p;
       int   volume_id = git->volume_id;
       int   plane_id  = (volume_id - 1) / 4 ;// from 1 - 16. four chambers per station
-      float x         = git->x[0] + gRandom->Gaus( 0, 0.01 );
-      float y         = git->x[1] + gRandom->Gaus( 0, 0.01 );
-      float z         = git->x[2] + gRandom->Gaus( 0, 0.01 );
+      float x         = git->x[0] + gRandom->Gaus( 0, 0.01 ); // 100 micron blur according to approx sTGC reso
+      float y         = git->x[1] + gRandom->Gaus( 0, 0.01 ); // 100 micron blur according to approx sTGC reso
+      float z         = git->x[2] + gRandom->Gaus( 0, 0.01 ); // 100 micron blur according to approx sTGC reso
+
+      mlt_x[ mlt_n ] = x; 
+      mlt_y[ mlt_n ] = y; 
+      mlt_z[ mlt_n ] = z;
+      mlt_tid[ mlt_n ] = track_id;
+      mlt_vid[ mlt_n ] = plane_id;
+      mlt_n++;
+      
 
       LOG_F( INFO, "STGC Hit: volume_id=%d, plane_id=%d, (%f, %f, %f)", volume_id, plane_id, x, y, z );
       histograms[ "stgc_volume_id" ] ->Fill( volume_id );
@@ -314,6 +348,8 @@ int StgMaker::Make()
       if ( mcTrackMap[ track_id ] )    mcTrackMap[ track_id ]->addHit( hit );
 
    }
+
+   mlTree->Fill();
 
    /************************************************************/
    // FSI Hits
