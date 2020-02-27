@@ -61,6 +61,41 @@ template<> bool accept( genfit::Track *track )
    return true;
 };
 
+class SiRasterizer {
+public:
+   SiRasterizer() {}
+   SiRasterizer( jdb::XmlConfig &_cfg ) { setup( _cfg ); }
+   ~SiRasterizer() {}
+   void setup( jdb::XmlConfig &_cfg ){
+      cfg = _cfg;
+
+      raster_r   = cfg.get<double>( "SiRasterizer:r", 3.0 );
+      raster_phi = cfg.get<double>( "SiRasterizer:phi", 0.1 );
+      if ( active() )
+         LOG_F( INFO, "SiRasterizer (active) r=%f, phi=%f", raster_r, raster_phi );
+      else {
+         LOG_F( INFO, "SiRasterizer (inactive)" );
+      }
+   }
+
+   bool active() {
+      return cfg.get<bool>( "SiRasterizer:active", false );
+   }
+
+   TVector3 raster( TVector3 _p ){
+      TVector3 p = _p;
+      double r = p.Perp();
+      double phi = p.Phi();
+      // 5.0 is the r minimum of the Si
+      p.SetPerp( 5.0 + (floor( (r - 5.0) / raster_r ) * raster_r + raster_r / 2.0) );
+      p.SetPhi( -TMath::Pi() + (floor( (phi + TMath::Pi()) / raster_phi ) * raster_phi + raster_phi / 2.0)  );
+      return p;
+   }
+
+   jdb::XmlConfig cfg;
+   double raster_r, raster_phi;
+};
+
 
 //_______________________________________________________________________________________
 // Adaptor for STAR magnetic field
@@ -196,6 +231,8 @@ int StgMaker::Init()
    loguru::add_file("everything.log", loguru::Truncate, loguru::Verbosity_2);
    loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
 
+   mSiRasterizer = new SiRasterizer( _xmlconfig );
+
    mForwardTracker = new ForwardTracker();
    mForwardTracker->setConfig( _xmlconfig );
 
@@ -211,6 +248,9 @@ int StgMaker::Init()
    histograms[ "stgc_volume_id" ] = new TH1I( "stgc_volume_id", ";stgc_volume_id", 50, 0, 50 );
    histograms[ "fsi_volume_id" ] = new TH1I( "fsi_volume_id", ";fsi_volume_id", 50, 0, 50 );
 
+   histograms[ "fsiHitDeltaR" ] = new TH1F( "fsiHitDeltaR", "FSI; delta r (cm); ", 500, -5, 5 );
+   histograms[ "fsiHitDeltaPhi" ] = new TH1F( "fsiHitDeltaPhi", "FSI; delta phi; ", 500, -5, 5 );
+
    // there are 4 stgc stations
    for ( int i = 0; i < 4; i++ ){
       histograms[ TString::Format("stgc%dHitMap", i).Data() ] = new TH2F( TString::Format("stgc%dHitMap", i), TString::Format("STGC Layer %d; x (cm); y(cm)"), 200, -100, 100, 200, -100, 100 );
@@ -219,6 +259,8 @@ int StgMaker::Init()
    // There are 3 silicon stations
    for ( int i = 0; i < 3; i++ ){
       histograms[ TString::Format("fsi%dHitMap", i).Data() ] = new TH2F( TString::Format("fsi%dHitMap", i), TString::Format("FSI Layer %d; x (cm); y(cm)"), 200, -100, 100, 200, -100, 100 );
+      histograms[ TString::Format("fsi%dHitMapR", i).Data() ] = new TH1F( TString::Format("fsi%dHitMapR", i), TString::Format("FSI Layer %d; r (cm); "), 500, 0, 50 );
+      histograms[ TString::Format("fsi%dHitMapPhi", i).Data() ] = new TH1F( TString::Format("fsi%dHitMapPhi", i), TString::Format("FSI Layer %d; phi; "), 320, 0, TMath::Pi()*2 + 0.1 );
    }
 
    return kStOK;
@@ -292,7 +334,7 @@ int StgMaker::Make()
       int   plane_id  = (volume_id - 1) / 4 ;// from 1 - 16. four chambers per station
       float x         = git->x[0] + gRandom->Gaus( 0, 0.01 );
       float y         = git->x[1] + gRandom->Gaus( 0, 0.01 );
-      float z         = git->x[2] + gRandom->Gaus( 0, 0.01 );
+      float z         = git->x[2];
 
       LOG_F( INFO, "STGC Hit: volume_id=%d, plane_id=%d, (%f, %f, %f)", volume_id, plane_id, x, y, z );
       histograms[ "stgc_volume_id" ] ->Fill( volume_id );
@@ -336,15 +378,25 @@ int StgMaker::Make()
       int   track_id  = git->track_p;
       int   volume_id = git->volume_id; // 4, 5, 6
       int   plane_id  = volume_id - 4;
-      float x         = git->x[0] + gRandom->Gaus( 0, 0.0001 );
-      float y         = git->x[1] + gRandom->Gaus( 0, 0.0001 );
-      float z         = git->x[2] + gRandom->Gaus( 0, 0.0001 );
+      float x         = git->x[0];
+      float y         = git->x[1];
+      float z         = git->x[2];
+
+      if ( mSiRasterizer->active() ){
+         TVector3 rastered = mSiRasterizer->raster( TVector3( git->x[0], git->x[1], git->x[2] ) );
+         histograms[ "fsiHitDeltaR" ] ->Fill( sqrt( x*x + y*y ) - rastered.Perp() );
+         histograms[ "fsiHitDeltaPhi" ] ->Fill( atan2( y, x ) - rastered.Phi() );
+         x = rastered.X();
+         y = rastered.Y();
+      }
 
       LOG_F( INFO, "FSI Hit: volume_id=%d, plane_id=%d, (%f, %f, %f)", volume_id, plane_id, x, y, z );
       histograms[ "fsi_volume_id" ] ->Fill( volume_id );
       
       if ( plane_id < 3 && plane_id >= 0 ){
          histograms[ TString::Format("fsi%dHitMap", plane_id).Data() ] -> Fill( x, y );
+         histograms[ TString::Format("fsi%dHitMapR", plane_id).Data() ] -> Fill( sqrt( x*x + y*y ) );
+         histograms[ TString::Format("fsi%dHitMapPhi", plane_id).Data() ] -> Fill( atan2( y, x ) + TMath::Pi() );
       } else {
          LOG_F( ERROR, "Out of bounds FSI plane_id!" );
          continue;
@@ -361,8 +413,6 @@ int StgMaker::Make()
 
    // Process single event
    mForwardTracker -> doEvent();
-
-   // mForwardTracker -> addSiHits();
 
    StEvent *event = static_cast<StEvent *>(GetInputDS("StEvent"));
 

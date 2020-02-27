@@ -260,6 +260,59 @@ public:
 		return TMatrixDSym(2);
 	}
 
+
+	/* Get the Covariance Matrix for the detector hit point
+	 *
+	 */
+	TMatrixDSym  makeSiCovMat( KiTrack::IHit *hit )
+	{
+		// we can calculate the CovMat since we know the det info, but in future we should probably keep this info in the hit itself
+
+		float r_size = cfg.get<float>( "SiRasterizer:r", 3.0 );
+		float phi_size = cfg.get<float>( "SiRasterizer:phi", 0.004 );
+
+		// measurements on a plane only need 2x2
+		// for Si geom we need to convert from cylindrical to cartesian coords
+		TMatrixDSym cm(2);
+		TMatrixD T(2, 2);
+		TMatrixD J(2, 2);
+		const float x = hit->getX();
+		const float y = hit->getY();
+		const float R = sqrt( x * x + y * y );
+		const float cosphi = x / R;
+		const float sinphi = y / R;
+		const float sqrt12 = sqrt(12.);
+
+		const float dr = r_size / sqrt12;
+		const float nPhiDivs = 128 * 12; // may change with geom?
+		const float dphi = ( phi_size ) / sqrt12;
+
+		// Setup the Transposed and normal Jacobian transform matrix;
+		// note, the si fast sim did this wrong
+		// row col
+		T(0, 0) = cosphi; T(0, 1) = -R * sinphi;
+		T(1, 0) = sinphi; T(1, 1) = R * cosphi;
+
+		J(0, 0) = cosphi; J(0, 1) = sinphi;
+		J(1, 0) = -R * sinphi; J(1, 1) = R * cosphi;
+
+		TMatrixD cmcyl(2, 2);
+		cmcyl(0, 0) = dr * dr;
+		cmcyl(1, 1) = dphi * dphi;
+
+		TMatrixD r = T * cmcyl * J;
+		
+		const float sigmaX = sqrt( r(0, 0) );
+		const float sigmaY = sqrt( r(1, 1) );
+
+		cm(0, 0) = r(0, 0);
+		cm(1, 1) = r(1, 1);
+		cm(0, 1) = r(0, 1);
+		cm(1, 0) = r(1, 0);
+
+		return cm;
+	}
+
 	float fitSimpleCircle( vector<KiTrack::IHit *> trackCand, size_t i0, size_t i1, size_t i2 )
 	{
 		float curv = 0;
@@ -447,7 +500,9 @@ public:
 		hitCoords[1] = 0;
 
 		int planeId(0);
-		int hitId(0);
+		int hitId(5);
+
+		bool usingRasteredHits = cfg.get<bool>( "SiRasterizer:active", false );
 
 		// add the hits to the track
 		for ( auto h : si_hits ){
@@ -455,6 +510,10 @@ public:
 
 			if ( useFCM == false )
 				hitCovMat = getCovMat( h );
+
+			if ( usingRasteredHits ){
+				hitCovMat = makeSiCovMat( h );
+			}
 
 			hitCoords[0] = h->getX();
 			hitCoords[1] = h->getY();

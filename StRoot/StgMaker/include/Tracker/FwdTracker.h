@@ -707,7 +707,7 @@ public:
 
 				if ( p.Perp() == fitMoms[ i ].Perp() ){
 					hist[ "FitStatus" ] -> Fill( "BadReFit", 1 );
-					fitMoms[ i ] = TVector3( 1000, 1000, 1000 );
+					
 				} else {
 					hist[ "FitStatus" ] -> Fill( "GoodReFit", 1 );
 				}
@@ -716,11 +716,13 @@ public:
 				LOG_F(INFO, "pt was: %0.2f and now is: %0.2f", fitMoms[ i ].Perp(), p.Perp() );
 				fitMoms[ i ] = p;
 
+			} else {
+				// fitMoms[ i ] = TVector3( 1000, 1000, 1000 );
 			}
 		} // loop on globals
 	} // addSiHits
 
-	std::vector<KiTrack::IHit *> findSiHitsNearMe( std::vector<KiTrack::IHit *> &available_hits, genfit::MeasuredStateOnPlane &msp, double dphi = 0.5 ){
+	std::vector<KiTrack::IHit *> findSiHitsNearMe( std::vector<KiTrack::IHit *> &available_hits, genfit::MeasuredStateOnPlane &msp, double dphi = 0.004 * 10.5 ){
 		LOG_SCOPE_FUNCTION( INFO );
 		double probe_phi = TMath::ATan2( msp.getPos().Y(), msp.getPos().X() );
 		double probe_r = sqrt( pow(msp.getPos().X(), 2) + pow(msp.getPos().Y(), 2) );

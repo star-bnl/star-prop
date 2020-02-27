@@ -18,8 +18,10 @@ class StarFieldAdaptor;
 class StRnDHitCollection;
 class StTrack;
 class StTrackDetectorInfo;
+class SiRasterizer;
 
 #include <vector>
+
 
 class StgMaker : public StMaker
 {
@@ -44,6 +46,8 @@ protected:
    ForwardTracker        *mForwardTracker;
    ForwardHitLoader      *mForwardHitLoader;
    StarFieldAdaptor      *mFieldAdaptor;
+
+   SiRasterizer          *mSiRasterizer;
 
    typedef std::vector<KiTrack::IHit *> Seed_t;
 
