@@ -934,8 +934,8 @@ void StgMaker::FillTrackDcaGeometry( StTrack          *otrack_, genfit::Track *i
 
   double charge = measuredState.getCharge();
 
-  static TVectorD    state;
-  static TMatrixDSym cov;
+  static TVectorD    state(5);
+  static TMatrixDSym cov(5);
 
   //
   // Should be the 5D state and covariance matrix
@@ -948,9 +948,9 @@ void StgMaker::FillTrackDcaGeometry( StTrack          *otrack_, genfit::Track *i
   //      u' = cos(thetaX)
   //      v' = cos(thetaY)
   //
+
   state = measuredState.getState();
   cov   = measuredState.getCov();
-
 
   // Below is one way to convert the parameters to a helix, using the
   // StPhysicalHelix class
@@ -1060,6 +1060,7 @@ void StgMaker::FillDetectorInfo(  StTrackDetectorInfo *info, genfit::Track *trac
     if ( !measurement ) {
       continue;
     }
+
     const TVectorD &xyz = measurement->getRawHitCoords();
     float x = xyz[0];
     float y = xyz[1];
