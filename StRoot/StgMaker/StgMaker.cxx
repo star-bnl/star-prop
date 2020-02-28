@@ -221,6 +221,9 @@ int StgMaker::Finish()
   // Default sTGC on and FSI off
   SetAttr("useSTGC",1); 
 
+  // Default configuration file (user may override before Init())
+  SetAttr("config","config.xml");
+
   return kStOk;
 }
 
@@ -229,7 +232,7 @@ int StgMaker::Init()
 {
 
   // Initialize configuration file
-  std::string configFile = "config.xml";
+  std::string configFile = SAttr("config");
   std::map<string, string> cmdLineConfig;
   jdb::XmlConfig _xmlconfig;
   _xmlconfig.loadFile( configFile, cmdLineConfig );
