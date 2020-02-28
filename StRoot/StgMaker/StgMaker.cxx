@@ -560,6 +560,18 @@ void StgMaker::FillTrack( StTrack             *otrack, genfit::Track *itrack, co
   // TODO: calcuate the number of possible points in each detector, for now set = 4
   otrack->setNumberOfPossiblePoints( 4, kUnknownId );
 
+
+  // Calculate TheTruth from the track seed for now.   This will be fine as
+  // long as we do not "refit" the track, potentially removing original seed
+  // hits from the final reconstructed track.
+
+  // Apply dominant contributor model to the track seed
+  int idtruth, qatruth;
+  idtruth = TheTruth( iseed, qatruth );
+
+  otrack->setIdTruth( idtruth, qatruth ); // StTrack is dominant contributor model
+
+
   // Fill the inner and outer geometries of the track.  For now,
   // always propagate the track to the first layer of the silicon
   // to fill the inner geometry.
