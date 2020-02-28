@@ -1046,6 +1046,8 @@ void StgMaker::FillDetectorInfo(  StTrackDetectorInfo *info, genfit::Track *trac
 
   }
 
+  info->setNumberOfPoints( (unsigned char)count, kUnknownId ); // TODO assign sTGC ID
+
 
   assert(count);
 
