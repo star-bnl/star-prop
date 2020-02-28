@@ -42,12 +42,20 @@
 // For now, accept anything we are passed, no matter what it is or how bad it is
 template<typename T> bool accept( T ) { return true; }
 
+// Basic sanity cuts on genfit tracks
 template<> bool accept( genfit::Track *track )
 {
 
   // This also gets rid of failed fits (but may need to explicitly
   // for fit failure...)
   if (track->getNumPoints() <= 0 ) return false; // fit may have failed
+
+  // Next, check that all points on the track have fitter info
+  // (may be another indication of a failed fit?)
+  auto cardinal = track->getCardinalRep();
+  for ( auto point : track->getPoints() ) {
+    if ( !point->hasFitterInfo(cardinal) ) return false;
+  }
 
   // Fitted state at the first point
   const auto &atFirstPoint = track->getFittedState();
