@@ -37,6 +37,7 @@
 #include "StarClassLibrary/StPhysicalHelix.hh"
 #include "St_base/StMessMgr.h"
 
+#include <SystemOfUnits.h>
 
 //_______________________________________________________________________________________
 // For now, accept anything we are passed, no matter what it is or how bad it is
@@ -855,7 +856,7 @@ void StgMaker::FillTrackGeometry( StTrack             *otrack, genfit::Track *it
   double Bz = B[2];
 
   // Temporary helix to get the helix parameters
-  StPhysicalHelix helix( momentum, origin, Bz, charge );
+  StPhysicalHelix helix( momentum, origin, Bz*tesla, charge );
   // StiStEventFiller has this as |curv|.
   double curv = TMath::Abs(helix.curvature());
   double h    = -TMath::Sign(charge * Bz, 1.0); // helicity
