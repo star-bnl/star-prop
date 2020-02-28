@@ -190,6 +190,9 @@ int StgMaker::Finish()
     nh.second->Write();
   }
 
+  // Default sTGC on and FSI off
+  SetAttr("useSTGC",1); 
+
   return kStOk;
 }
 
@@ -299,6 +302,7 @@ int StgMaker::Make()
   LOG_INFO << "# stg hits= " << nstg << endm;
   histograms[ "nHitsSTGC" ]->Fill( nstg );
 
+  if ( IAttr("useSTGC") )
   for ( int i = 0; i < nstg; i++ ) {
 
     g2t_fts_hit_st *git = (g2t_fts_hit_st *)g2t_stg_hits->At(i); if (0 == git) continue; // geant hit
@@ -345,6 +349,7 @@ int StgMaker::Make()
   histograms[ "nHitsFSI" ]->Fill( nfsi );
   LOG_INFO << "# fsi hits = " << nfsi << endm;
 
+  if ( IAttr("useFSI") )
   for ( int i = 0; i < nfsi; i++ ) { // yes, negative... because are skipping Si in initial tests
 
     g2t_fts_hit_st *git = (g2t_fts_hit_st *)g2t_fsi_hits->At(i); if (0 == git) continue; // geant hit

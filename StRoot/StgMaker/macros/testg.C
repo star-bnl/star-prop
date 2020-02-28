@@ -30,6 +30,8 @@ void testg( size_t n_events = 1000, const char *filename = 0 )
 
    // Create genfit forward track maker and add it to the chain before the MuDst maker
    StgMaker *gmk = new StgMaker();
+   gmk->SetAttr("useSTGC",1);
+   //gmk->SetAttr("useFSI",1); 
    chain->AddAfter( "0Event", gmk );
 
    // And initialize it, since we have already initialized the chain
