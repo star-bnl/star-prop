@@ -69,6 +69,33 @@ template<> bool accept( genfit::Track *track )
   return true;
 };
 
+//_______________________________________________________________________________________
+// // Truth handlers
+int TheTruth ( const Seed_t& seed, int &qa ) {
+
+  int count = 0;
+  std::map<int,int> truth;
+  for ( auto hit : seed ) {
+    count++; // add another hit
+    FwdHit* fhit = dynamic_cast<FwdHit*>(hit);
+    if ( 0 == fhit ) continue;
+    truth[ fhit->_tid ]++;
+  }
+
+  int id = -1;
+  int nmax = -1;
+  for (auto const& it : truth ) {
+    if ( it.second > nmax ) {
+      nmax = it.second;
+      id   = it.first;
+    }
+  }
+  // QA is stored as an integer representing the percentage of hits which
+  // vote the same way on the track
+  qa = int( 100.0 * double(nmax) / double(count) );
+  return id;
+
+};
 
 //_______________________________________________________________________________________
 // Adaptor for STAR magnetic field
