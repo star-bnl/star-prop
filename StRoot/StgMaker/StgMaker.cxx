@@ -656,6 +656,8 @@ void StgMaker::FillTrackFlags( StTrack *otrack, genfit::Track *itrack )
   // As for "bad" fits, I believe GenFit does not propagate fit information for
   // failed fits.  (???).  So we will not publish bad track flags.
 
+  otrack->setFlag(flag);
+
 }
 //________________________________________________________________________
 void StgMaker::FillTrackMatches( StTrack *otrack, genfit::Track *itrack )
