@@ -1057,6 +1057,9 @@ void StgMaker::FillDetectorInfo(  StTrackDetectorInfo *info, genfit::Track *trac
   for ( const auto *point : track->getPoints() ) {
 
     const auto *measurement = point->getRawMeasurement();
+    if ( !measurement ) {
+      continue;
+    }
     const TVectorD &xyz = measurement->getRawHitCoords();
     float x = xyz[0];
     float y = xyz[1];
@@ -1064,6 +1067,9 @@ void StgMaker::FillDetectorInfo(  StTrackDetectorInfo *info, genfit::Track *trac
 
     // Get fitter info for the cardinal representation
     const auto *fitinfo = point->getFitterInfo();
+    if ( !fitinfo ) {
+      continue;
+    }
 
     const auto &plane = fitinfo->getPlane();
     TVector3 normal = plane->getNormal();
