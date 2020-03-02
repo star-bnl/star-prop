@@ -38,6 +38,7 @@
 #include "St_base/StMessMgr.h"
 
 #include <SystemOfUnits.h>
+#include <exception>
 
 //_______________________________________________________________________________________
 // For now, accept anything we are passed, no matter what it is or how bad it is
@@ -92,7 +93,6 @@ template<> bool accept( genfit::Track *track )
 
     TVector3 momentum = fittedState.getMom();
     double   pt       = momentum.Perp();
-
 
     if (pt < 0.10 ) return false; // below this
 
@@ -233,11 +233,9 @@ public:
 //________________________________________________________________________
 StgMaker::StgMaker() : StMaker("stg"), mForwardTracker(0), mForwardHitLoader(0), mFieldAdaptor(new StarFieldAdaptor())
 {
-  // Default sTGC on and FSI off
-  SetAttr("useSTGC",1); 
-
-  // Default configuration file (user may override before Init())
-  SetAttr("config","config.xml");
+  SetAttr("useSTGC",1);                // Default sTGC on and FSI off
+  SetAttr("config", "config.xml");     // Default configuration file (user may override before Init())
+  SetAttr("logfile","everything.log"); // Default filename for log-guru output 
 
 };
 
@@ -268,7 +266,8 @@ int StgMaker::Init()
   _xmlconfig.loadFile( configFile, cmdLineConfig );
 
   // setup the loguru log file
-  loguru::add_file("everything.log", loguru::Truncate, loguru::Verbosity_2);
+  std::string loggerFile = SAttr("logfile");
+  loguru::add_file( loggerFile, loguru::Truncate, loguru::Verbosity_2);
   loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
 
   mForwardTracker = new ForwardTracker();
