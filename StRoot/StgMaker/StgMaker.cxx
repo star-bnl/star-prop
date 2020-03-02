@@ -267,7 +267,7 @@ int StgMaker::Init()
 
   // setup the loguru log file
   std::string loggerFile = SAttr("logfile");
-  loguru::add_file( loggerFile, loguru::Truncate, loguru::Verbosity_2);
+  loguru::add_file( loggerFile.c_str(), loguru::Truncate, loguru::Verbosity_2);
   loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
 
   mForwardTracker = new ForwardTracker();
