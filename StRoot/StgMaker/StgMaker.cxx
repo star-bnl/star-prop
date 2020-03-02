@@ -47,27 +47,57 @@ template<typename T> bool accept( T ) { return true; }
 template<> bool accept( genfit::Track *track )
 {
 
-  // This also gets rid of failed fits (but may need to explicitly
-  // for fit failure...)
-  if (track->getNumPoints() <= 0 ) return false; // fit may have failed
+    unsigned int npoints = track->getNumPoints();
 
-  // Next, check that all points on the track have fitter info
-  // (may be another indication of a failed fit?)
-  auto cardinal = track->getCardinalRep();
-  for ( auto point : track->getPoints() ) {
-    if ( !point->hasFitterInfo(cardinal) ) return false;
-  }
+    // This also gets rid of failed fits (but may need to explicitly
+    // for fit failure...)
+    if (npoints <= 0 ) return false; // fit may have failed
 
-  // Fitted state at the first point
-  const auto &atFirstPoint = track->getFittedState();
+    // Next, check that all points on the track have fitter info
+    // (may be another indication of a failed fit?)
+    auto cardinal = track->getCardinalRep();
+    for ( auto point : track->getPoints() ) {
+      if ( !point->hasFitterInfo(cardinal) ) {
+	return false;
+      }
+    }
 
-  TVector3 momentum = atFirstPoint.getMom();
-  double   pt = momentum.Perp();
+    // Following line fails with an exception, because some tracks lack 
+    //   forward update, or prediction in fitter info at the first point
+    //
+    // genfit::KalmanFitterInfo::getFittedState(bool) const of 
+    //                         GenFit/fitters/src/KalmanFitterInfo.cc:250
+  
+    // Fitted state at the first point
+    // const auto &atFirstPoint = track->getFittedState();
+
+    // Getting the fitted state from a track occasionally fails, because
+    // the first point on the fit doesn't have forward/backward fit
+    // information.  So we want the first point with fit info...
+ 
+    genfit::TrackPoint* first = 0;
+    unsigned int ipoint = 0;
+    for ( ipoint = 0; ipoint < npoints; ipoint++ ) {
+      first = track->getPointWithFitterInfo( ipoint );
+      if ( first ) break;
+    } 
+  
+    // No points on the track have fit information
+    if ( 0 == first ) {
+      LOG_INFO << "No fit information on track" << endm;
+      return false;
+    }
+
+    auto& fittedState= track->getFittedState(ipoint);
+
+    TVector3 momentum = fittedState.getMom();
+    double   pt       = momentum.Perp();
 
 
-  if (pt < 0.10 ) return false; // below this
+    if (pt < 0.10 ) return false; // below this
 
-  return true;
+    return true;
+ 
 };
 
 //_______________________________________________________________________________________
@@ -536,6 +566,7 @@ void StgMaker::FillEvent()
 
   } // end of loop over tracks
 
+  LOG_INFO << "  number visited  = " <<   track_count_total  << endm;
   LOG_INFO << "  number accepted = " <<   track_count_accept << endm;
 
 }
