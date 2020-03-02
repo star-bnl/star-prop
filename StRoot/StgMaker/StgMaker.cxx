@@ -203,6 +203,11 @@ public:
 //________________________________________________________________________
 StgMaker::StgMaker() : StMaker("stg"), mForwardTracker(0), mForwardHitLoader(0), mFieldAdaptor(new StarFieldAdaptor())
 {
+  // Default sTGC on and FSI off
+  SetAttr("useSTGC",1); 
+
+  // Default configuration file (user may override before Init())
+  SetAttr("config","config.xml");
 
 };
 
@@ -218,12 +223,6 @@ int StgMaker::Finish()
     nh.second->Write();
   }
 
-  // Default sTGC on and FSI off
-  SetAttr("useSTGC",1); 
-
-  // Default configuration file (user may override before Init())
-  SetAttr("config","config.xml");
-
   return kStOk;
 }
 
@@ -233,6 +232,7 @@ int StgMaker::Init()
 
   // Initialize configuration file
   std::string configFile = SAttr("config");
+  LOG_INFO << "Using tracker configuration " << configFile << endm;
   std::map<string, string> cmdLineConfig;
   jdb::XmlConfig _xmlconfig;
   _xmlconfig.loadFile( configFile, cmdLineConfig );
