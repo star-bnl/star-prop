@@ -228,7 +228,7 @@ int StgMaker::Init()
    _xmlconfig.loadFile( configFile, cmdLineConfig );
    
    // setup the loguru log file
-   loguru::add_file("everything.log", loguru::Truncate, loguru::Verbosity_2);
+   // loguru::add_file("everything.log", loguru::Truncate, loguru::Verbosity_2);
    loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
 
    mSiRasterizer = new SiRasterizer( _xmlconfig );
@@ -336,7 +336,7 @@ int StgMaker::Make()
       float y         = git->x[1] + gRandom->Gaus( 0, 0.01 );
       float z         = git->x[2];
 
-      LOG_F( INFO, "STGC Hit: volume_id=%d, plane_id=%d, (%f, %f, %f)", volume_id, plane_id, x, y, z );
+      LOG_F( INFO, "STGC Hit: volume_id=%d, plane_id=%d, (%f, %f, %f), track_id=%d", volume_id, plane_id, x, y, z, track_id );
       histograms[ "stgc_volume_id" ] ->Fill( volume_id );
 
       if ( plane_id < 4 && plane_id >= 0 ){

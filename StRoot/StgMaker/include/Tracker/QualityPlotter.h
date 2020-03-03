@@ -97,14 +97,37 @@ public:
 		hist["McPhiFoundAllQ"] = new TH1F( "McPhiFoundAllQ", ";#phi^{MC} (GeV/c)", 128, -3.2, 3.2 );
 		hist["nFailedFits"] = new TH1F( "nFailedFits", ";;nFailedFits", 5, 0, 5 );
 
+		// 2D efficiency
+		hist["McPtPhiFound"]       = new TH2F( "McPtPhiFound", "; p_{T}^{MC} (GeV/c);#phi^{MC} (GeV/c)", 20, 0, 10, 64, -3.2, 3.2 );
+		hist["McPtPhiFoundAllQ"]   = new TH2F( "McPtPhiFoundAllQ", "; p_{T}^{MC} (GeV/c);#phi^{MC} (GeV/c)", 20, 0, 10, 64, -3.2, 3.2 );
+		hist["McPtPhi_4hits"]      = new TH2F( "McPtPhi_4hits", "; p_{T}^{MC} (GeV/c);#phi^{MC} (GeV/c)", 20, 0, 10, 64, -3.2, 3.2 );
 
-		for ( size_t track_len : { 4, 5, 6, 7 } ) {
+
+		// for ( size_t track_len : { 4, 5, 6, 7 } ) 
+		{
+			size_t track_len = 4;
+			// only Q > 0.9
 			string n = TString::Format( "McPtFound%lu", track_len ).Data();
 			hist[n] = new TH1F( n.c_str(), ";p_{T}^{MC} (GeV/c)", 100, 0, 10 );
 			n = TString::Format( "McEtaFound%lu", track_len ).Data();
 			hist[n] = new TH1F( n.c_str(), ";#eta^{MC} (GeV/c)", 100, 2, 5 );
 			n = TString::Format( "McPhiFound%lu", track_len ).Data();
 			hist[n] = new TH1F( n.c_str(), ";#phi^{MC} (GeV/c)", 128, -3.2, 3.2 );
+
+			n = TString::Format( "McPtPhiFound%lu", track_len ).Data();
+			hist[n]      = new TH2F( n.c_str(), "; p_{T}^{MC} (GeV/c);#phi^{MC} (GeV/c)", 20, 0, 10, 64, -3.2, 3.2 );
+
+			// all Q versions
+			n = TString::Format( "McPtFound%luAllQ", track_len ).Data();
+			hist[n] = new TH1F( n.c_str(), ";p_{T}^{MC} (GeV/c)", 100, 0, 10 );
+			n = TString::Format( "McEtaFound%luAllQ", track_len ).Data();
+			hist[n] = new TH1F( n.c_str(), ";#eta^{MC} (GeV/c)", 100, 2, 5 );
+			n = TString::Format( "McPhiFound%luAllQ", track_len ).Data();
+			hist[n] = new TH1F( n.c_str(), ";#phi^{MC} (GeV/c)", 128, -3.2, 3.2 );
+
+
+			n = TString::Format( "McPtPhiFound%luAllQ", track_len ).Data();
+			hist[n]      = new TH2F( n.c_str(), "; p_{T}^{MC} (GeV/c);#phi^{MC} (GeV/c)", 20, 0, 10, 64, -3.2, 3.2 );
 		}
 
 
@@ -225,6 +248,8 @@ public:
 				this->get( "McPt_4hits" )->Fill( kv.second->_pt );
 				this->get( "McEta_4hits" )->Fill( kv.second->_eta );
 				this->get( "McPhi_4hits" )->Fill( kv.second->_phi );
+
+				this->get( "McPtPhi_4hits" )->Fill( kv.second->_pt, kv.second->_phi );
 			}
 
 			if ( kv.second->hits.size() >= 5 ) {
@@ -267,6 +292,7 @@ public:
 
 			for ( auto hit : t ) {
 				qual_map[ static_cast<FwdHit *>(hit)->_tid ]++;
+				LOG_F( INFO, "_tid = %d", static_cast<FwdHit *>(hit)->_tid );
 			}
 
 			for ( auto &kv : qual_map ) {
@@ -288,14 +314,40 @@ public:
 			avgQuality += quality;
 			this->get( "AllQuality" )->Fill( quality );
 
-			if ( mctid > 0 ) {
+			if ( mctid > 0 && quality >= 3.0/4.0 - 0.001) {
 				this->get( "McPtFoundAllQ" )->Fill( mcTrackMap[ mctid ]->_pt );
 				this->get( "McEtaFoundAllQ" )->Fill( mcTrackMap[ mctid ]->_eta );
 				this->get( "McPhiFoundAllQ" )->Fill( mcTrackMap[ mctid ]->_phi );
-			}
 
-			if ( mctid > 0 && quality > 0.9 ) {
+				// for ( size_t min_track_len : { 4, 5, 6, 7 } ) 
+				{
+					size_t min_track_len = 4;
+					if ( t.size() >= min_track_len ) {
+						this->get( TString::Format("McPtPhiFound%luAllQ", min_track_len).Data() )->Fill( mcTrackMap[ mctid ]->_pt, mcTrackMap[ mctid ]->_phi );
+						this->get( TString::Format("McPtFound%luAllQ", min_track_len).Data() )->Fill( mcTrackMap[ mctid ]->_pt );
+						this->get( TString::Format("McEtaFound%luAllQ", min_track_len).Data() )->Fill( mcTrackMap[ mctid ]->_eta );
+						this->get( TString::Format("McPhiFound%luAllQ", min_track_len).Data() )->Fill( mcTrackMap[ mctid ]->_phi );
+					}
+				}
+
+			} // quality >= 3/4
+
+			// if ( mctid > 0 && quality >= 3.0/4.0 ) {
+			if ( mctid > 0 && quality >= 4.0/4.0 ) {
+				// for ( size_t min_track_len : { 4, 5, 6, 7 } ) 
+				{
+					size_t min_track_len = 4;
+					if ( t.size() >= min_track_len ) {
+						this->get( TString::Format("McPtPhiFound%lu", min_track_len).Data() )->Fill( mcTrackMap[ mctid ]->_pt, mcTrackMap[ mctid ]->_phi );
+						this->get( TString::Format("McPtFound%lu", min_track_len).Data() )->Fill( mcTrackMap[ mctid ]->_pt );
+						this->get( TString::Format("McEtaFound%lu", min_track_len).Data() )->Fill( mcTrackMap[ mctid ]->_eta );
+						this->get( TString::Format("McPhiFound%lu", min_track_len).Data() )->Fill( mcTrackMap[ mctid ]->_phi );
+					}
+				}
+
+
 				this->get( "McPtFound" )->Fill( mcTrackMap[ mctid ]->_pt );
+				this->get( "McPtPhiFound" )->Fill( mcTrackMap[ mctid ]->_pt, mcTrackMap[ mctid ]->_phi );
 				this->get( "McEtaFound" )->Fill( mcTrackMap[ mctid ]->_eta );
 				this->get( "McPhiFound" )->Fill( mcTrackMap[ mctid ]->_phi );
 
@@ -366,19 +418,13 @@ public:
 				}
 
 
-				for ( size_t min_track_len : { 4, 5, 6, 7 } ) {
-					if ( t.size() >= min_track_len ) {
-						this->get( TString::Format("McPtFound%lu", min_track_len).Data() )->Fill( mcTrackMap[ mctid ]->_pt );
-						this->get( TString::Format("McEtaFound%lu", min_track_len).Data() )->Fill( mcTrackMap[ mctid ]->_eta );
-						this->get( TString::Format("McPhiFound%lu", min_track_len).Data() )->Fill( mcTrackMap[ mctid ]->_phi );
-					}
-				}
+
 
 			}
 			else if ( mctid == 0 ) {
-				this->get( "McPtFound" )->Fill( 0 );
-				this->get( "McEtaFound" )->Fill( 0 );
-				this->get( "McPhiFound" )->Fill( -10 );
+				// this->get( "McPtFound" )->Fill( 0 );
+				// this->get( "McEtaFound" )->Fill( 0 );
+				// this->get( "McPhiFound" )->Fill( -10 );
 			}
 
 
@@ -414,18 +460,37 @@ public:
 		this->hist[ "EffVsMcPhi" ] = (TH1 *)this->get( "McPhiFound" )->Clone( "EffVsMcPhi" );
 		this->get( "EffVsMcPhi" ) -> Divide( this->get( "McPhi" ) );
 
-		for ( size_t i : { 4, 5, 6, 7 } ) {
+		// for ( size_t i : { 4 } ) {
+		{
+			size_t i = 4;
 			string n = TString::Format( "McPt_%luhits", i ).Data();
 			this->hist[ "EffVs" + n ] = (TH1 *)this->get( TString::Format("McPtFound%lu", i).Data() )->Clone( ("EffVs" + n).c_str() );
 			this->get( "EffVs" + n ) -> Divide( this->get( n ) );
+
+			this->hist[ "EffVs" + n + "_AllQ" ] = (TH1 *)this->get( TString::Format("McPtFound%luAllQ", i).Data() )->Clone( ("EffVs" + n + "_AllQ").c_str() );
+			this->get( "EffVs" + n + "_AllQ" ) -> Divide( this->get( n ) );
 
 			n = TString::Format( "McEta_%luhits", i ).Data();
 			this->hist[ "EffVs" + n ] = (TH1 *)this->get( TString::Format("McEtaFound%lu", i).Data() )->Clone( ("EffVs" + n).c_str() );
 			this->get( "EffVs" + n ) -> Divide( this->get( n ) );
 
+			this->hist[ "EffVs" + n + "_AllQ" ] = (TH1 *)this->get( TString::Format("McEtaFound%luAllQ", i).Data() )->Clone( ("EffVs" + n + "_AllQ").c_str() );
+			this->get( "EffVs" + n + "_AllQ" ) -> Divide( this->get( n ) );
+
 			n = TString::Format( "McPhi_%luhits", i ).Data();
 			this->hist[ "EffVs" + n ] = (TH1 *)this->get( TString::Format("McPhiFound%lu", i).Data() )->Clone( ("EffVs" + n).c_str() );
 			this->get( "EffVs" + n ) -> Divide( this->get( n ) );
+
+			this->hist[ "EffVs" + n + "_AllQ" ] = (TH1 *)this->get( TString::Format("McPhiFound%luAllQ", i).Data() )->Clone( ("EffVs" + n + "_AllQ").c_str() );
+			this->get( "EffVs" + n + "_AllQ" ) -> Divide( this->get( n ) );
+
+
+			n = TString::Format( "McPtPhi_%luhits", i ).Data();
+			this->hist[ "EffVs" + n ] = (TH1 *)this->get( TString::Format("McPtPhiFound%lu", i).Data() )->Clone( ("EffVs" + n).c_str() );
+			this->get( "EffVs" + n ) -> Divide( this->get( n ) );
+
+			this->hist[ "EffVs" + n + "_AllQ" ] = (TH1 *)this->get( TString::Format("McPtPhiFound%luAllQ", i).Data() )->Clone( ("EffVs" + n + "_AllQ").c_str() );
+			this->get( "EffVs" + n + "_AllQ") -> Divide( this->get( n ) );
 		}
 
 

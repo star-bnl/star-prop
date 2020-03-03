@@ -194,6 +194,7 @@ public:
 			float vmax = cfg.get<float>( p + ":max", 1 );
 			LOG_F( INFO, "Loading Criteria from %s (name=%s, min=%f, max=%f)", p.c_str(), name.c_str(), vmin, vmax );
 			crits.push_back(KiTrack::Criteria::createCriterion( name, vmin, vmax ));
+			
 		}
 
 		return crits;

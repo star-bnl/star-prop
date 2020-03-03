@@ -173,6 +173,12 @@ public:
 		hist[ "SiProjPosXY" ] 		= new TH2F( "SiProjPosXY", ";X;Y", 1000, -500, 500, 1000, -500, 500 );
 		hist[ "SiProjSigmaXY" ] 	= new TH2F( "SiProjSigmaXY", ";#sigma_{X};#sigma_{Y}", 150, 0, 15, 150, 0, 15 );
 
+		hist[ "VertexProjPosXY" ] 		= new TH2F( "VertexProjPosXY", ";X;Y", 100, -5, 5, 100, -5, 5 );
+		hist[ "VertexProjSigmaXY" ] 	= new TH2F( "VertexProjSigmaXY", ";#sigma_{X};#sigma_{Y}", 150, 0, 20, 150, 0, 20 );
+
+		hist[ "VertexProjPosZ" ] 		= new TH1F( "VertexProjPosZ", ";Z;", 100, -50, 50 );
+		hist[ "VertexProjSigmaZ" ] 		= new TH1F( "VertexProjSigmaZ", ";#sigma_{Z};", 100, 0, 10 );
+
 		hist[ "SiWrongProjPosXY" ] 		= new TH2F( "SiWrongProjPosXY", ";X;Y", 1000, -500, 500, 1000, -500, 500 );
 		hist[ "SiWrongProjSigmaXY" ] 	= new TH2F( "SiWrongProjSigmaXY", ";#sigma_{X};#sigma_{Y}", 50, 0, 0.5, 50, 0, 0.5 );
 
@@ -624,6 +630,46 @@ public:
 
 	}
 
+	void studyProjectionToVertex( genfit::AbsTrackRep *cardinalRep, genfit::Track &fitTrack )
+	{
+
+		// try projecting onto the Si plane
+		genfit::MeasuredStateOnPlane tst = fitTrack.getFittedState(1);
+
+		auto TCM = cardinalRep->get6DCov(tst);
+
+		double len = cardinalRep->extrapolateToLine( tst, TVector3(0, 0, 0), TVector3( 0, 0, 1 ) );
+
+		LOG_F(INFO, "len to (0,0) %f", len);
+		LOG_F( INFO, "Position at (0,0) (%0.2f, %0.2f, %0.2f) +/- ()", tst.getPos().X(), tst.getPos().Y(), tst.getPos().Z() );
+		TCM = cardinalRep->get6DCov( tst );
+		LOG_F( INFO, "Cov SI (%0.5f, %0.5f, %0.5f, %0.5f, %0.5f, %0.5f)", TCM(0, 0), TCM(0, 1), TCM(0, 2), TCM(0, 3), TCM(0, 4), TCM(0, 5) );
+		LOG_F( INFO, "Cov SI (%0.5f, %0.5f, %0.5f, %0.5f, %0.5f, %0.5f)", TCM(1, 0), TCM(1, 1), TCM(1, 2), TCM(1, 3), TCM(1, 4), TCM(1, 5) );
+		LOG_F( INFO, "Cov SI (%0.5f, %0.5f, %0.5f, %0.5f, %0.5f, %0.5f)", TCM(2, 0), TCM(2, 1), TCM(2, 2), TCM(2, 3), TCM(2, 4), TCM(2, 5) );
+		LOG_F( INFO, "Cov SI (%0.5f, %0.5f, %0.5f, %0.5f, %0.5f, %0.5f)", TCM(3, 0), TCM(3, 1), TCM(3, 2), TCM(3, 3), TCM(3, 4), TCM(3, 5) );
+		LOG_F( INFO, "Cov SI (%0.5f, %0.5f, %0.5f, %0.5f, %0.5f, %0.5f)", TCM(4, 0), TCM(4, 1), TCM(4, 2), TCM(4, 3), TCM(4, 4), TCM(4, 5) );
+		LOG_F( INFO, "Cov SI (%0.5f, %0.5f, %0.5f, %0.5f, %0.5f, %0.5f)", TCM(5, 0), TCM(5, 1), TCM(5, 2), TCM(5, 3), TCM(5, 4), TCM(5, 5) );
+
+
+		if ( MAKE_HIST ) {
+
+			this->hist[ "VertexProjPosXY" ]->Fill( tst.getPos().X(), tst.getPos().Y() );
+			this->hist[ "VertexProjSigmaXY" ]->Fill( sqrt(TCM(0, 0)), sqrt(TCM(1, 1)) );
+
+			this->hist[ "VertexProjPosZ" ]->Fill( tst.getPos().Z() );
+			this->hist[ "VertexProjSigmaZ" ]->Fill( sqrt(TCM(2, 2)) );
+
+			// this->hist[ "SiWrongProjPosXY" ]->Fill( tst2.getPos().X(), tst2.getPos().Y() );
+			// this->hist[ "SiWrongProjSigmaXY" ]->Fill( sqrt(TCM2(0, 0)), sqrt(TCM2(1, 1)) );
+
+			// LOG_F( INFO, "DeltaX Si Proj = %f", fabs( tst.getPos().X() - tst2.getPos().X()) );
+			// this->hist[ "SiDeltaProjPosXY" ]->Fill( fabs( tst.getPos().X() - tst2.getPos().X()), fabs( tst.getPos().Y() - tst2.getPos().Y()) );
+
+
+		}
+
+	}
+
 
 	void studyProjectionToECal( genfit::AbsTrackRep *cardinalRep, genfit::Track &fitTrack )
 	{
@@ -824,7 +870,7 @@ public:
 			_q = cardinalRep->getCharge(fitTrack.getFittedState(1, cardinalRep));
 			_p = p;
 
-
+			studyProjectionToVertex( cardinalRep, fitTrack );
 			/*
 			  studyProjectionToECal( cardinalRep, fitTrack );
 
