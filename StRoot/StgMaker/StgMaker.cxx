@@ -484,9 +484,14 @@ int StgMaker::Make()
     LOG_INFO << "inner: Track origin: " << origin << " momentum: " << momentum << " pt=" << momentum.perp() << " eta=" << momentum.pseudoRapidity() << endm;
 
     StDcaGeometry *dca = track->dcaGeometry();
+    if ( dca ) {
     origin = dca->origin();
     momentum = dca->momentum();
     LOG_INFO << "d c a: Track origin: " << origin << " momentum: " << momentum << " pt=" << momentum.perp() << " eta=" << momentum.pseudoRapidity() << endm;
+    }
+    else {
+      LOG_INFO << "d c a geometry missing" << endm;
+    }
 
     int idtruth = track->idTruth();
     LOG_INFO << " idtruth = " << idtruth << endm;
