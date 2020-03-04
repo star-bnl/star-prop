@@ -943,6 +943,13 @@ void StgMaker::FillTrackGeometry( StTrack             *otrack, genfit::Track *it
 void StgMaker::FillTrackDcaGeometry( StTrack          *otrack_, genfit::Track *itrack )
 {
 
+  // We will need the event
+  StEvent *event = static_cast<StEvent *>(GetInputDS("StEvent"));
+  assert(event); // we warned ya
+
+  // And the primary vertex
+  const StPrimaryVertex* primaryVertex = event->primaryVertex(0);
+ 
   // Recast to global track
   StGlobalTrack *otrack = dynamic_cast<StGlobalTrack *>(otrack_);
 
@@ -954,8 +961,18 @@ void StgMaker::FillTrackDcaGeometry( StTrack          *otrack_, genfit::Track *i
   // Obtain the cardinal representation
   genfit::AbsTrackRep *cardinal =  itrack->getCardinalRep();
 
-  const TVector3 vertex(0., 0., 0.); // TODO get actual primary vertex
-  const TVector3 direct(0., 0., 1.); // TODO get actual beamline slope
+  static TVector3 vertex;
+  double x = 0;
+  double y = 0;
+  double z = 0;
+  if ( primaryVertex ) {
+    x = primaryVertex->position()[0];
+    y = primaryVertex->position()[1];
+    z = primaryVertex->position()[2];
+  }
+  vertex.SetX(x); vertex.SetY(y); vertex.SetZ(z);
+
+  const static TVector3 direct(0., 0., 1.); // TODO get actual beamline slope
 
   // Extrapolate the measured state to the DCA of the beamline
   try {
@@ -964,7 +981,7 @@ void StgMaker::FillTrackDcaGeometry( StTrack          *otrack_, genfit::Track *i
   catch ( genfit::Exception &e ) {
     std::cerr << e.what() << std::endl;
     std::cerr << "Extrapolation to beamline (DCA) failed." << std::endl;
-    assert(0);
+    std::cerr << "... vertex " << x << " " << y << "  " << z << std::endl;
     return;
   }
 
