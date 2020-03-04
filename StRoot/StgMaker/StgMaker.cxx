@@ -29,10 +29,14 @@
 
 #include "StarMagField.h"
 
+#include "StEvent/StEnumerations.h"
+#include "StEvent/StEvent.h"
+#include "StEvent/StPrimaryVertex.h"
+
+
 #include "StEventUtilities/StEventHelper.h"
 
 #include "StTrackDetectorInfo.h"
-#include "StEvent/StEnumerations.h"
 
 #include "StarClassLibrary/StPhysicalHelix.hh"
 #include "St_base/StMessMgr.h"
