@@ -54,9 +54,17 @@ template<> bool accept( genfit::Track *track )
     // for fit failure...)
     if (npoints <= 0 ) return false; // fit may have failed
 
+    auto cardinal = track->getCardinalRep();
+
+    // Check that the track fit converged
+    auto status = track->getFitStatus( cardinal );
+    if ( 0 == status->isFitConverged() ) {
+      return false;
+    }
+
+
     // Next, check that all points on the track have fitter info
     // (may be another indication of a failed fit?)
-    auto cardinal = track->getCardinalRep();
     for ( auto point : track->getPoints() ) {
       if ( !point->hasFitterInfo(cardinal) ) {
 	return false;
