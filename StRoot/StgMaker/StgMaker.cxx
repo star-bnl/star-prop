@@ -236,6 +236,7 @@ StgMaker::StgMaker() : StMaker("stg"), mForwardTracker(0), mForwardHitLoader(0),
   SetAttr("useSTGC",1);                // Default sTGC on and FSI off
   SetAttr("config", "config.xml");     // Default configuration file (user may override before Init())
   SetAttr("logfile","everything.log"); // Default filename for log-guru output 
+  SetAttr("fillEvent",1); // fill StEvent
 
 };
 
@@ -452,6 +453,9 @@ int StgMaker::Make()
     return kStOk;
   }
 
+
+  if ( IAttr("fillEvent") ) {
+
   // Now fill StEvent
   FillEvent();
 
@@ -482,6 +486,8 @@ int StgMaker::Make()
 
     if ( mctrack )
       LOG_INFO << "truth: pt=" << mctrack->_pt << " eta=" << mctrack->_eta << " phi=" << mctrack->_phi << " q=" << mctrack->_q << endm;
+  }
+
   }
 
 
