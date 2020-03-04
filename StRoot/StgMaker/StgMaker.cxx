@@ -630,7 +630,7 @@ void StgMaker::FillTrack( StTrack             *otrack, genfit::Track *itrack, co
   // to fill the inner geometry.
   //
   // TODO: We may need to extend our "geometry" classes for RK parameters
-  FillTrackGeometry( otrack, itrack, z_fst [0], kInnerGeometry );
+  FillTrackGeometry( otrack, itrack, z_stgc[0], kInnerGeometry );
   FillTrackGeometry( otrack, itrack, z_stgc[3], kOuterGeometry );
 
   // Next fill the fit traits
