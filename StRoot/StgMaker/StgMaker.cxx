@@ -468,43 +468,43 @@ int StgMaker::Make()
 
   if ( IAttr("fillEvent") ) {
 
-  // Now fill StEvent
-  FillEvent();
+    // Now fill StEvent
+    FillEvent();
 
-  // Now loop over the tracks and do printout
-  int nnodes = event->trackNodes().size();
+    // Now loop over the tracks and do printout
+    int nnodes = event->trackNodes().size();
 
-  for ( int i = 0; i < nnodes; i++ ) {
+    for ( int i = 0; i < nnodes; i++ ) {
 
-    const StTrackNode *node = event->trackNodes()[i];
-    StGlobalTrack *track = (StGlobalTrack *)node->track(global);
-    StTrackGeometry *geometry = track->geometry();
-
-    StThreeVectorF origin = geometry->origin();
-    StThreeVectorF momentum = geometry->momentum();
-
-    LOG_INFO << "-------------------------------------------------------------------------------" << endm;
-    LOG_INFO << "Track # " << i << endm;
-    LOG_INFO << "inner: Track origin: " << origin << " momentum: " << momentum << " pt=" << momentum.perp() << " eta=" << momentum.pseudoRapidity() << endm;
-
-    StDcaGeometry *dca = track->dcaGeometry();
-    if ( dca ) {
-    origin = dca->origin();
-    momentum = dca->momentum();
-    LOG_INFO << "d c a: Track origin: " << origin << " momentum: " << momentum << " pt=" << momentum.perp() << " eta=" << momentum.pseudoRapidity() << endm;
+      const StTrackNode *node = event->trackNodes()[i];
+      StGlobalTrack *track = (StGlobalTrack *)node->track(global);
+      StTrackGeometry *geometry = track->geometry();
+      
+      StThreeVectorF origin = geometry->origin();
+      StThreeVectorF momentum = geometry->momentum();
+      
+      LOG_INFO << "-------------------------------------------------------------------------------" << endm;
+      LOG_INFO << "Track # " << i << endm;
+      LOG_INFO << "inner: Track origin: " << origin << " momentum: " << momentum << " pt=" << momentum.perp() << " eta=" << momentum.pseudoRapidity() << endm;
+      
+      StDcaGeometry *dca = track->dcaGeometry();
+      if ( dca ) {
+	origin = dca->origin();
+	momentum = dca->momentum();
+	LOG_INFO << "d c a: Track origin: " << origin << " momentum: " << momentum << " pt=" << momentum.perp() << " eta=" << momentum.pseudoRapidity() << endm;
+      }
+      else {
+	LOG_INFO << "d c a geometry missing" << endm;
+      }
+      
+      int idtruth = track->idTruth();
+      LOG_INFO << " idtruth = " << idtruth << endm;
+      auto mctrack = mcTrackMap[ idtruth ];
+      
+      if ( mctrack )
+	LOG_INFO << "truth: pt=" << mctrack->_pt << " eta=" << mctrack->_eta << " phi=" << mctrack->_phi << " q=" << mctrack->_q << endm;
     }
-    else {
-      LOG_INFO << "d c a geometry missing" << endm;
-    }
-
-    int idtruth = track->idTruth();
-    LOG_INFO << " idtruth = " << idtruth << endm;
-    auto mctrack = mcTrackMap[ idtruth ];
-
-    if ( mctrack )
-      LOG_INFO << "truth: pt=" << mctrack->_pt << " eta=" << mctrack->_eta << " phi=" << mctrack->_phi << " q=" << mctrack->_q << endm;
-  }
-
+    
   }
 
 
@@ -606,8 +606,10 @@ void StgMaker::FillTrack( StTrack             *otrack, genfit::Track *itrack, co
   // Track length and TOF between first and last point on the track
   // TODO: is this same definition used in StEvent?
   double track_len = itrack->getTrackLen();
+
+
   //  double track_tof = itrack->getTrackTOF();
-  otrack->setLength( track_len );
+  otrack->setLength( abs(track_len) );
 
   // Get the so called track seed quality... the number of hits in the seed
   int seed_qual = iseed.size();
