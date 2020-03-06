@@ -34,9 +34,7 @@
 #include "GenFit/FitStatus.h"
 
 #include "StgMaker/XmlConfig/XmlConfig.h"
-
-
-
+#include <exception>
 
 // Utility class for evaluating ID and QA truth
 struct MCTruthUtils {
@@ -423,9 +421,12 @@ public:
 
     hist[ "FitStatus" ]->Fill( "Seeds", 1 );
 
+    static TVector3 p;
+
     if ( doTrackFitting ) {
       hist[ "FitStatus" ]->Fill( "AttemptFit", 1 );
-      TVector3 p = trackFitter->fitTrack( track );
+
+      /*TVector3*/ p = trackFitter->fitTrack( track );
 
       if ( p.Perp() > 1e-1 ) {
         hist[ "FitStatus" ]->Fill( "GoodFit", 1 );
