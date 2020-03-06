@@ -1,11 +1,14 @@
 TString infile = "testg.fzd";
-void testg( size_t n_events = 1000, const char *filename = 0 )
+void testg( size_t n_events = 1000, const char *filename = 0, const char* config="config.xml" )
 {
 
    if (filename) infile = filename;
 
    gROOT->LoadMacro("bfc.C");
-   bfc(0, "fzin agml debug vfmce mcevent makeevent stu sdt20181215 cmudst", infile );
+// bfc(0, "fzin agml debug vfmce mcevent makeevent stu sdt20181215 cmudst", infile );
+// bfc(0, "fzin agml       vfmce mcevent makeevent stu sdt20181215 cmudst", infile );
+   bfc(0, "fzin agml       vfmce         makeevent stu sdt20181215 cmudst", infile );
+
    gSystem->Load("libgenfit2.so");
    gSystem->Load("libKiTrack.so");
    gSystem->Load("libStgMaker.so");
@@ -28,15 +31,26 @@ void testg( size_t n_events = 1000, const char *filename = 0 )
       delete geom;
    }
 
-   // Create genfit forward track maker and add it to the chain before the MuDst maker
-   StgMaker *gmk = new StgMaker();
-   gmk->SetAttr("useSTGC",1);
-   //gmk->SetAttr("useFSI",1); 
-   chain->AddAfter( "0Event", gmk );
+   TString logname = filename;
+   logname.ReplaceAll("fzd","stg.log");
 
-   // And initialize it, since we have already initialized the chain
-   gmk->Init();
-
+   if ( 1 ) {
+     
+     // Create genfit forward track maker and add it to the chain before the MuDst maker
+     StgMaker *gmk = new StgMaker();
+     gmk->SetAttr("useSTGC",1);
+     gmk->SetAttr("useFSI",1);
+     gmk->SetAttr("logfile",logname.Data());
+     gmk->SetAttr("fillEvent",1);
+     gmk->SetAttr("config",config); 
+     //gmk->SetAttr("useFSI",1); 
+     chain->AddAfter( "0Event", gmk );
+     
+     // And initialize it, since we have already initialized the chain
+     gmk->Init();
+     
+   }
+     
    // Do an ls to be sure
    chain->ls(3);
 
