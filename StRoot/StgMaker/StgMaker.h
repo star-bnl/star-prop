@@ -23,6 +23,7 @@ class StTrackDetectorInfo;
 #include "TTree.h"
 #include "TNtuple.h"
 
+const size_t MAX_TREE_ELEMENTS = 10000;
 
 class StgMaker : public StMaker
 {
@@ -39,6 +40,8 @@ public:
    int  Make();
    void Clear( const Option_t *opts = "" );
 
+   void GenerateTree( bool _genTree ) { mGenTree = _genTree; }
+
    enum { kInnerGeometry,       kOuterGeometry };
 
 private:
@@ -53,9 +56,12 @@ protected:
    std::map< std::string, TH1 * > histograms;
    TFile * mlFile;
    TTree *mlTree;
+   bool mGenTree;
    
-   float mlt_x[10000], mlt_y[10000], mlt_z[10000];
-   int mlt_n, mlt_tid[10000], mlt_vid[10000];
+
+   float mlt_x[MAX_TREE_ELEMENTS], mlt_y[MAX_TREE_ELEMENTS], mlt_z[MAX_TREE_ELEMENTS];
+   int mlt_n, mlt_nt, mlt_tid[MAX_TREE_ELEMENTS], mlt_vid[MAX_TREE_ELEMENTS], mlt_hpt[MAX_TREE_ELEMENTS], mlt_hsv[MAX_TREE_ELEMENTS];
+   float mlt_pt[MAX_TREE_ELEMENTS], mlt_eta[MAX_TREE_ELEMENTS], mlt_phi[MAX_TREE_ELEMENTS];
 
    // Fill StEvent
    void FillEvent();

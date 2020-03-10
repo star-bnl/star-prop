@@ -50,12 +50,13 @@ public:
       _phi = -999;
       _q = 0;
    }
-   McTrack( float pt, float eta = -999, float phi = -999, int q = 0 )
+   McTrack( float pt, float eta = -999, float phi = -999, int q = 0, int start_vertex = -1 )
    {
       _pt = pt;
       _eta = eta;
       _phi = phi;
       _q = q;
+      _start_vertex = start_vertex;
    }
    void addHit( KiTrack::IHit *hit )
    {
@@ -68,7 +69,7 @@ public:
    }
 
    float _pt, _eta, _phi;
-   int _tid, _q;
+   int _tid, _q, _start_vertex;
 
    std::vector<KiTrack::IHit *> hits;
    std::vector<KiTrack::IHit *> fsi_hits;

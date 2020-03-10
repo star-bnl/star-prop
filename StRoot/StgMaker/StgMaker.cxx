@@ -186,10 +186,12 @@ int StgMaker::Finish(){
    // gDirectory->cd();
    gDirectory->Write();
 
-   mlTree->Print();
-   mlFile->cd();
-   mlTree->Write();
-   mlFile->Write();
+   if ( mGenTree ){
+      mlTree->Print();
+      mlFile->cd();
+      mlTree->Write();
+      mlFile->Write();
+   }
    
 
    return kStOk;
@@ -209,16 +211,27 @@ int StgMaker::Init()
    loguru::add_file("everything.log", loguru::Truncate, loguru::Verbosity_2);
    loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
 
-   mlFile = new TFile( "mltree.root", "RECREATE" );
-   mlTree = new TTree( "Stg", "stg hits" );
-   mlTree->Branch( "n", &mlt_n, "n/I" );
-   mlTree->Branch( "x", mlt_x, "x[n]/F" );
-   mlTree->Branch( "y", mlt_y, "y[n]/F" );
-   mlTree->Branch( "z", mlt_z, "z[n]/F" );
-   mlTree->Branch( "tid", &mlt_tid, "tid[n]/I" );
-   mlTree->Branch( "vid", &mlt_vid, "vid[n]/I" );
-   // mlTree->Branch( "tid", &mlt_tid, "tid/I" );
-   mlTree->SetAutoFlush(0);
+   if ( mGenTree ){
+      mlFile = new TFile( "mltree.root", "RECREATE" );
+      mlTree = new TTree( "Stg", "stg hits" );
+      mlTree->Branch( "n", &mlt_n, "n/I" );
+      mlTree->Branch( "x", mlt_x, "x[n]/F" );
+      mlTree->Branch( "y", mlt_y, "y[n]/F" );
+      mlTree->Branch( "z", mlt_z, "z[n]/F" );
+      mlTree->Branch( "tid", &mlt_tid, "tid[n]/I" );
+      mlTree->Branch( "vid", &mlt_vid, "vid[n]/I" );
+      mlTree->Branch( "hpt", &mlt_hpt, "hpt[n]/F" );
+      mlTree->Branch( "hsv", &mlt_hsv, "hsv[n]/I" );
+
+
+      // mc tracks
+      mlTree->Branch( "nt", &mlt_nt, "nt/I" );
+      mlTree->Branch( "pt", &mlt_pt, "pt[nt]/F" );
+      mlTree->Branch( "eta", &mlt_eta, "eta[nt]/F" );
+      mlTree->Branch( "phi", &mlt_phi, "phi[nt]/F" );
+      // mlTree->Branch( "tid", &mlt_tid, "tid/I" );
+      mlTree->SetAutoFlush(0);
+   }
 
    mForwardTracker = new ForwardTracker();
    mForwardTracker->setConfig( _xmlconfig );
@@ -271,6 +284,10 @@ int StgMaker::Make()
    if (!g2t_track)
       return kStWarn;
 
+
+   mlt_nt = 1;
+   //g2t_track->GetNRows();
+
    LOG_INFO << "# mc tracks = " << g2t_track->GetNRows() << endm;
    histograms[ "nMcTracks" ]->Fill( g2t_track->GetNRows() );
    if ( g2t_track ) for ( int irow = 0; irow < g2t_track->GetNRows(); irow++ ) {
@@ -286,7 +303,15 @@ int StgMaker::Make()
          int   q   = track->charge;
 
          if ( 0 == mcTrackMap[ track_id ] ) // should always happen
-            mcTrackMap[ track_id ] = shared_ptr< McTrack >( new McTrack(pt, eta, phi, q) );
+            mcTrackMap[ track_id ] = shared_ptr< McTrack >( new McTrack(pt, eta, phi, q, track->start_vertex_p) );
+
+         if ( mGenTree ) {
+            LOG_F( INFO, "mlt_nt = %d == track_id = %d, is_shower = %d, start_vtx = %d", mlt_nt, track_id, track->is_shower, track->start_vertex_p );
+            mlt_pt[ mlt_nt ] = pt;
+            mlt_eta[ mlt_nt ] = eta;
+            mlt_phi[ mlt_nt ] = phi;
+            mlt_nt++;
+         }
       }
 
    // Add hits onto the hit loader (from rndHitCollection)
@@ -320,15 +345,19 @@ int StgMaker::Make()
       float y         = git->x[1] + gRandom->Gaus( 0, 0.01 ); // 100 micron blur according to approx sTGC reso
       float z         = git->x[2] + gRandom->Gaus( 0, 0.01 ); // 100 micron blur according to approx sTGC reso
 
-      mlt_x[ mlt_n ] = x; 
-      mlt_y[ mlt_n ] = y; 
-      mlt_z[ mlt_n ] = z;
-      mlt_tid[ mlt_n ] = track_id;
-      mlt_vid[ mlt_n ] = plane_id;
-      mlt_n++;
+      if ( mGenTree ){
+         mlt_x[ mlt_n ] = x; 
+         mlt_y[ mlt_n ] = y; 
+         mlt_z[ mlt_n ] = z;
+         mlt_tid[ mlt_n ] = track_id;
+         mlt_vid[ mlt_n ] = plane_id;
+         mlt_hpt[ mlt_n ] = mcTrackMap[track_id]->_pt;
+         mlt_hsv[ mlt_n ] = mcTrackMap[track_id]->_start_vertex;
+         mlt_n++;
+      }
       
 
-      LOG_F( INFO, "STGC Hit: volume_id=%d, plane_id=%d, (%f, %f, %f)", volume_id, plane_id, x, y, z );
+      LOG_F( INFO, "STGC Hit: volume_id=%d, plane_id=%d, (%f, %f, %f), track_id = %d, pT = %0.2f", volume_id, plane_id, x, y, z, track_id, mcTrackMap[ track_id ]->_pt );
       histograms[ "stgc_volume_id" ] ->Fill( volume_id );
 
       if ( plane_id < 4 && plane_id >= 0 ){
@@ -349,7 +378,7 @@ int StgMaker::Make()
 
    }
 
-   mlTree->Fill();
+   
 
    /************************************************************/
    // FSI Hits
@@ -397,6 +426,11 @@ int StgMaker::Make()
 
    // Process single event
    mForwardTracker -> doEvent();
+
+
+   if ( mGenTree ){
+      mlTree->Fill();
+   }
 
    // mForwardTracker -> addSiHits();
 
