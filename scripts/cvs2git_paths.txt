@@ -1,0 +1,22 @@
+# A file for rsync that contains include/exclude patterns (one per line)
+#
+# included paths start with '+ '
+# excluded paths start with '- '
+
+- /.backup
+- /Cons
+- /CVSROOT
+- /cgi
+- /conf
+- /Dsv
+- /group
+- /HISTORY
+- /obsolete
+- /offline
+- /online
+- /quaranteene.zip
+- /RealFiles.lis
+- /root
+- /root3
+- /root5
+- /scripts

@@ -77,10 +77,34 @@ endforeach()
 # Applies patches found in `patch` subdirectory only to $STAR_SRC code checked
 # out from a git repository.
 function(STAR_APPLY_PATCH)
-	if(NOT STAR_PATCH STREQUAL STAR_PATCH_APPLIED)
-		execute_process(COMMAND ${PROJECT_SOURCE_DIR}/scripts/apply_patch.py ${STAR_SRC} ${STAR_PATCH} OUTPUT_FILE patch.out ERROR_FILE patch.out)
-		set(STAR_PATCH_APPLIED "${STAR_PATCH}" CACHE STRING "Applied patch ID" FORCE)
+	# Do nothing if STAR_PATCH is not set (default value is NO)
+	if(NOT STAR_PATCH)
+		return()
 	endif()
+
+	file(GLOB _patch_files "${PROJECT_SOURCE_DIR}/patches/${STAR_PATCH}/*.patch")
+
+	if(NOT _patch_files)
+		message(WARNING "StarCommon: Patch set ${STAR_PATCH} not found")
+		return()
+	endif()
+
+	foreach(_patch_file ${_patch_files})
+		message(STATUS "StarCommon: Applying patch from ${STAR_PATCH}: ${_patch_file}")
+		execute_process(COMMAND patch -p1 -d "${STAR_SRC}"
+			INPUT_FILE "${_patch_file}" RESULT_VARIABLE _result OUTPUT_VARIABLE _output)
+		if(_result EQUAL 0)
+			message(STATUS "StarCommon: Patch succesfully applied")
+		else() # distinguish between failed patch and already applied one
+			execute_process(COMMAND patch -p1 -d "${STAR_SRC}" --reverse --dry-run
+				INPUT_FILE "${_patch_file}" RESULT_VARIABLE _result OUTPUT_VARIABLE _output)
+			if(_result EQUAL 0)
+				message(WARNING "StarCommon: Patch from ${STAR_PATCH} already applied: ${_patch_file}")
+			else()
+				message(FATAL_ERROR "StarCommon: Failed to apply patch from ${STAR_PATCH}: ${_patch_file}")
+			endif()
+		endif()
+	endforeach()
 endfunction()
 
 
@@ -598,7 +622,9 @@ function(STAR_ADD_LIBRARY_STARSIM starsim_dir)
 			"atmain/sterror.age"
 			"atmain/traceq.age"
 		)
-		list(SORT _all_files)
+		if(_all_files)
+			list(SORT _all_files)
+		endif()
 
 		foreach(_source_file ${_all_files})
 			get_filename_component(_source_file_ext ${_source_file} EXT)
@@ -717,16 +743,11 @@ function(STAR_ADD_LIBRARY_VERTEXNOSTI star_lib_dir)
 
 	GET_ROOT_DICT_FILE_NAMES(_linkdef_file _dictinc_file _dict_source _dict_header)
 
-	add_library(StGenericVertexMakerNoSti
-		${star_lib_dir_abs}/StCtbUtility.cxx
-		${star_lib_dir_abs}/StFixedVertexFinder.cxx
-		${star_lib_dir_abs}/StGenericVertexFinder.cxx
-		${star_lib_dir_abs}/StGenericVertexMaker.cxx
-		${star_lib_dir_abs}/StppLMVVertexFinder.cxx
-		${star_lib_dir_abs}/VertexFinderOptions.cxx
-		${star_lib_dir_abs}/Minuit/StMinuitVertexFinder.cxx
-		${star_lib_dir_abs}/Minuit/St_VertexCutsC.cxx
-		${_dict_source})
+	file(GLOB_RECURSE _cxx_files "${star_lib_dir_abs}/*.cxx")
+	# Remove source files coming from the following subdirectories
+	FILTER_LIST(_cxx_files EXCLUDE "StiPPVertex/" "StvPPVertex/" "macros/")
+
+	add_library(StGenericVertexMakerNoSti ${_cxx_files} ${_dict_source})
 	# Output the library to the respecitve subdirectory in the binary directory
 	set_target_properties(StGenericVertexMakerNoSti PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${star_lib_dir_out})
 

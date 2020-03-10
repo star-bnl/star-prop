@@ -83,6 +83,11 @@ star_add_library(pams/ctf St_ctf)
 star_add_library(pams/sim/g2t St_g2t)
 star_add_library(pams/sim/gstar)
 
+# directory is balcklisted because it is mostly external generators
+star_add_library(StRoot/StarGenerator/UTIL "StarGeneratorUtil" )
+star_add_library(StRoot/StarGenerator/EVENT "StarGeneratorEvent")
+star_add_library(StRoot/StarGenerator/BASE "StarGeneratorBase")
+
 GET_SUBDIRS(star_lib_dirs "StarVMC;StRoot")
 if(EXISTS ${PROJECT_SOURCE_DIR}/StRoot)
 	GET_SUBDIRS(star_lib_dirs "StarVMC;StRoot;${PROJECT_SOURCE_DIR}/StRoot")
