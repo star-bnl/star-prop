@@ -1,7 +1,7 @@
 #ifndef StgMaker_h
 #define StgMaker_h
 
-#include "StMaker.h"
+#include "StChain/StMaker.h"
 
 #include "GenFit/Track.h"
 
@@ -15,6 +15,7 @@ class ForwardTracker;
 class ForwardHitLoader;
 class StarFieldAdaptor;
 
+class StGlobalTrack;
 class StRnDHitCollection;
 class StTrack;
 class StTrackDetectorInfo;
@@ -23,9 +24,6 @@ class StTrackDetectorInfo;
 
 class StgMaker : public StMaker
 {
-
-  ClassDef(StgMaker, 0);
-
 public:
 
   StgMaker();
@@ -39,7 +37,6 @@ public:
   enum { kInnerGeometry,       kOuterGeometry };
 
 private:
-protected:
 
   ForwardTracker        *mForwardTracker;
   ForwardHitLoader      *mForwardHitLoader;
@@ -55,12 +52,11 @@ protected:
   void FillTrack         ( StTrack             *otrack, genfit::Track *itrack, const Seed_t &iseed, StTrackDetectorInfo *info );
   void FillTrackFlags    ( StTrack             *otrack, genfit::Track *itrack );
   void FillTrackGeometry ( StTrack             *otrack, genfit::Track *itrack, double zplane, int io );
-  void FillTrackDcaGeometry ( StTrack             *otrack, genfit::Track *itrack );
+  void FillTrackDcaGeometry ( StGlobalTrack    *otrack, genfit::Track *itrack );
   void FillTrackFitTraits( StTrack             *otrack, genfit::Track *itrack );
   void FillTrackMatches  ( StTrack             *otrack, genfit::Track *itrack );
 
-
-
+  ClassDef(StgMaker, 0);
 };
 
 #endif

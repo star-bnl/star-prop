@@ -4,9 +4,7 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "TH1.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TGraph2D.h"
+#include "TH1I.h"
 #include "TRandom3.h"
 #include "TVector3.h"
 #include "Fit/Fitter.h"
@@ -25,11 +23,11 @@
 #include "StgMaker/include/Tracker/VertexFinder.h"
 #include "StgMaker/include/Tracker/TrackFitter.h"
 
-#include "KiTrack/SegmentBuilder.h"
 #include "KiTrack/Automaton.h"
+#include "KiTrack/SegmentBuilder.h"
+#include "KiTrack/SubsetHopfieldNN.h"
 #include "Criteria/Criteria.h"
 #include "Criteria/ICriterion.h"
-#include "KiTrack/SubsetHopfieldNN.h"
 
 #include "GenFit/FitStatus.h"
 
@@ -813,7 +811,5 @@ public:
   const std::vector<genfit::Track *> &globalTracks() const { return _globalTracks; }
 
 };
-
-
 
 #endif
