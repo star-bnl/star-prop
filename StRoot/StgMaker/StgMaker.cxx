@@ -39,6 +39,7 @@
 #include "StEventUtilities/StEventHelper.h"
 
 #include "StarClassLibrary/StPhysicalHelix.hh"
+#include "StarClassLibrary/SystemOfUnits.h"
 #include "St_base/StMessMgr.h"
 
 #include <SystemOfUnits.h>
@@ -898,7 +899,7 @@ void StgMaker::FillTrackGeometry( StTrack *otrack, genfit::Track *itrack, double
   double Bz = B[2];
 
   // Temporary helix to get the helix parameters
-  StPhysicalHelix helix( momentum, origin, Bz*tesla, charge );
+  StPhysicalHelix helix( momentum, origin, Bz*units::kilogauss, charge );
   // StiStEventFiller has this as |curv|.
   double curv = TMath::Abs(helix.curvature());
   double h    = -TMath::Sign(charge * Bz, 1.0); // helicity
@@ -1019,7 +1020,7 @@ void StgMaker::FillTrackDcaGeometry( StGlobalTrack *otrack, genfit::Track *itrac
   double Bz = B[2];
 
   // Temporary helix to get the helix parameters
-  StPhysicalHelix helix( momentum, origin, Bz, charge );
+  StPhysicalHelix helix( momentum, origin, Bz*units::kilogauss, charge );
 
   // StiStEventFiller has this as |curv|.
   double curv =  TMath::Abs(helix.curvature());
