@@ -40,6 +40,10 @@ public:
 
   enum { kInnerGeometry,       kOuterGeometry };
 
+  void SetConfigFile( std::string n ) {
+    mConfigFile = n;
+  }
+
 private:
 protected:
 
@@ -52,6 +56,7 @@ protected:
    typedef std::vector<KiTrack::IHit *> Seed_t;
 
   std::map< std::string, TH1 * > histograms;
+  std::string mConfigFile;
 
   // Fill StEvent
   void FillEvent();

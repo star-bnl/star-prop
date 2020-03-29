@@ -380,6 +380,16 @@ public:
 
     if ( mcTrackFinding ) {
       doMcTrackFinding( mcTrackMap );
+      /***********************************************/
+      // REFIT with Silicon hits
+      if ( cfg.get<bool>( "TrackFitter:refitSi", true ) ){
+        LOG_SCOPE_F( INFO, "Refitting" );
+        addSiHits();
+        LOG_F( INFO, "Finished adding Si hits" );
+      } else {
+        LOG_F( INFO, "Skipping Si Refit" );
+      }
+      /***********************************************/
       qPlotter->summarizeEvent( recoTracks, mcTrackMap, fitMoms, fitStatus );
       return;
     }

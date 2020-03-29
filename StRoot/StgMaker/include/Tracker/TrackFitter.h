@@ -84,10 +84,23 @@ public:
 		fitter = new genfit::KalmanFitterRefTrack( );
 		//	fitter = new genfit::KalmanFitter( );
 		// fitter->setMaxIterations(2);
-		//		fitter->setDebugLvl(10);
+		// fitter->(10);
 		// track representation
 		// pion_track_rep =
 
+		// fitter->setRelChi2Change( 0.7 );
+		// fitter->setBlowUpMaxVal( 100 );
+		// fitter->setDeltaPval( 0.5 );
+
+
+		// MaxFailedHits = -1 is default, no restriction
+		fitter->setMaxFailedHits( cfg.get<int>( "TrackFitter.KalmanFitterRefTrack:MaxFailedHits", -1 ) );
+		fitter->setDebugLvl( cfg.get<int>( "TrackFitter.KalmanFitterRefTrack:DebugLvl", 0 ) );
+		LOG_F( INFO, "getDeltaPval = %f", fitter->getDeltaPval() );
+		LOG_F( INFO, "getRelChi2Change = %f", fitter->getRelChi2Change() );
+		LOG_F( INFO, "getBlowUpMaxVal = %f", fitter->getBlowUpMaxVal() );
+		LOG_F( INFO, "getMaxFailedHits = %d", fitter->getMaxFailedHits() );
+		
 
 		// make a super simple version of the FTS geometry detector planes (this needs to be updated)
 
@@ -814,6 +827,9 @@ public:
 		try {
 			LOG_SCOPE_F(INFO, "Track Fit with GENFIT2");
 			fitTrack.checkConsistency();
+
+			// prepare the track
+			// fitter->prepareTrack( &fitTrack, trackRepPos );
 
 			// do the fit
 			fitter->processTrack(&fitTrack);

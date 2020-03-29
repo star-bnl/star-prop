@@ -223,49 +223,53 @@ int StgMaker::Finish()
 //________________________________________________________________________
 int StgMaker::Init()
 {
-   // Initialize configuration file
-   std::string configFile = "config.xml";
-   std::map<string, string> cmdLineConfig;
-   jdb::XmlConfig _xmlconfig;
-   _xmlconfig.loadFile( configFile, cmdLineConfig );
-   
-   // setup the loguru log file
-   // loguru::add_file("everything.log", loguru::Truncate, loguru::Verbosity_2);
-   loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
+  // Initialize configuration file
+  std::string configFile = "config.xml";
+  if ( mConfigFile.length() > 4 ){
+    configFile = mConfigFile;
+    LOG_F( INFO, "Config File : %s", mConfigFile.c_str() );
+  }
+  std::map<string, string> cmdLineConfig;
+  jdb::XmlConfig _xmlconfig;
+  _xmlconfig.loadFile( configFile, cmdLineConfig );
 
-   mSiRasterizer = new SiRasterizer( _xmlconfig );
+  // setup the loguru log file
+  loguru::add_file("everything.log", loguru::Truncate, loguru::Verbosity_2);
+  loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
 
-   mForwardTracker = new ForwardTracker();
-   mForwardTracker->setConfig( _xmlconfig );
+  mSiRasterizer = new SiRasterizer( _xmlconfig );
 
-   mForwardHitLoader = new ForwardHitLoader();
-   mForwardTracker->setLoader( mForwardHitLoader );
-   mForwardTracker->initialize();
+  mForwardTracker = new ForwardTracker();
+  mForwardTracker->setConfig( _xmlconfig );
 
-   // create histograms
-   histograms[ "nMcTracks" ] = new TH1I( "nMcTracks", ";# MC Tracks/Event", 1000, 0, 1000 );
-   histograms[ "nHitsSTGC" ] = new TH1I( "nHitsSTGC", ";# STGC Hits/Event", 1000, 0, 1000 );
-   histograms[ "nHitsFSI" ] = new TH1I( "nHitsFSI", ";# FSIT Hits/Event", 1000, 0, 1000 );
-   
-   histograms[ "stgc_volume_id" ] = new TH1I( "stgc_volume_id", ";stgc_volume_id", 50, 0, 50 );
-   histograms[ "fsi_volume_id" ] = new TH1I( "fsi_volume_id", ";fsi_volume_id", 50, 0, 50 );
+  mForwardHitLoader = new ForwardHitLoader();
+  mForwardTracker->setLoader( mForwardHitLoader );
+  mForwardTracker->initialize();
 
-   histograms[ "fsiHitDeltaR" ] = new TH1F( "fsiHitDeltaR", "FSI; delta r (cm); ", 500, -5, 5 );
-   histograms[ "fsiHitDeltaPhi" ] = new TH1F( "fsiHitDeltaPhi", "FSI; delta phi; ", 500, -5, 5 );
+  // create histograms
+  histograms[ "nMcTracks" ] = new TH1I( "nMcTracks", ";# MC Tracks/Event", 1000, 0, 1000 );
+  histograms[ "nHitsSTGC" ] = new TH1I( "nHitsSTGC", ";# STGC Hits/Event", 1000, 0, 1000 );
+  histograms[ "nHitsFSI" ] = new TH1I( "nHitsFSI", ";# FSIT Hits/Event", 1000, 0, 1000 );
 
-   // there are 4 stgc stations
-   for ( int i = 0; i < 4; i++ ){
-      histograms[ TString::Format("stgc%dHitMap", i).Data() ] = new TH2F( TString::Format("stgc%dHitMap", i), TString::Format("STGC Layer %d; x (cm); y(cm)"), 200, -100, 100, 200, -100, 100 );
-   }
+  histograms[ "stgc_volume_id" ] = new TH1I( "stgc_volume_id", ";stgc_volume_id", 50, 0, 50 );
+  histograms[ "fsi_volume_id" ] = new TH1I( "fsi_volume_id", ";fsi_volume_id", 50, 0, 50 );
 
-   // There are 3 silicon stations
-   for ( int i = 0; i < 3; i++ ){
-      histograms[ TString::Format("fsi%dHitMap", i).Data() ] = new TH2F( TString::Format("fsi%dHitMap", i), TString::Format("FSI Layer %d; x (cm); y(cm)"), 200, -100, 100, 200, -100, 100 );
-      histograms[ TString::Format("fsi%dHitMapR", i).Data() ] = new TH1F( TString::Format("fsi%dHitMapR", i), TString::Format("FSI Layer %d; r (cm); "), 500, 0, 50 );
-      histograms[ TString::Format("fsi%dHitMapPhi", i).Data() ] = new TH1F( TString::Format("fsi%dHitMapPhi", i), TString::Format("FSI Layer %d; phi; "), 320, 0, TMath::Pi()*2 + 0.1 );
-   }
+  histograms[ "fsiHitDeltaR" ] = new TH1F( "fsiHitDeltaR", "FSI; delta r (cm); ", 500, -5, 5 );
+  histograms[ "fsiHitDeltaPhi" ] = new TH1F( "fsiHitDeltaPhi", "FSI; delta phi; ", 500, -5, 5 );
 
-   return kStOK;
+  // there are 4 stgc stations
+  for ( int i = 0; i < 4; i++ ){
+    histograms[ TString::Format("stgc%dHitMap", i).Data() ] = new TH2F( TString::Format("stgc%dHitMap", i), TString::Format("STGC Layer %d; x (cm); y(cm)"), 200, -100, 100, 200, -100, 100 );
+  }
+
+  // There are 3 silicon stations
+  for ( int i = 0; i < 3; i++ ){
+    histograms[ TString::Format("fsi%dHitMap", i).Data() ] = new TH2F( TString::Format("fsi%dHitMap", i), TString::Format("FSI Layer %d; x (cm); y(cm)"), 200, -100, 100, 200, -100, 100 );
+    histograms[ TString::Format("fsi%dHitMapR", i).Data() ] = new TH1F( TString::Format("fsi%dHitMapR", i), TString::Format("FSI Layer %d; r (cm); "), 500, 0, 50 );
+    histograms[ TString::Format("fsi%dHitMapPhi", i).Data() ] = new TH1F( TString::Format("fsi%dHitMapPhi", i), TString::Format("FSI Layer %d; phi; "), 320, 0, TMath::Pi()*2 + 0.1 );
+  }
+
+  return kStOK;
 };
 //________________________________________________________________________
 int StgMaker::Make()
