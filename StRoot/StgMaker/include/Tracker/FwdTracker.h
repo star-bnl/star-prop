@@ -380,16 +380,18 @@ public:
 
     if ( mcTrackFinding ) {
       doMcTrackFinding( mcTrackMap );
+      
       /***********************************************/
       // REFIT with Silicon hits
       if ( cfg.get<bool>( "TrackFitter:refitSi", true ) ){
-        LOG_SCOPE_F( INFO, "Refitting" );
-        addSiHits();
+        LOG_SCOPE_F( INFO, "Refitting with Si hits (MC association)" );
+        addSiHitsMc();
         LOG_F( INFO, "Finished adding Si hits" );
       } else {
         LOG_F( INFO, "Skipping Si Refit" );
       }
       /***********************************************/
+
       qPlotter->summarizeEvent( recoTracks, mcTrackMap, fitMoms, fitStatus );
       return;
     }
@@ -424,7 +426,7 @@ public:
       hist[ "FitStatus" ]->Fill( "AttemptFit", 1 );
       TVector3 p = trackFitter->fitTrack( track );
 
-      if ( p.Perp() > 1e-1 ){
+      if ( p.Perp() > 1e-3 ){
         hist[ "FitStatus" ]->Fill( "GoodFit", 1 );
       } else {
         hist[ "FitStatus" ]->Fill( "BadFit", 1 );
@@ -434,7 +436,7 @@ public:
       fitStatus.push_back( trackFitter->getStatus() );
 
       auto ft = trackFitter->getTrack();
-      if ( ft->getFitStatus( ft->getCardinalRep() )->isFitConverged() ){
+      if ( ft->getFitStatus( ft->getCardinalRep() )->isFitConverged() && p.Perp() > 1e-3 ){
         hist[ "FitStatus" ]->Fill( "GoodCardinal", 1 );
       }
       
@@ -667,6 +669,62 @@ public:
 
     }
   } // doTrackIteration
+
+
+  void addSiHitsMc(  ){
+    LOG_SCOPE_FUNCTION( INFO );
+    std::map<int, std::vector<KiTrack::IHit *> > hitmap = hitLoader -> loadSi( 0 );
+    LOG_F( INFO, "hitmap size = %lu (should be 3)", hitmap.size() );
+
+    LOG_F( INFO, "We have %d global tracks to work with", _globalTracks.size() );
+    for ( size_t i = 0; i < _globalTracks.size(); i++ ){
+      LOG_F( INFO, "_globalTracks mcTrackId = %d", _globalTracks[i]->getMcTrackId() );
+
+      if ( _globalTracks[i]->getFitStatus( _globalTracks[i]->getCardinalRep() )->isFitConverged() == false || fitMoms[i] .Perp() < 1e-3){
+        LOG_F( WARNING, "Original Track fit did not converge, skipping" );
+        return;
+      }
+
+      hist[ "FitStatus" ]->Fill( "PossibleReFit", 1);
+
+      std::vector<KiTrack::IHit *> si_hits_for_this_track( 3, nullptr );
+      
+      for ( size_t j =0; j < 3; j++ ){
+        LOG_F( INFO, "Checking hitmap[%lu]", i );
+        for ( auto h0 : hitmap[j] ){
+          LOG_F( INFO, "Checking hit with _tid=%lu", dynamic_cast<FwdHit *>(h0)->_tid );
+          if ( dynamic_cast<FwdHit *>(h0)->_tid == _globalTracks[i]->getMcTrackId() ){
+            si_hits_for_this_track[j] = h0;
+            LOG_F( INFO, "Found Si hit on layer %lu", j );
+            break;
+          }
+        } // loop on hits in this layer of hitmap
+      } // loop on hitmap layers
+
+
+      LOG_F( INFO, "Si hit0 = %p", si_hits_for_this_track[0] );
+      LOG_F( INFO, "Si hit1 = %p", si_hits_for_this_track[1] );
+      LOG_F( INFO, "Si hit2 = %p", si_hits_for_this_track[2] );
+
+      bool have_all_three = (si_hits_for_this_track[0] != nullptr) && (si_hits_for_this_track[1] != nullptr) && (si_hits_for_this_track[2] != nullptr);
+
+      if ( have_all_three ){
+        hist[ "FitStatus" ]-> Fill ("AttemptReFit", 1 );
+        TVector3 p = trackFitter->refitTrackWithSiHits( _globalTracks[i], si_hits_for_this_track );
+
+        if ( p.Perp() == fitMoms[ i ].Perp() ){
+          hist[ "FitStatus" ] -> Fill( "BadReFit", 1 );
+          
+        } else {
+          hist[ "FitStatus" ] -> Fill( "GoodReFit", 1 );
+        }
+
+        LOG_F( INFO, "Global track now has: %lu points", _globalTracks[i]->getNumPoints() );
+        LOG_F(INFO, "pt was: %0.2f and now is: %0.2f", fitMoms[ i ].Perp(), p.Perp() );
+        fitMoms[ i ] = p;
+      } // we have 3 Si hits to refit with
+    } // loop on the global tracks
+  } // ad Si hits via MC associations
 
 
   void addSiHits(  ){

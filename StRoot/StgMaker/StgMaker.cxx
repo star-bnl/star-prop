@@ -397,7 +397,7 @@ int StgMaker::Make()
          y = rastered.Y();
       }
 
-      LOG_F( INFO, "FSI Hit: volume_id=%d, plane_id=%d, (%f, %f, %f)", volume_id, plane_id, x, y, z );
+      LOG_F( INFO, "FSI Hit: volume_id=%d, plane_id=%d, (%f, %f, %f), track_id=%d", volume_id, plane_id, x, y, z, track_id );
       histograms[ "fsi_volume_id" ] ->Fill( volume_id );
       
       if ( plane_id < 3 && plane_id >= 0 ){

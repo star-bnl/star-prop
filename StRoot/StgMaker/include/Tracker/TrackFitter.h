@@ -96,6 +96,8 @@ public:
 		// MaxFailedHits = -1 is default, no restriction
 		fitter->setMaxFailedHits( cfg.get<int>( "TrackFitter.KalmanFitterRefTrack:MaxFailedHits", -1 ) );
 		fitter->setDebugLvl( cfg.get<int>( "TrackFitter.KalmanFitterRefTrack:DebugLvl", 0 ) );
+		fitter->setMaxIterations( cfg.get<int>( "TrackFitter.KalmanFitterRefTrack:MaxIterations", 4 ) );
+		LOG_F( INFO, "getMaxIterations = %d", fitter->getMaxIterations() );
 		LOG_F( INFO, "getDeltaPval = %f", fitter->getDeltaPval() );
 		LOG_F( INFO, "getRelChi2Change = %f", fitter->getRelChi2Change() );
 		LOG_F( INFO, "getBlowUpMaxVal = %f", fitter->getBlowUpMaxVal() );
