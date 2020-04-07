@@ -64,6 +64,7 @@ protected:
    TFile * mlFile;
    TTree *mlTree;
    bool mGenTree;
+   std::string mConfigFile;
    
 
    float mlt_x[MAX_TREE_ELEMENTS], mlt_y[MAX_TREE_ELEMENTS], mlt_z[MAX_TREE_ELEMENTS];
