@@ -43,35 +43,36 @@ FwdSystem *gFwdSystem;
 class McTrack
 {
 public:
-  McTrack()
-  {
-    _pt = -999;
-    _eta = -999;
-    _phi = -999;
-    _q = 0;
-  }
-  McTrack( float pt, float eta = -999, float phi = -999, int q = 0 )
-  {
-    _pt = pt;
-    _eta = eta;
-    _phi = phi;
-    _q = q;
-  }
-  void addHit( KiTrack::IHit *hit )
-  {
-    hits.push_back( hit );
-  }
+   McTrack()
+   {
+      _pt = -999;
+      _eta = -999;
+      _phi = -999;
+      _q = 0;
+   }
+   McTrack( float pt, float eta = -999, float phi = -999, int q = 0, int start_vertex = -1 )
+   {
+      _pt = pt;
+      _eta = eta;
+      _phi = phi;
+      _q = q;
+      _start_vertex = start_vertex;
+   }
+   void addHit( KiTrack::IHit *hit )
+   {
+      hits.push_back( hit );
+   }
 
-  void addFSIHit( KiTrack::IHit *hit )
-  {
-    fsi_hits.push_back( hit );
-  }
+   void addFSIHit( KiTrack::IHit *hit )
+   {
+      fsi_hits.push_back( hit );
+   }
 
-  float _pt, _eta, _phi;
-  int _tid, _q;
+   float _pt, _eta, _phi;
+   int _tid, _q, _start_vertex;
 
-  std::vector<KiTrack::IHit *> hits;
-  std::vector<KiTrack::IHit *> fsi_hits;
+   std::vector<KiTrack::IHit *> hits;
+   std::vector<KiTrack::IHit *> fsi_hits;
 };
 
 class FwdHit : public KiTrack::IHit
