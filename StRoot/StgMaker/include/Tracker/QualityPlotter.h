@@ -256,7 +256,7 @@ public:
 			this->get( "McEta" )->Fill( kv.second->_eta );
 			this->get( "McPhi" )->Fill( kv.second->_phi );
 
-			if ( kv.second->hits.size() >= 4 && kv.second->_start_vertex == 1) {
+			if ( kv.second->hits.size() >= 4 ) {
 				this->get( "McPt_4hits" )->Fill( kv.second->_pt );
 				this->get( "McEta_4hits" )->Fill( kv.second->_eta );
 				this->get( "McPhi_4hits" )->Fill( kv.second->_phi );

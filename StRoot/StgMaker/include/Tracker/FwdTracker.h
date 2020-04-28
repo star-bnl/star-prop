@@ -31,6 +31,8 @@
 #include "Criteria/ICriterion.h"
 #include "KiTrack/SubsetHopfieldNN.h"
 
+#include "CriteriaKeeper.h"
+
 #include "GenFit/FitStatus.h"
 
 #include "StgMaker/XmlConfig/XmlConfig.h"
@@ -85,6 +87,10 @@ public:
   
   void setConfigFile( std::string cf ){
     configFile = cf;
+  }
+
+  void setSaveCriteriaValues( bool save ){
+    saveCriteriaValues = save;
   }
 
   // Adopt external configuration file
@@ -193,14 +199,62 @@ public:
       float vmin = cfg.get<float>( p + ":min", 0 );
       float vmax = cfg.get<float>( p + ":max", 1 );
       LOG_F( INFO, "Loading Criteria from %s (name=%s, min=%f, max=%f)", p.c_str(), name.c_str(), vmin, vmax );
-      crits.push_back(KiTrack::Criteria::createCriterion( name, vmin, vmax ));
-      
+      auto crit = KiTrack::Criteria::createCriterion( name, vmin, vmax );
+      crit->setSaveValues( saveCriteriaValues );
+      if ( saveCriteriaValues )
+        crits.push_back( new KiTrack::CriteriaKeeper(crit) ); // KiTrack::CriteriaKeeper intercepts values and saves them
+      else 
+        crits.push_back( crit );
     }
 
     return crits;
   }
 
+  std::vector<float> getCriteriaValues( std::string crit_name ) {
+    std::vector<float> em;
+    if ( saveCriteriaValues != true ){
+      return em;
+    }
 
+    for ( auto crit : twoHitCrit ){
+      if ( crit_name == crit->getName() ){
+        auto critKeeper = static_cast<KiTrack::CriteriaKeeper*>(crit);
+        return critKeeper->getValues();
+      }
+    }
+
+    for ( auto crit : threeHitCrit ){
+      if ( crit_name == crit->getName() ){
+        auto critKeeper = static_cast<KiTrack::CriteriaKeeper*>(crit);
+        return critKeeper->getValues();
+      }
+    }
+
+    return em;
+  };
+
+  std::vector<int> getCriteriaTrackIds( std::string crit_name ) {
+    std::vector<int> em;
+    if ( saveCriteriaValues != true ){
+      return em;
+    }
+
+    for ( auto crit : twoHitCrit ){
+      if ( crit_name == crit->getName() ){
+        auto critKeeper = static_cast<KiTrack::CriteriaKeeper*>(crit);
+        return critKeeper->getTrackIds();
+      }
+    }
+
+    for ( auto crit : threeHitCrit ){
+      if ( crit_name == crit->getName() ){
+        auto critKeeper = static_cast<KiTrack::CriteriaKeeper*>(crit);
+        return critKeeper->getTrackIds();
+      }
+    }
+
+    return em;
+  };
 
   size_t nHitsInHitMap( std::map<int, std::vector<KiTrack::IHit *> > &hitmap )
   {
@@ -332,7 +386,6 @@ public:
   } // removeHits
 
 
-
   void doEvent( unsigned long long int iEvent = 0 )
   {
     LOG_SCOPE_FUNCTION(INFO);
@@ -343,6 +396,8 @@ public:
     // Moved cleanup to the start of doEvent, so that the fit results
     // persist after the call
     recoTracks.clear();
+    recoTrackQuality.clear();
+    recoTrackIdTruth.clear();
     fitMoms.clear();
     fitStatus.clear();
 
@@ -472,8 +527,15 @@ public:
         uvid.insert( static_cast<FwdHit *>(h)->_vid );
       }
 
-      if ( uvid.size() == track.size() ) // only add tracks that have one hit per volume
+      if ( uvid.size() == track.size() ) {// only add tracks that have one hit per volume
         recoTracks.push_back( track );
+        int idt = 0;
+        float qual = 0;
+        MCTruthUtils::domCon( track, qual );
+        recoTrackQuality.push_back( qual );
+        recoTrackIdTruth.push_back( idt );
+      }
+
     }
 
     LOG_F( INFO, "Made %lu Reco Tracks from MC Tracks", recoTracks.size() );
@@ -521,7 +583,9 @@ public:
       criteriaPath = "TrackFinder.SegmentBuilder";
     }
 
-    builder.addCriteria( loadCriteria( criteriaPath ) );
+    twoHitCrit.clear();
+    twoHitCrit = loadCriteria( criteriaPath );
+    builder.addCriteria( twoHitCrit );
 
     // Setup the connector (this tells it how to connect hits together into segments)
     std::string connPath = "TrackFinder.Iteration[" + std::to_string(iIteration) + "].Connector";
@@ -556,7 +620,9 @@ public:
 
     if ( false == cfg.exists( criteriaPath ) ) criteriaPath = "TrackFinder.ThreeHitSegments";
 
-    automaton.addCriteria( loadCriteria( criteriaPath ) );
+    threeHitCrit.clear();
+    threeHitCrit = loadCriteria( criteriaPath );
+    automaton.addCriteria( threeHitCrit );
     automaton.lengthenSegments();
 
     bool doAutomation = cfg.get<bool>( criteriaPath + ":doAutomation", true );
@@ -629,6 +695,14 @@ public:
 
       // Fit each accepted track seed
       for ( auto t : acceptedTracks ) {
+        
+        // calculate the Mc Matching info
+        int idt = 0;
+        float qual = 0;
+        MCTruthUtils::domCon( t, qual );
+        recoTrackQuality.push_back( qual );
+        recoTrackIdTruth.push_back( idt );
+
         trackFitting( t );
       }
 
@@ -810,6 +884,10 @@ public:
     return found_hits;
   }
 
+  bool getSaveCriteriaValues() { return saveCriteriaValues; }
+  std::vector<KiTrack::ICriterion*> getTwoHitCriteria() { return twoHitCrit; }
+  std::vector<KiTrack::ICriterion*> getThreeHitCriteria() { return threeHitCrit; }
+
 protected:
   FastSim *fastSim;
   TTree *tree;
@@ -817,6 +895,7 @@ protected:
   unsigned long long int nEvents;
 
   bool doTrackFitting = true;
+  bool saveCriteriaValues = false;
 
   /* TTree data members */
   int tree_n;
@@ -839,6 +918,8 @@ protected:
   size_t nTrueTracksWith7;
 
   std::vector<Seed_t> recoTracks; // the tracks recod from all iterations
+  std::vector<float> recoTrackQuality;
+  std::vector<int> recoTrackIdTruth;
   std::vector<TVector3> fitMoms;
   // vector<int> fitQs;
   std::vector<genfit::FitStatus>     fitStatus;
@@ -850,8 +931,12 @@ protected:
 
   TrackFitter *trackFitter = nullptr;
 
+  std::vector<KiTrack::ICriterion *> twoHitCrit;
+  std::vector<KiTrack::ICriterion *> threeHitCrit;
+
   // histograms of the raw input data
   std::map<std::string, TH1 * > hist;
+  std::map < std::string , std::vector<float> > criteriaValues;
 
 public:
   const std::vector<Seed_t> &getRecoTracks() const { return recoTracks; }

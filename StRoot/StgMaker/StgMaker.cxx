@@ -269,7 +269,31 @@ int StgMaker::Init()
 			mlTree->Branch( "pt", &mlt_pt, "pt[nt]/F" );
 			mlTree->Branch( "eta", &mlt_eta, "eta[nt]/F" );
 			mlTree->Branch( "phi", &mlt_phi, "phi[nt]/F" );
-			// mlTree->Branch( "tid", &mlt_tid, "tid/I" );
+			mlTree->Branch( "tid", &mlt_tid, "tid/I" );
+
+			std::string path = "TrackFinder.Iteration[0].SegmentBuilder";
+			std::vector<string> paths = _xmlconfig.childrenOf(path);
+
+			for ( string p : paths ) {
+				string name = _xmlconfig.get<string>( p + ":name" );
+				bool active = _xmlconfig.get<bool>( p + ":active", true );
+				mlt_crits[name]; // create the entry
+				mlTree->Branch( name.c_str(), &mlt_crits[name] );
+				mlTree->Branch( (name + "_trackIds").c_str(), &mlt_crit_track_ids[name] );
+			}
+
+			// Three hit criteria
+			path = "TrackFinder.Iteration[0].ThreeHitSegments";
+			paths = _xmlconfig.childrenOf(path);
+
+			for ( string p : paths ) {
+				string name = _xmlconfig.get<string>( p + ":name" );
+				bool active = _xmlconfig.get<bool>( p + ":active", true );
+				mlt_crits[name]; // create the entry
+				mlTree->Branch( name.c_str(), &mlt_crits[name] );
+				mlTree->Branch( (name + "_trackIds").c_str(), &mlt_crit_track_ids[name] );
+			}
+			
 			mlTree->SetAutoFlush(0);
 	}
 
@@ -277,6 +301,8 @@ int StgMaker::Init()
 
 	mForwardTracker = new ForwardTracker();
 	mForwardTracker->setConfig( _xmlconfig );
+	// only save criteria values if we are generating a tree.
+	mForwardTracker->setSaveCriteriaValues( mGenTree );
 
 	mForwardHitLoader = new ForwardHitLoader();
 	mForwardTracker->setLoader( mForwardHitLoader );
@@ -347,7 +373,7 @@ int StgMaker::Make()
 		int   q   = track->charge;
 
 		if ( 0 == mcTrackMap[ track_id ] ) // should always happen
-			mcTrackMap[ track_id ] = shared_ptr< McTrack >( new McTrack(pt, eta, phi, q) );
+			mcTrackMap[ track_id ] = shared_ptr< McTrack >( new McTrack(pt, eta, phi, q, track->start_vertex_p) );
 		if ( mGenTree ) {
 			LOG_F( INFO, "mlt_nt = %d == track_id = %d, is_shower = %d, start_vtx = %d", mlt_nt, track_id, track->is_shower, track->start_vertex_p );
 			mlt_pt[ mlt_nt ] = pt;
@@ -480,7 +506,37 @@ int StgMaker::Make()
 
 
 	 if ( mGenTree ){
-			mlTree->Fill();
+
+		if (mForwardTracker->getSaveCriteriaValues()){
+			for ( auto crit : mForwardTracker->getTwoHitCriteria() ) {
+				string name = crit->getName();
+				mlt_crits[name].clear();
+				mlt_crit_track_ids[name].clear();
+				// copy by value so ROOT doesnt get lost (uses pointer to vector)
+				for ( float v : mForwardTracker->getCriteriaValues( name ) ){
+					mlt_crits[name].push_back( v );
+				}
+				for ( int v : mForwardTracker->getCriteriaTrackIds( name ) ){
+					mlt_crit_track_ids[name].push_back( v );
+				}
+			}
+
+			// three hit criteria
+			for ( auto crit : mForwardTracker->getThreeHitCriteria() ) {
+				string name = crit->getName();
+				mlt_crits[name].clear();
+				mlt_crit_track_ids[name].clear();
+				// copy by value so ROOT doesnt get lost (uses pointer to vector)
+				for ( float v : mForwardTracker->getCriteriaValues( name ) ){
+					mlt_crits[name].push_back( v );
+				}
+				for ( int v : mForwardTracker->getCriteriaTrackIds( name ) ){
+					mlt_crit_track_ids[name].push_back( v );
+				}
+			}
+		}
+
+		mlTree->Fill();
 	 }
 
 
