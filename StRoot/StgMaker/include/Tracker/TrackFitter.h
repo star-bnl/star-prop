@@ -199,8 +199,11 @@ class TrackFitter {
         hist[n] = new TH1F(n.c_str(), ";", 5, 0, 5);
         jdb::HistoBins::labelAxis(hist[n]->GetXaxis(), {"Total", "Pass", "Fail", "GoodCardinal", "Exception"});
 
-        n = "FitDuration"
+        n = "FitDuration";
         hist[n] = new TH1F( n.c_str(), "; Duraton (ms)", 5000, 0, 50000 );
+
+        n = "FailedFitDuration";
+        hist[n] = new TH1F( n.c_str(), "; Duraton (ms)", 500, 0, 50000 );
     }
 
     void writeHistograms() {
@@ -841,6 +844,9 @@ class TrackFitter {
                 LOG_F(INFO, "SeedPosALT( X=%0.2f, Y=%0.2f, Z=%0.2f )", seedPos.X(), seedPos.Y(), seedPos.Z());
                 p.SetXYZ(0, 0, 0);
                 this->hist["FitStatus"]->Fill("Fail", 1);
+                
+                long long duration = (loguru::now_ns() - itStart) * 1e-6; // milliseconds
+                this->hist["FailedFitDuration" ]->Fill( duration );
                 return p;
             }
 
@@ -871,6 +877,10 @@ class TrackFitter {
             LOG_F(INFO, "SeedPosALT( X=%0.2f, Y=%0.2f, Z=%0.2f )", seedPos.X(), seedPos.Y(), seedPos.Z());
             p.SetXYZ(0, 0, 0);
             this->hist["FitStatus"]->Fill("Exception", 1);
+
+            long long duration = (loguru::now_ns() - itStart) * 1e-6; // milliseconds
+            this->hist["FailedFitDuration" ]->Fill( duration );
+
             return p;
         }
 
@@ -894,8 +904,7 @@ class TrackFitter {
             this->hist["delta_fit_seed_phi"]->Fill(p.Phi() - seedMom.Phi());
         }
 
-        long long itEnd = loguru::now_ns();
-        long long duration = (itEnd - itStart) * 1e-6; // milliseconds
+        long long duration = (loguru::now_ns() - itStart) * 1e-6; // milliseconds
         this->hist["FitDuration" ]->Fill( duration );
 
         return p;
