@@ -5,7 +5,9 @@
 #include "GenFit/EventDisplay.h"
 #include "GenFit/Exception.h"
 #include "GenFit/FieldManager.h"
+#include "GenFit/KalmanFitStatus.h"
 #include "GenFit/KalmanFitter.h"
+#include "GenFit/KalmanFitterInfo.h"
 #include "GenFit/KalmanFitterRefTrack.h"
 #include "GenFit/MaterialEffects.h"
 #include "GenFit/PlanarMeasurement.h"
@@ -36,6 +38,229 @@
 // hack of a global field pointer
 genfit::AbsBField *_gField = 0;
 
+namespace genfit {
+class FwdKalmanFitterRefTrack : public KalmanFitterRefTrack {
+
+    void processTrackWithRep(Track *tr, const AbsTrackRep *rep, bool resortHits = false) {
+        LOG_SCOPE_FUNCTION(INFO);
+        if (tr->hasFitStatus(rep) && tr->getFitStatus(rep)->isTrackPruned()) {
+            Exception exc("KalmanFitterRefTrack::processTrack: Cannot process pruned track!", __LINE__, __FILE__);
+            throw exc;
+        }
+
+        double oldChi2FW = 1e6;
+        double oldPvalFW = 0.;
+        double oldChi2BW = 1e6;
+        double oldPvalBW = 0.;
+        double chi2FW(0), ndfFW(0);
+        double chi2BW(0), ndfBW(0);
+        int nFailedHits(0);
+
+        KalmanFitStatus *status = new KalmanFitStatus();
+        tr->setFitStatus(status, rep);
+
+        status->setIsFittedWithReferenceTrack(true);
+
+        unsigned int nIt = 0;
+        for (;;) {
+            LOG_F(INFO, "ITERATION %lu", nIt);
+            try {
+                if (debugLvl_ > 0) {
+                    debugOut << " KalmanFitterRefTrack::processTrack with rep " << rep
+                             << " (id == " << tr->getIdForRep(rep) << ")"
+                             << ", iteration nr. " << nIt << "\n";
+                }
+
+                {
+                    LOG_SCOPE_F(INFO, "Preparing track");
+                    // prepare
+                    if (!prepareTrack(tr, rep, resortHits, nFailedHits)) {
+                        if (debugLvl_ > 0) {
+                            debugOut << "KalmanFitterRefTrack::processTrack. Track preparation did not change anything!\n";
+                        }
+
+                        status->setIsFitted();
+
+                        status->setIsFitConvergedPartially();
+                        if (nFailedHits == 0)
+                            status->setIsFitConvergedFully();
+                        else
+                            status->setIsFitConvergedFully(false);
+
+                        status->setNFailedPoints(nFailedHits);
+
+                        status->setHasTrackChanged(false);
+                        status->setCharge(rep->getCharge(*static_cast<KalmanFitterInfo *>(tr->getPointWithMeasurement(0)->getFitterInfo(rep))->getBackwardUpdate()));
+                        status->setNumIterations(nIt);
+                        status->setForwardChi2(chi2FW);
+                        status->setBackwardChi2(chi2BW);
+                        status->setForwardNdf(std::max(0., ndfFW));
+                        status->setBackwardNdf(std::max(0., ndfBW));
+                        if (debugLvl_ > 0) {
+                            status->Print();
+                        }
+                        return;
+                    }
+                }
+
+                if (debugLvl_ > 0) {
+                    debugOut << "KalmanFitterRefTrack::processTrack. Prepared Track:";
+                    tr->Print("C");
+                    //tr->Print();
+                }
+
+                // resort
+                if (resortHits) {
+                    if (tr->sort()) {
+                        if (debugLvl_ > 0) {
+                            debugOut << "KalmanFitterRefTrack::processTrack. Resorted Track:";
+                            tr->Print("C");
+                        }
+                        prepareTrack(tr, rep, resortHits, nFailedHits); // re-prepare if order of hits has changed!
+                        status->setNFailedPoints(nFailedHits);
+                        if (debugLvl_ > 0) {
+                            debugOut << "KalmanFitterRefTrack::processTrack. Prepared resorted Track:";
+                            tr->Print("C");
+                        }
+                    }
+                }
+
+                // fit forward
+                if (debugLvl_ > 0)
+                    debugOut << "KalmanFitterRefTrack::forward fit\n";
+                TrackPoint *lastProcessedPoint = fitTrack(tr, rep, chi2FW, ndfFW, +1);
+
+                // fit backward
+                if (debugLvl_ > 0) {
+                    debugOut << "KalmanFitterRefTrack::backward fit\n";
+                }
+
+                // backward fit must not necessarily start at last hit, set prediction = forward update and blow up cov
+                if (lastProcessedPoint != nullptr) {
+                    KalmanFitterInfo *lastInfo = static_cast<KalmanFitterInfo *>(lastProcessedPoint->getFitterInfo(rep));
+                    if (!lastInfo->hasBackwardPrediction()) {
+                        lastInfo->setBackwardPrediction(new MeasuredStateOnPlane(*(lastInfo->getForwardUpdate())));
+                        lastInfo->getBackwardPrediction()->blowUpCov(blowUpFactor_, resetOffDiagonals_, blowUpMaxVal_); // blow up cov
+                        if (debugLvl_ > 0) {
+                            debugOut << "blow up cov for backward fit at TrackPoint " << lastProcessedPoint << "\n";
+                        }
+                    }
+                }
+
+                fitTrack(tr, rep, chi2BW, ndfBW, -1);
+
+                ++nIt;
+
+                double PvalBW = std::max(0., ROOT::Math::chisquared_cdf_c(chi2BW, ndfBW));
+                double PvalFW = (debugLvl_ > 0) ? std::max(0., ROOT::Math::chisquared_cdf_c(chi2FW, ndfFW)) : 0; // Don't calculate if not debugging as this function potentially takes a lot of time.
+
+                if (debugLvl_ > 0) {
+                    debugOut << "KalmanFitterRefTrack::Track after fit:";
+                    tr->Print("C");
+
+                    debugOut << "old chi2s: " << oldChi2BW << ", " << oldChi2FW
+                             << " new chi2s: " << chi2BW << ", " << chi2FW << std::endl;
+                    debugOut << "old pVals: " << oldPvalBW << ", " << oldPvalFW
+                             << " new pVals: " << PvalBW << ", " << PvalFW << std::endl;
+                }
+
+                // See if p-value only changed little.  If the initial
+                // parameters are very far off, initial chi^2 and the chi^2
+                // after the first iteration will be both very close to zero, so
+                // we need to have at least two iterations here.  Convergence
+                // doesn't make much sense before running twice anyway.
+                bool converged(false);
+                bool finished(false);
+                if (nIt >= minIterations_ && fabs(oldPvalBW - PvalBW) < deltaPval_) {
+                    // if pVal ~ 0, check if chi2 has changed significantly
+                    if (fabs(1 - fabs(oldChi2BW / chi2BW)) > relChi2Change_) {
+                        finished = false;
+                    } else {
+                        finished = true;
+                        converged = true;
+                    }
+
+                    if (PvalBW == 0.)
+                        converged = false;
+                }
+
+                if (finished) {
+                    if (debugLvl_ > 0) {
+                        debugOut << "Fit is finished! ";
+                        if (converged)
+                            debugOut << "Fit is converged! ";
+                        debugOut << "\n";
+                    }
+
+                    if (nFailedHits == 0)
+                        status->setIsFitConvergedFully(converged);
+                    else
+                        status->setIsFitConvergedFully(false);
+
+                    status->setIsFitConvergedPartially(converged);
+                    status->setNFailedPoints(nFailedHits);
+
+                    break;
+                } else {
+                    oldPvalBW = PvalBW;
+                    oldChi2BW = chi2BW;
+                    if (debugLvl_ > 0) {
+                        oldPvalFW = PvalFW;
+                        oldChi2FW = chi2FW;
+                    }
+                }
+
+                if (nIt >= maxIterations_) {
+                    if (debugLvl_ > 0) {
+                        debugOut << "KalmanFitterRefTrack::number of max iterations reached!\n";
+                    }
+                    break;
+                }
+            } catch (Exception &e) {
+                errorOut << e.what();
+                status->setIsFitted(false);
+                status->setIsFitConvergedFully(false);
+                status->setIsFitConvergedPartially(false);
+                status->setNFailedPoints(nFailedHits);
+                if (debugLvl_ > 0) {
+                    status->Print();
+                }
+                return;
+            }
+        }
+
+        TrackPoint *tp = tr->getPointWithMeasurementAndFitterInfo(0, rep);
+
+        double charge(0);
+        if (tp != nullptr) {
+            if (static_cast<KalmanFitterInfo *>(tp->getFitterInfo(rep))->hasBackwardUpdate())
+                charge = static_cast<KalmanFitterInfo *>(tp->getFitterInfo(rep))->getBackwardUpdate()->getCharge();
+        }
+        status->setCharge(charge);
+
+        if (tp != nullptr) {
+            status->setIsFitted();
+        } else { // none of the trackPoints has a fitterInfo
+            status->setIsFitted(false);
+            status->setIsFitConvergedFully(false);
+            status->setIsFitConvergedPartially(false);
+            status->setNFailedPoints(nFailedHits);
+        }
+
+        status->setHasTrackChanged(false);
+        status->setNumIterations(nIt);
+        status->setForwardChi2(chi2FW);
+        status->setBackwardChi2(chi2BW);
+        status->setForwardNdf(ndfFW);
+        status->setBackwardNdf(ndfBW);
+
+        if (debugLvl_ > 0) {
+            status->Print();
+        }
+    }
+};
+} // namespace genfit
+
 class TrackFitter {
 
   public:
@@ -45,10 +270,11 @@ class TrackFitter {
     }
 
     void setup(bool make_display = false) {
+        LOG_SCOPE_FUNCTION(INFO);
+
         new TGeoManager("Geometry", "Geane geometry");
         TGeoManager::Import(cfg.get<string>("Geometry", "fGeom.root").c_str());
         genfit::MaterialEffects::getInstance()->init(new genfit::TGeoMaterialInterface());
-        //		genfit::MaterialEffects::getInstance()->setDebugLvl(10); // setNoEffects(); // TEST
         genfit::MaterialEffects::getInstance()->setNoEffects(cfg.get<bool>("TrackFitter::noMaterialEffects", false));
         // TODO : Load the STAR MagField
         genfit::AbsBField *bField = nullptr;
@@ -74,21 +300,17 @@ class TrackFitter {
             display = genfit::EventDisplay::getInstance();
 
         // init the fitter
-        fitter = new genfit::KalmanFitterRefTrack();
-        //	fitter = new genfit::KalmanFitter( );
-        // fitter->setMaxIterations(2);
-        // fitter->(10);
-        // track representation
-        // pion_track_rep =
-
-        // fitter->setRelChi2Change( 0.7 );
-        // fitter->setBlowUpMaxVal( 100 );
-        // fitter->setDeltaPval( 0.5 );
+        // fitter = new genfit::KalmanFitterRefTrack();
+        fitter = new genfit::FwdKalmanFitterRefTrack();
+        // fitter = new genfit::KalmanFitter( );
+        // fitter = new genfit::GblFitter();
 
         // MaxFailedHits = -1 is default, no restriction
         fitter->setMaxFailedHits(cfg.get<int>("TrackFitter.KalmanFitterRefTrack:MaxFailedHits", -1));
         fitter->setDebugLvl(cfg.get<int>("TrackFitter.KalmanFitterRefTrack:DebugLvl", 0));
         fitter->setMaxIterations(cfg.get<int>("TrackFitter.KalmanFitterRefTrack:MaxIterations", 4));
+        fitter->setMinIterations(cfg.get<int>("TrackFitter.KalmanFitterRefTrack:MinIterations", 0));
+        LOG_F(INFO, "getMinIterations = %d", fitter->getMinIterations());
         LOG_F(INFO, "getMaxIterations = %d", fitter->getMaxIterations());
         LOG_F(INFO, "getDeltaPval = %f", fitter->getDeltaPval());
         LOG_F(INFO, "getRelChi2Change = %f", fitter->getRelChi2Change());
@@ -97,7 +319,14 @@ class TrackFitter {
 
         // make a super simple version of the FTS geometry detector planes (this needs to be updated)
 
-        float SI_DET_Z[] = {138.87, 152.87, 166.87};
+        // float SI_DET_Z[] = {138.87, 152.87, 166.87};
+        vector<float> SI_DET_Z = cfg.getFloatVector("TrackFitter.Geometry:si");
+        if (SI_DET_Z.size() < 3) {
+            LOG_F(WARNING, "Using Default Si z locations");
+            SI_DET_Z.push_back(140.286011);
+            SI_DET_Z.push_back(154.286011);
+            SI_DET_Z.push_back(168.286011);
+        }
 
         for (auto z : SI_DET_Z) {
             LOG_F(INFO, "Adding Si Detector Plane at (0, 0, %0.2f)", z);
@@ -105,7 +334,15 @@ class TrackFitter {
         }
 
         useSi = false;
-        float DET_Z[] = {281, 304, 327, 349};
+        // float DET_Z[] = {281, 304, 327, 349};
+        vector<float> DET_Z = cfg.getFloatVector("TrackFitter.Geometry:stgc");
+        if (DET_Z.size() < 4) {
+            DET_Z.push_back(280.904449);
+            DET_Z.push_back(303.695099);
+            DET_Z.push_back(326.597626);
+            DET_Z.push_back(349.400482);
+            LOG_F(WARNING, "Using Default STGC z locations");
+        }
 
         for (auto z : DET_Z) {
             LOG_F(INFO, "Adding DetPlane at (0, 0, %0.2f)", z);
@@ -200,10 +437,10 @@ class TrackFitter {
         jdb::HistoBins::labelAxis(hist[n]->GetXaxis(), {"Total", "Pass", "Fail", "GoodCardinal", "Exception"});
 
         n = "FitDuration";
-        hist[n] = new TH1F( n.c_str(), "; Duraton (ms)", 5000, 0, 50000 );
+        hist[n] = new TH1F(n.c_str(), "; Duraton (ms)", 5000, 0, 50000);
 
         n = "FailedFitDuration";
-        hist[n] = new TH1F( n.c_str(), "; Duraton (ms)", 500, 0, 50000 );
+        hist[n] = new TH1F(n.c_str(), "; Duraton (ms)", 500, 0, 50000);
     }
 
     void writeHistograms() {
@@ -692,8 +929,9 @@ class TrackFitter {
         }
     }
 
-    TVector3 fitTrack(vector<KiTrack::IHit *> trackCand, double *Vertex = 0) {
+    TVector3 fitTrack(vector<KiTrack::IHit *> trackCand, double *Vertex = 0, TVector3 *McSeedMom = 0) {
         LOG_SCOPE_FUNCTION(INFO);
+        LOG_INFO << "****************************************************" << endm;
 
         long long itStart = loguru::now_ns();
 
@@ -716,6 +954,9 @@ class TrackFitter {
         // get the seed info from our hits
         TVector3 seedMom, seedPos;
         float curv = seedState(trackCand, seedPos, seedMom);
+        if (seedMom.Pt() < 0.2) {
+            TVector3(0, 0, 0);
+        }
 
         // create the track representations
         auto trackRepPos = new genfit::RKTrackRep(pdg_mu_plus);
@@ -729,8 +970,19 @@ class TrackFitter {
         if (fTrack)
             delete fTrack;
 
+        if (McSeedMom != nullptr) {
+            seedMom = *McSeedMom;
+            LOG_F(INFO, "Using MC Seed Momentum (%f, %f, %f)", seedMom.Pt(), seedMom.Eta(), seedMom.Phi());
+        }
+
         fTrack = new genfit::Track(trackRepPos, seedPos, seedMom);
         fTrack->addTrackRep(trackRepNeg);
+
+        LOG_INFO
+            << "seedPos : (" << seedPos.X() << ", " << seedPos.Y() << ", " << seedPos.Z() << " )"
+            << ", seedMom : (" << seedMom.X() << ", " << seedMom.Y() << ", " << seedMom.Z() << " )"
+            << ", seedMom : (" << seedMom.Pt() << ", " << seedMom.Eta() << ", " << seedMom.Phi() << " )"
+            << endm;
 
         genfit::Track &fitTrack = *fTrack;
 
@@ -738,9 +990,14 @@ class TrackFitter {
         int planeId(0);     // detector plane ID
         int hitId(0);       // hit ID
 
+        // initialize the hit coords on plane
+        TVectorD hitCoords(2);
+        hitCoords[0] = 0;
+        hitCoords[1] = 0;
+
         /******************************************************************************************************************************
-		* Include the Primary vertex if desired
-		*******************************************************************************************************************************/
+        * Include the Primary vertex if desired
+        *******************************************************************************************************************************/
         if (includeVertexInFit) {
 
             TMatrixDSym hitCov3(3);
@@ -752,23 +1009,10 @@ class TrackFitter {
             fitTrack.insertPoint(new genfit::TrackPoint(measurement, &fitTrack));
         }
 
-        // initialize the hit coords on plane
-        TVectorD hitCoords(2);
-        hitCoords[0] = 0;
-        hitCoords[1] = 0;
-
         /******************************************************************************************************************************
 		 * loop over the hits, add them to the track
 		 *******************************************************************************************************************************/
         for (auto h : trackCand) {
-
-            // if ( skipSi0 == true && h->getSector() == 0 ) continue;
-            // if ( skipSi1 == true && h->getSector() == 1 ) continue;
-
-            // if ( static_cast<FwdHit*>(h)->_vid == 9 ) continue;
-            // if ( static_cast<FwdHit*>(h)->_vid == 10 ) continue;
-            // if ( static_cast<FwdHit*>(h)->_vid == 11 ) continue;
-
             TMatrixDSym hitCovMat = FakeHitCov;
 
             if (useFCM == false)
@@ -776,6 +1020,7 @@ class TrackFitter {
 
             hitCoords[0] = h->getX();
             hitCoords[1] = h->getY();
+            LOG_F(INFO, "PlanarMeasurement( x=%f, y=%f, sector=%d, hitId=%d )", hitCoords[0], hitCoords[1], h->getSector(), hitId + 1);
             genfit::PlanarMeasurement *measurement = new genfit::PlanarMeasurement(hitCoords, hitCovMat, h->getSector(), ++hitId, nullptr);
 
             planeId = h->getSector();
@@ -788,19 +1033,73 @@ class TrackFitter {
             auto plane = DetPlanes[planeId];
             measurement->setPlane(plane, planeId);
             fitTrack.insertPoint(new genfit::TrackPoint(measurement, &fitTrack));
+
+            if (abs(h->getZ() - plane->getO().Z()) > 0.05) {
+                LOG_F(ERROR, "Z Mismatch");
+            }
         }
 
         LOG_F(INFO, "TRACK has %u hits", fitTrack.getNumPointsWithMeasurement());
 
         try {
             LOG_SCOPE_F(INFO, "Track Fit with GENFIT2");
-            fitTrack.checkConsistency();
+            // fitTrack.checkConsistency();
 
-            // prepare the track
-            // fitter->prepareTrack( &fitTrack, trackRepPos );
+            // {
+            //     LOG_SCOPE_F( INFO, "Fitting Positive Track Rep" );
+
+            //     // prepare the track
+            //     for ( int i = 0; i < 3; i++ ){
+            //         LOG_F( INFO, "Preparing Positive Track" );
+            //         int nFailedHits = 0;
+            //         static_cast< genfit::KalmanFitterRefTrack* >( fitter )
+            //             ->prepareTrack( &fitTrack, trackRepPos, false, nFailedHits );
+
+            //         LOG_F( INFO, "nFailedHits = %d", nFailedHits );
+
+            //         LOG_F( INFO, "Fit track" );
+            //         double chi2=-1, ndf=-1;
+            //         bool fitresult = false;
+
+            //         fitresult = static_cast< genfit::KalmanFitterRefTrack* >( fitter )
+            //             ->fitTrack( &fitTrack, trackRepPos, chi2, ndf, 1 );
+            //         LOG_F( INFO, "Forward Fit: result=%d, chi2=%f, ndf=%f", (int)fitresult, chi2, ndf );
+            //         fitresult = static_cast< genfit::KalmanFitterRefTrack* >( fitter )
+            //             ->fitTrack( &fitTrack, trackRepPos, chi2, ndf, -1 );
+            //         LOG_F( INFO, "Backward Fit: result=%d, chi2=%f, ndf=%f", (int)fitresult, chi2, ndf );
+            //     }
+
+            // }
+
+            // {
+            //     LOG_SCOPE_F( INFO, "Fitting Negative Track Rep" );
+
+            //     for ( int i = 0; i < 3; i++ ){
+            //         LOG_F( INFO, "Preparing Negative Track" );
+            //         int nFailedHits = 0;
+            //         static_cast< genfit::KalmanFitterRefTrack* >( fitter )
+            //             ->prepareTrack( &fitTrack, trackRepNeg, false, nFailedHits );
+
+            //         LOG_F( INFO, "nFailedHits = %d", nFailedHits );
+
+            //         LOG_F( INFO, "Fit track" );
+            //         double chi2=-1, ndf=-1;
+            //         bool fitresult = false;
+
+            //         fitresult = static_cast< genfit::KalmanFitterRefTrack* >( fitter )
+            //             ->fitTrack( &fitTrack, trackRepNeg, chi2, ndf, 1 );
+            //         LOG_F( INFO, "Forward Fit: result=%d, chi2=%f, ndf=%f", (int)fitresult, chi2, ndf );
+            //         fitresult = static_cast< genfit::KalmanFitterRefTrack* >( fitter )
+            //             ->fitTrack( &fitTrack, trackRepNeg, chi2, ndf, -1 );
+            //         LOG_F( INFO, "Backward Fit: result=%d, chi2=%f, ndf=%f", (int)fitresult, chi2, ndf );
+            //     }
+            // }
 
             // do the fit
-            fitter->processTrack(&fitTrack);
+            LOG_F(INFO, "Processing Track");
+            fitter->processTrackWithRep(&fitTrack, trackRepPos);
+            fitter->processTrackWithRep(&fitTrack, trackRepNeg);
+            // fitter->processTrack( &fitTrack );
 
             // print fit result
             // fitTrack.getFittedState().Print();
@@ -844,9 +1143,9 @@ class TrackFitter {
                 LOG_F(INFO, "SeedPosALT( X=%0.2f, Y=%0.2f, Z=%0.2f )", seedPos.X(), seedPos.Y(), seedPos.Z());
                 p.SetXYZ(0, 0, 0);
                 this->hist["FitStatus"]->Fill("Fail", 1);
-                
+
                 long long duration = (loguru::now_ns() - itStart) * 1e-6; // milliseconds
-                this->hist["FailedFitDuration" ]->Fill( duration );
+                this->hist["FailedFitDuration"]->Fill(duration);
                 return p;
             }
 
@@ -855,7 +1154,7 @@ class TrackFitter {
             _q = cardinalRep->getCharge(fitTrack.getFittedState(1, cardinalRep));
             _p = p;
 
-            studyProjectionToVertex(cardinalRep, fitTrack);
+            // studyProjectionToVertex(cardinalRep, fitTrack);
             /*
 			  studyProjectionToECal( cardinalRep, fitTrack );
 
@@ -879,7 +1178,7 @@ class TrackFitter {
             this->hist["FitStatus"]->Fill("Exception", 1);
 
             long long duration = (loguru::now_ns() - itStart) * 1e-6; // milliseconds
-            this->hist["FailedFitDuration" ]->Fill( duration );
+            this->hist["FailedFitDuration"]->Fill(duration);
 
             return p;
         }
@@ -905,7 +1204,7 @@ class TrackFitter {
         }
 
         long long duration = (loguru::now_ns() - itStart) * 1e-6; // milliseconds
-        this->hist["FitDuration" ]->Fill( duration );
+        this->hist["FitDuration"]->Fill(duration);
 
         return p;
     }

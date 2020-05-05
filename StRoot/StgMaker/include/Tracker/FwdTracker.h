@@ -278,7 +278,7 @@ class ForwardTrackMaker {
         hist["FitStatus"] = new TH1I("FitStatus", ";;# failed REfits", 10, 0, 10);
         jdb::HistoBins::labelAxis(hist["FitStatus"]->GetXaxis(), {"Seeds", "AttemptFit", "GoodFit", "BadFit", "GoodCardinal", "PossibleReFit", "AttemptReFit", "GoodReFit", "BadReFit"});
 
-        hist[ "FitDuration" ] = new TH1I("FitDuration", ";Duration (ms)", 5000, 0, 50000 );
+        hist["FitDuration"] = new TH1I("FitDuration", ";Duration (ms)", 5000, 0, 50000);
     }
 
     void fillHistograms() {
@@ -464,36 +464,43 @@ class ForwardTrackMaker {
         idt = MCTruthUtils::domCon(track, qual);
         recoTrackQuality.push_back(qual);
         recoTrackIdTruth.push_back(idt);
+        TVector3 mcSeedMom;
 
         auto mctm = hitLoader->getMcTrackMap();
-        
-        if ( qual < cfg.get<float>( "TrackFitter.McFilter:quality-min", 0.0 ) ){
-            LOG_F( INFO, "McFilter: Skipping low quality (q=%f) track", qual );
+
+        if (qual < cfg.get<float>("TrackFitter.McFilter:quality-min", 0.0)) {
+            LOG_F(INFO, "McFilter: Skipping low quality (q=%f) track", qual);
             return;
         }
-        if ( mctm.count( idt ) ){
-            auto mct = mctm[ idt ];
-            if ( mct->_pt < cfg.get<float>( "TrackFitter.McFilter:pt-min", 0.0 ) ||
-                 mct->_pt > cfg.get<float>( "TrackFitter.McFilter:pt-max", 1e10 ) ){
-                LOG_F( INFO, "McFilter: Skipping low pt (pt=%f) track", mct->_pt );
+        if (mctm.count(idt)) {
+            auto mct = mctm[idt];
+            mcSeedMom.SetPtEtaPhi(mct->_pt, mct->_eta, mct->_phi);
+            if (mct->_pt < cfg.get<float>("TrackFitter.McFilter:pt-min", 0.0) ||
+                mct->_pt > cfg.get<float>("TrackFitter.McFilter:pt-max", 1e10)) {
+                LOG_F(INFO, "McFilter: Skipping low pt (pt=%f) track", mct->_pt);
                 return;
             }
-            if ( mct->_eta < cfg.get<float>( "TrackFitter.McFilter:eta-min", 0.0 ) ||
-                 mct->_eta > cfg.get<float>( "TrackFitter.McFilter:eta-max", 1e10 ) ){
-                LOG_F( INFO, "McFilter: Skipping low eta (eta=%f) track", mct->_eta );
+            if (mct->_eta < cfg.get<float>("TrackFitter.McFilter:eta-min", 0.0) ||
+                mct->_eta > cfg.get<float>("TrackFitter.McFilter:eta-max", 1e10)) {
+                LOG_F(INFO, "McFilter: Skipping low eta (eta=%f) track", mct->_eta);
                 return;
             }
+            LOG_F(INFO, "Checking McFilter on track id=%d, quality=%f, (%f, %f, %f), charge=%d", idt, qual, mct->_pt, mct->_eta, mct->_phi, mct->_q);
         } else {
-            LOG_F( INFO, "Cannot find the McTrack ID = %d ", idt );
+            LOG_F(INFO, "Cannot find the McTrack ID = %d ", idt);
         }
-
 
         // Done with Mc Filter
 
-        
         if (doTrackFitting) {
             hist["FitStatus"]->Fill("AttemptFit", 1);
-            TVector3 p = trackFitter->fitTrack(track);
+
+            TVector3 p;
+            if (true == cfg.get<bool>("TrackFitter:mcSeed", false)) {
+                p = trackFitter->fitTrack(track, 0, &mcSeedMom);
+            } else {
+                p = trackFitter->fitTrack(track);
+            }
 
             if (p.Perp() > 1e-3) {
                 hist["FitStatus"]->Fill("GoodFit", 1);
@@ -552,9 +559,14 @@ class ForwardTrackMaker {
 
         LOG_F(INFO, "Made %lu Reco Tracks from MC Tracks", recoTracks.size());
 
+        long long itStart = loguru::now_ns();
+        // Fit each accepted track seed
         for (auto t : recoTracks) {
             trackFitting(t);
         }
+        long long itEnd = loguru::now_ns();
+        long long duration = (itEnd - itStart) * 1e-6; // milliseconds
+        this->hist["FitDuration"]->Fill(duration);
 
         qPlotter->afterIteration(0, recoTracks);
     }
@@ -710,7 +722,7 @@ class ForwardTrackMaker {
             }
             long long itEnd = loguru::now_ns();
             long long duration = (itEnd - itStart) * 1e-6; // milliseconds
-            this->hist["FitDuration" ]->Fill( duration );
+            this->hist["FitDuration"]->Fill(duration);
 
             qPlotter->afterIteration(iIteration, acceptedTracks);
 
@@ -765,7 +777,7 @@ class ForwardTrackMaker {
             std::vector<KiTrack::IHit *> si_hits_for_this_track(3, nullptr);
 
             for (size_t j = 0; j < 3; j++) {
-                LOG_F(INFO, "Checking hitmap[%lu]", i);
+                LOG_F(INFO, "Checking hitmap[%lu]", j);
                 for (auto h0 : hitmap[j]) {
                     LOG_F(INFO, "Checking hit with _tid=%lu", dynamic_cast<FwdHit *>(h0)->_tid);
                     if (dynamic_cast<FwdHit *>(h0)->_tid == _globalTracks[i]->getMcTrackId()) {
@@ -874,7 +886,7 @@ class ForwardTrackMaker {
         for (auto h : available_hits) {
             double h_phi = TMath::ATan2(h->getY(), h->getX());
             double h_r = sqrt(pow(h->getX(), 2) + pow(h->getY(), 2));
-
+            LOG_F(1, "hit_phi=%0.2f - mphi=%0.2f = %0.2f", h_phi, probe_phi, fabs(h_phi - probe_phi));
             if (fabs(h_phi - probe_phi) < dphi) { // handle 2pi edge
                 found_hits.push_back(h);
             }
