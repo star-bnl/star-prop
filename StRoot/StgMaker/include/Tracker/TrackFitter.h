@@ -34,6 +34,7 @@
 #include "StgMaker/include/Tracker/FwdHit.h"
 #include "StgMaker/include/Tracker/STARField.h"
 #include "StgMaker/include/Tracker/loguru.h"
+#include "StgMaker/include/Tracker/FwdGeomUtils.h"
 
 // hack of a global field pointer
 genfit::AbsBField *_gField = 0;
@@ -272,10 +273,20 @@ class TrackFitter {
     void setup(bool make_display = false) {
         LOG_SCOPE_FUNCTION(INFO);
 
-        new TGeoManager("Geometry", "Geane geometry");
-        TGeoManager::Import(cfg.get<string>("Geometry", "fGeom.root").c_str());
-        genfit::MaterialEffects::getInstance()->init(new genfit::TGeoMaterialInterface());
-        genfit::MaterialEffects::getInstance()->setNoEffects(cfg.get<bool>("TrackFitter::noMaterialEffects", false));
+        TGeoManager * gMan = nullptr;
+
+        {
+            LOG_SCOPE_F( INFO, "Setup Geometry in GENFIT" );
+            // gMan = new TGeoManager("Geometry", "Geane geometry");
+            TGeoManager::Import(cfg.get<string>("Geometry", "fGeom.root").c_str());
+            gMan = gGeoManager;
+            genfit::MaterialEffects::getInstance()->init(new genfit::TGeoMaterialInterface());
+            genfit::MaterialEffects::getInstance()->setNoEffects(cfg.get<bool>("TrackFitter::noMaterialEffects", false));
+            if ( cfg.get<bool>("TrackFitter::noMaterialEffects", false) ){
+                LOG_F( WARNING, "MaterialEffects are turned OFF" );
+            }
+        }
+
         // TODO : Load the STAR MagField
         genfit::AbsBField *bField = nullptr;
 
@@ -320,28 +331,56 @@ class TrackFitter {
         // make a super simple version of the FTS geometry detector planes (this needs to be updated)
 
         // float SI_DET_Z[] = {138.87, 152.87, 166.87};
+        LOG_F( INFO, "Setting up the FwdGeomUtils" );
+        FwdGeomUtils fwdGeoUtils( gMan );
+
+        LOG_F( INFO, "Setting up Si planes" );
         vector<float> SI_DET_Z = cfg.getFloatVector("TrackFitter.Geometry:si");
         if (SI_DET_Z.size() < 3) {
-            LOG_F(WARNING, "Using Default Si z locations");
-            SI_DET_Z.push_back(140.286011);
-            SI_DET_Z.push_back(154.286011);
-            SI_DET_Z.push_back(168.286011);
+        
+            // try to read from GEOMETRY
+            if ( fwdGeoUtils.siZ( 0 ) > 1.0 ) { // returns 0.0 on failure
+                SI_DET_Z.clear();
+                SI_DET_Z.push_back( fwdGeoUtils.siZ( 0 ) );
+                SI_DET_Z.push_back( fwdGeoUtils.siZ( 1 ) );
+                SI_DET_Z.push_back( fwdGeoUtils.siZ( 2 ) );
+                LOG_F( INFO, "From GEOMETRY : Si Z = %0.2f, %0.2f, %0.2f", SI_DET_Z[0], SI_DET_Z[1], SI_DET_Z[2] );
+            } else {
+                LOG_F(WARNING, "Using Default Si z locations - that means FTSM NOT in Geometry");
+                SI_DET_Z.push_back(140.286011);
+                SI_DET_Z.push_back(154.286011);
+                SI_DET_Z.push_back(168.286011);
+            }
+        } else {
+            LOG_F( WARNING, "Using Si Z location from config - may not match real geometry" );
         }
 
         for (auto z : SI_DET_Z) {
             LOG_F(INFO, "Adding Si Detector Plane at (0, 0, %0.2f)", z);
             SiDetPlanes.push_back(genfit::SharedPlanePtr(new genfit::DetPlane(TVector3(0, 0, z), TVector3(1, 0, 0), TVector3(0, 1, 0))));
         }
-
         useSi = false;
-        // float DET_Z[] = {281, 304, 327, 349};
+
+        // Now load STGC
         vector<float> DET_Z = cfg.getFloatVector("TrackFitter.Geometry:stgc");
         if (DET_Z.size() < 4) {
-            DET_Z.push_back(280.904449);
-            DET_Z.push_back(303.695099);
-            DET_Z.push_back(326.597626);
-            DET_Z.push_back(349.400482);
-            LOG_F(WARNING, "Using Default STGC z locations");
+            // try to read from GEOMETRY
+            if ( fwdGeoUtils.stgcZ( 0 ) > 1.0 ) { // returns 0.0 on failure
+                DET_Z.clear();
+                DET_Z.push_back( fwdGeoUtils.stgcZ( 0 ) );
+                DET_Z.push_back( fwdGeoUtils.stgcZ( 1 ) );
+                DET_Z.push_back( fwdGeoUtils.stgcZ( 2 ) );
+                DET_Z.push_back( fwdGeoUtils.stgcZ( 3 ) );
+                LOG_F( INFO, "From GEOMETRY : sTGC Z = %0.2f, %0.2f, %0.2f, %0.2f", DET_Z[0], DET_Z[1], DET_Z[2], DET_Z[3] );
+            } else {
+                DET_Z.push_back(280.904449);
+                DET_Z.push_back(303.695099);
+                DET_Z.push_back(326.597626);
+                DET_Z.push_back(349.400482);
+                LOG_F(WARNING, "Using Default STGC z locations");
+            }
+        } else {
+            LOG_F( WARNING, "Using STGC Z location from config - may not match real geometry" );
         }
 
         for (auto z : DET_Z) {
