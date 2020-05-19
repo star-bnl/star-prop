@@ -442,6 +442,7 @@ class TrackFitter {
         std::string n = "";
         hist["ECalProjPosXY"] = new TH2F("ECalProjPosXY", ";X;Y", 1000, -500, 500, 1000, -500, 500);
         hist["ECalProjSigmaXY"] = new TH2F("ECalProjSigmaXY", ";#sigma_{X};#sigma_{Y}", 50, 0, 0.5, 50, 0, 0.5);
+        hist["ECalProjSigmaR"] = new TH1F("ECalProjSigmaR", ";#sigma_{XY} (cm) at ECAL", 50, 0, 0.5);
 
         hist["SiProjPosXY"] = new TH2F("SiProjPosXY", ";X;Y", 1000, -500, 500, 1000, -500, 500);
         hist["SiProjSigmaXY"] = new TH2F("SiProjSigmaXY", ";#sigma_{X};#sigma_{Y}", 150, 0, 15, 150, 0, 15);
@@ -964,6 +965,8 @@ class TrackFitter {
 
         if (MAKE_HIST) {
             this->hist["ECalProjPosXY"]->Fill(tst.getPos().X(), tst.getPos().Y());
+            float sigmaR = sqrt(TCM(0, 0) + TCM(1, 1));
+            this->hist["ECalProjSigmaR"]->Fill( sigmaR );
             this->hist["ECalProjSigmaXY"]->Fill(sqrt(TCM(0, 0)), sqrt(TCM(1, 1)));
         }
     }

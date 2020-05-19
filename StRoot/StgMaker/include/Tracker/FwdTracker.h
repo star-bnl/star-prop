@@ -279,6 +279,7 @@ class ForwardTrackMaker {
         jdb::HistoBins::labelAxis(hist["FitStatus"]->GetXaxis(), {"Seeds", "AttemptFit", "GoodFit", "BadFit", "GoodCardinal", "PossibleReFit", "AttemptReFit", "GoodReFit", "BadReFit"});
 
         hist["FitDuration"] = new TH1I("FitDuration", ";Duration (ms)", 5000, 0, 50000);
+        hist["nSiHitsFound"] = new TH2I( "nSiHitsFound", ";Si Disk; n Hits", 5, 0, 5, 10, 0, 10 );
     }
 
     void fillHistograms() {
@@ -848,6 +849,12 @@ class ForwardTrackMaker {
             LOG_F(INFO, "Track already has %lu points", _globalTracks[i]->getNumPoints());
             vector<KiTrack::IHit *> hits_to_add;
 
+            this->hist[ "nSiHitsFound" ]->Fill( 1, hits_near_disk0.size() );
+            this->hist[ "nSiHitsFound" ]->Fill( 2, hits_near_disk1.size() );
+            this->hist[ "nSiHitsFound" ]->Fill( 3, hits_near_disk2.size() );
+
+            this->hist[ "nSiHitsFound" ]->Fill( 4, 1 );
+
             // This is the simplest/best case
             if (hits_near_disk0.size() == 1 && hits_near_disk1.size() == 1 && hits_near_disk2.size() == 1) {
                 LOG_F(INFO, "Found one-to-one matching on all three Si disks, do REFIT");
@@ -876,7 +883,7 @@ class ForwardTrackMaker {
         } // loop on globals
     }     // addSiHits
 
-    std::vector<KiTrack::IHit *> findSiHitsNearMe(std::vector<KiTrack::IHit *> &available_hits, genfit::MeasuredStateOnPlane &msp, double dphi = 0.004 * 10.5) {
+    std::vector<KiTrack::IHit *> findSiHitsNearMe(std::vector<KiTrack::IHit *> &available_hits, genfit::MeasuredStateOnPlane &msp, double dphi = 0.004 * 20.5) {
         LOG_SCOPE_FUNCTION(INFO);
         double probe_phi = TMath::ATan2(msp.getPos().Y(), msp.getPos().X());
         double probe_r = sqrt(pow(msp.getPos().X(), 2) + pow(msp.getPos().Y(), 2));
