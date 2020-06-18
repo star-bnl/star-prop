@@ -498,7 +498,8 @@ class TrackFitter {
 
         // for sTGC it is simple to compute the cartesian cov mat, do that first.
 
-        if (hit->getSector() > 2) { // 0-2 are Si, 3-6 are sTGC
+        // if (hit->getSector() > 2) { // 0-2 are Si, 3-6 are sTGC
+        if ( true ) {
             // only need the 2x2 since these are "measurements on a plane"
             TMatrixDSym cm(2);
             const float sigmaXY = 100 * 1e-4; // 100 microns convert to cm
@@ -791,6 +792,8 @@ class TrackFitter {
 
         // add the hits to the track
         for (auto h : si_hits) {
+            if ( nullptr == h ) continue; // if no Si hit in this plane, skip
+
             TMatrixDSym hitCovMat = FakeSiHitCov;
 
             if (useFCM == false)
@@ -1077,7 +1080,7 @@ class TrackFitter {
             fitTrack.insertPoint(new genfit::TrackPoint(measurement, &fitTrack));
 
             if (abs(h->getZ() - plane->getO().Z()) > 0.05) {
-                LOG_F(ERROR, "Z Mismatch");
+                LOG_F(ERROR, "Z Mismatch h->z = %f, plane->z = %f, diff = %f ", h->getZ(), plane->getO().Z(), abs(h->getZ() - plane->getO().Z()));
             }
         }
 

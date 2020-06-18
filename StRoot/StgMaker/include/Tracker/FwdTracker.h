@@ -275,8 +275,8 @@ class ForwardTrackMaker {
         hist["nAttemptedReFits"] = new TH1I("nAttemptedReFits", ";;#attempted REfits", 10, 0, 10);
         hist["nFailedReFits"] = new TH1I("nFailedReFits", ";;# failed REfits", 10, 0, 10);
 
-        hist["FitStatus"] = new TH1I("FitStatus", ";;# failed REfits", 10, 0, 10);
-        jdb::HistoBins::labelAxis(hist["FitStatus"]->GetXaxis(), {"Seeds", "AttemptFit", "GoodFit", "BadFit", "GoodCardinal", "PossibleReFit", "AttemptReFit", "GoodReFit", "BadReFit"});
+        hist["FitStatus"] = new TH1I("FitStatus", ";;# failed REfits", 15, 0, 15);
+        jdb::HistoBins::labelAxis(hist["FitStatus"]->GetXaxis(), {"Seeds", "AttemptFit", "GoodFit", "BadFit", "GoodCardinal", "PossibleReFit", "AttemptReFit", "GoodReFit", "BadReFit", "w3Si","w2Si", "w1Si", "w0Si" });
 
         hist["FitDuration"] = new TH1I("FitDuration", ";Duration (ms)", 5000, 0, 50000);
         hist["nSiHitsFound"] = new TH2I( "nSiHitsFound", ";Si Disk; n Hits", 5, 0, 5, 10, 0, 10 );
@@ -793,9 +793,19 @@ class ForwardTrackMaker {
             LOG_F(INFO, "Si hit1 = %p", si_hits_for_this_track[1]);
             LOG_F(INFO, "Si hit2 = %p", si_hits_for_this_track[2]);
 
+            size_t nSiHitsFound = 0;
+            if ( si_hits_for_this_track[0] != nullptr ) nSiHitsFound++;
+            if ( si_hits_for_this_track[1] != nullptr ) nSiHitsFound++;
+            if ( si_hits_for_this_track[2] != nullptr ) nSiHitsFound++;
+            LOG_F( INFO, "nSiHitsFound = %lu", nSiHitsFound );
+
+            this->hist[ "nSiHitsFound" ]->Fill( 1, ( si_hits_for_this_track[0] != nullptr ? 1 : 0 ) );
+            this->hist[ "nSiHitsFound" ]->Fill( 2, ( si_hits_for_this_track[1] != nullptr ? 1 : 0 ) );
+            this->hist[ "nSiHitsFound" ]->Fill( 3, ( si_hits_for_this_track[2] != nullptr ? 1 : 0 ) );
+
             bool have_all_three = (si_hits_for_this_track[0] != nullptr) && (si_hits_for_this_track[1] != nullptr) && (si_hits_for_this_track[2] != nullptr);
 
-            if (have_all_three) {
+            if (nSiHitsFound >= 1) {
                 hist["FitStatus"]->Fill("AttemptReFit", 1);
                 TVector3 p = trackFitter->refitTrackWithSiHits(_globalTracks[i], si_hits_for_this_track);
 
@@ -810,6 +820,9 @@ class ForwardTrackMaker {
                 LOG_F(INFO, "pt was: %0.2f and now is: %0.2f", fitMoms[i].Perp(), p.Perp());
                 fitMoms[i] = p;
             } // we have 3 Si hits to refit with
+
+            hist["FitStatus"]->Fill( TString::Format( "w%luSi", nSiHitsFound ).Data(), 1 );
+
         }     // loop on the global tracks
     }         // ad Si hits via MC associations
 
@@ -849,21 +862,36 @@ class ForwardTrackMaker {
             LOG_F(INFO, "Track already has %lu points", _globalTracks[i]->getNumPoints());
             vector<KiTrack::IHit *> hits_to_add;
 
+            size_t nSiHitsFound = 0; // this is really # of disks on which a hit is found
+
             this->hist[ "nSiHitsFound" ]->Fill( 1, hits_near_disk0.size() );
             this->hist[ "nSiHitsFound" ]->Fill( 2, hits_near_disk1.size() );
             this->hist[ "nSiHitsFound" ]->Fill( 3, hits_near_disk2.size() );
 
-            this->hist[ "nSiHitsFound" ]->Fill( 4, 1 );
+            //  TODO: HANDLE multiple points found?
+            if ( hits_near_disk0.size() == 1 ) {
+                hits_to_add.push_back( hits_near_disk0[0] );
+                nSiHitsFound++;
+            } else {
+                hits_to_add.push_back( nullptr );
+            }
+            if ( hits_near_disk1.size() == 1 ) {
+                hits_to_add.push_back( hits_near_disk1[0] );
+                nSiHitsFound++;
+            } else {
+                hits_to_add.push_back( nullptr );
+            }
+            if ( hits_near_disk2.size() == 1 ) {
+                hits_to_add.push_back( hits_near_disk2[0] );
+                nSiHitsFound++;
+            } else {
+                hits_to_add.push_back( nullptr );
+            }
 
-            // This is the simplest/best case
-            if (hits_near_disk0.size() == 1 && hits_near_disk1.size() == 1 && hits_near_disk2.size() == 1) {
-                LOG_F(INFO, "Found one-to-one matching on all three Si disks, do REFIT");
+            if (nSiHitsFound >= 1) {
+                LOG_SCOPE_F( INFO, "attempting to Refit with %lu si hits", nSiHitsFound );
 
                 hist["FitStatus"]->Fill("AttemptReFit", 1);
-
-                hits_to_add.push_back(hits_near_disk0[0]);
-                hits_to_add.push_back(hits_near_disk1[0]);
-                hits_to_add.push_back(hits_near_disk2[0]);
                 TVector3 p = trackFitter->refitTrackWithSiHits(_globalTracks[i], hits_to_add);
 
                 if (p.Perp() == fitMoms[i].Perp()) {
@@ -871,19 +899,23 @@ class ForwardTrackMaker {
 
                 } else {
                     hist["FitStatus"]->Fill("GoodReFit", 1);
+
+                    fitMoms[i] = p;
                 }
 
-                LOG_F(INFO, "Global track now has: %lu point", _globalTracks[i]->getNumPoints());
-                LOG_F(INFO, "pt was: %0.2f and now is: %0.2f", fitMoms[i].Perp(), p.Perp());
-                fitMoms[i] = p;
+                // LOG_F(INFO, "Global track now has: %lu point", _globalTracks[i]->getNumPoints());
+                // LOG_F(INFO, "pt was: %0.2f and now is: %0.2f", fitMoms[i].Perp(), p.Perp());
 
             } else {
                 // fitMoms[ i ] = TVector3( 1000, 1000, 1000 );
             }
+
+            hist["FitStatus"]->Fill( TString::Format( "w%luSi", nSiHitsFound ).Data(), 1 );
+
         } // loop on globals
     }     // addSiHits
 
-    std::vector<KiTrack::IHit *> findSiHitsNearMe(std::vector<KiTrack::IHit *> &available_hits, genfit::MeasuredStateOnPlane &msp, double dphi = 0.004 * 20.5) {
+    std::vector<KiTrack::IHit *> findSiHitsNearMe(std::vector<KiTrack::IHit *> &available_hits, genfit::MeasuredStateOnPlane &msp, double dphi = 0.004 * 2.5, double dr = 0.5) {
         LOG_SCOPE_FUNCTION(INFO);
         double probe_phi = TMath::ATan2(msp.getPos().Y(), msp.getPos().X());
         double probe_r = sqrt(pow(msp.getPos().X(), 2) + pow(msp.getPos().Y(), 2));
@@ -893,8 +925,12 @@ class ForwardTrackMaker {
         for (auto h : available_hits) {
             double h_phi = TMath::ATan2(h->getY(), h->getX());
             double h_r = sqrt(pow(h->getX(), 2) + pow(h->getY(), 2));
+            double mdphi = fabs(h_phi - probe_phi);
+            if ( mdphi > 2 * TMath::Pi() ) {
+                LOG_F( WARNING, "BAD WRAP" );
+            }
             LOG_F(1, "hit_phi=%0.2f - mphi=%0.2f = %0.2f", h_phi, probe_phi, fabs(h_phi - probe_phi));
-            if (fabs(h_phi - probe_phi) < dphi) { // handle 2pi edge
+            if ( mdphi < dphi || fabs( h_r - probe_r ) < dr) { // handle 2pi edge
                 found_hits.push_back(h);
             }
         }
