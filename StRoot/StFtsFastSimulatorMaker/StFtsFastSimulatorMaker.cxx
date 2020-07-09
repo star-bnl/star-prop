@@ -524,7 +524,7 @@ Rmax =    23.13971
                   float er = dr / SQRT12;
                   fsihit->setPosition(StThreeVectorF(x0, y0, z));
                   // fsihit->setPositionError(StThreeVectorF(er, dp, dz));
-                  fsihit->setPositionError(StThreeVectorF(er * 4, dp * 2, dz));
+                  fsihit->setPositionError(StThreeVectorF(er, dp, dz));
 
                   // StThreeVectorF posErr = fsihit->positionError();
                   // cout << " input : " << er*2 <<" , "<<  dp<< " , " << dz <<endl;
@@ -554,8 +554,9 @@ Rmax =    23.13971
                   float dr = rrMx - rrMn;
                   float er = dr / SQRT12;
                   fsihit->setPosition(StThreeVectorF(x0, y0, z));
+                  // fsihit->setPosition(StThreeVectorF(x, y, z));
                   // fsihit->setPositionError(StThreeVectorF(er, dp, dz));
-                  fsihit->setPositionError(StThreeVectorF(er * 4, dp * 2, dz));
+                  fsihit->setPositionError(StThreeVectorF(er, dp, dz));
                }
 
                fsihit->setErrorMatrix(&Hack1to6(fsihit)[0][0]);

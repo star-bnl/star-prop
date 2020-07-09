@@ -48,7 +48,8 @@ public:
         float y = tree_y[i] + gRandom->Gaus( 0.0, 0.01 );
         float z = tree_z[i];
         LOG_F( 3, "Hit at (%0.2f, %0.2f, %0.2f) in vol=%d from track=%d", x, y, z, vid, tree_tid[i] );
-        FwdHit *fhit = new FwdHit( iGlobal, x, y, tree_z[i], tree_vid[i], tree_tid[i] );
+        TMatrixDSym hitCov3;
+        FwdHit *fhit = new FwdHit( iGlobal, x, y, tree_z[i], tree_vid[i], tree_tid[i], hitCov3 );
         hits_map_by_track[ tree_tid[i] ].push_back( fhit ); // this one is for evaluation
         iGlobal++;
       }

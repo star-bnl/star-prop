@@ -915,7 +915,7 @@ class ForwardTrackMaker {
         } // loop on globals
     }     // addSiHits
 
-    std::vector<KiTrack::IHit *> findSiHitsNearMe(std::vector<KiTrack::IHit *> &available_hits, genfit::MeasuredStateOnPlane &msp, double dphi = 0.004 * 2.5, double dr = 0.5) {
+    std::vector<KiTrack::IHit *> findSiHitsNearMe(std::vector<KiTrack::IHit *> &available_hits, genfit::MeasuredStateOnPlane &msp, double dphi = 0.004 * 5.5, double dr = 0.75) {
         LOG_SCOPE_FUNCTION(INFO);
         double probe_phi = TMath::ATan2(msp.getPos().Y(), msp.getPos().X());
         double probe_r = sqrt(pow(msp.getPos().X(), 2) + pow(msp.getPos().Y(), 2));
@@ -941,6 +941,8 @@ class ForwardTrackMaker {
     bool getSaveCriteriaValues() { return saveCriteriaValues; }
     std::vector<KiTrack::ICriterion *> getTwoHitCriteria() { return twoHitCrit; }
     std::vector<KiTrack::ICriterion *> getThreeHitCriteria() { return threeHitCrit; }
+
+    TrackFitter *getTrackFitter() { return trackFitter; }
 
   protected:
     FastSim *fastSim;

@@ -17,10 +17,12 @@ class StRnDHitCollection;
 class StTrack;
 class StTrackDetectorInfo;
 class SiRasterizer;
+class McTrack;
 
 #include "TNtuple.h"
 #include "TTree.h"
 #include <vector>
+#include <memory>
 
 const size_t MAX_TREE_ELEMENTS = 10000;
 
@@ -66,6 +68,18 @@ class StgMaker : public StMaker {
     float mlt_pt[MAX_TREE_ELEMENTS], mlt_eta[MAX_TREE_ELEMENTS], mlt_phi[MAX_TREE_ELEMENTS];
     std::map<string, std::vector<float>> mlt_crits;
     std::map<string, std::vector<int>> mlt_crit_track_ids;
+
+    void FstStudy();
+    // I could not get the library generation to succeed with these.
+    // so I have removed them
+    #ifndef __CINT__
+        void loadMcTracks( std::map<int, std::shared_ptr<McTrack>> &mcTrackMap );
+        void loadStgcHits( std::map<int, std::shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap );
+        void loadFstHits( std::map<int, std::shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count = 0 );
+        void loadFstHitsFromGEANT( std::map<int, std::shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count = 0 );
+        void loadFstHitsFromStEvent( std::map<int, std::shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count = 0 );
+    #endif
+    
 
     // Fill StEvent
     void FillEvent();

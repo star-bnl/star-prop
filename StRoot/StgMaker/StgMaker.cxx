@@ -38,6 +38,7 @@
 #include "StarClassLibrary/StPhysicalHelix.hh"
 
 #include "TROOT.h"
+#include "TLorentzVector.h"
 
 //_______________________________________________________________________________________
 // For now, accept anything we are passed, no matter what it is or how bad it is
@@ -312,72 +313,258 @@ int StgMaker::Init() {
         histograms[TString::Format("fsi%dHitMapPhi", i).Data()] = new TH1F(TString::Format("fsi%dHitMapPhi", i), TString::Format("FSI Layer %d; phi; "), 320, 0, TMath::Pi() * 2 + 0.1);
     }
 
+    histograms["fstStudyPtRes"] = new TH1F("fstStudyPtRes", "FST; PtRes; ", 500, -5, 5);
+    histograms["fstStudyPtResVsPt"] = new TH2F("fstStudyPtResVs", "FST; Pt; PtRes", 500, 0, 5, 500, -5, 5);
+
+    histograms["fstStudyFastCovMatXY"] = new TH2F("fstStudyFastCovMatXY", "FST Fast Sim; #sigma_{X}; #sigma_{Y}", 500, 0, 5, 500, 0, 5);
+    histograms["fstStudyCovMatXY"] = new TH2F("fstStudyCovMatXY", "FST; #sigma_{X}; #sigma_{Y}", 500, 0, 1, 500, 0, 1);
+    histograms["fstStudyCovMatCompareX"] = new TH2F("fstStudyCovMatCompareX", "FST; #sigma_{X}; #sigma_{X} (Fast)", 500, 0, 1, 500, 0, 5);
+    histograms["fstStudyCovMatCompareY"] = new TH2F("fstStudyCovMatCompareY", "FST; #sigma_{Y}; #sigma_{Y} (Fast)", 500, 0, 1, 500, 0, 5);
+
     return kStOK;
 };
-//________________________________________________________________________
-int StgMaker::Make() {
-    LOG_INFO << "StgMaker::Make()   " << endm;
 
-    long long itStart = loguru::now_ns();
-    // const double z_fst[] = {93.3, 140.0, 186.6};
-    // const double z_stgc[] = {280.9, 303.7, 326.6, 349.4};
-    // const double z_wcal[] = {711.0};
-    // const double z_hcal[] = {740.0}; // TODO: get correct value
+TMatrixDSym makeSiCovMat(TVector3 hit) {
+        // we can calculate the CovMat since we know the det info, but in future we should probably keep this info in the hit itself
 
-    // I am a horrible person for doing this by reference, but at least
-    // I don't use "goto" anywhere.
-    std::map<int, shared_ptr<McTrack>> &mcTrackMap = mForwardHitLoader->_mctracks;
-    std::map<int, std::vector<KiTrack::IHit *>> &hitMap = mForwardHitLoader->_hits;
-    std::map<int, std::vector<KiTrack::IHit *>> &fsiHitMap = mForwardHitLoader->_fsi_hits;
+        float r_size = .5;//2.85;
+        float phi_size = 0.004088542;
 
-    // Get geant tracks
+        // measurements on a plane only need 2x2
+        // for Si geom we need to convert from cylindrical to cartesian coords
+        TMatrixDSym cm(2);
+        TMatrixD T(2, 2);
+        TMatrixD J(2, 2);
+        const float x = hit.X();
+        const float y = hit.Y();
+        const float R = sqrt(x * x + y * y);
+        const float cosphi = x / R;
+        const float sinphi = y / R;
+        const float sqrt12 = sqrt(12.);
+
+        const float dr = r_size / sqrt12;
+        const float nPhiDivs = 128 * 12; // may change with geom?
+        const float dphi = (phi_size) / sqrt12;
+
+        // Setup the Transposed and normal Jacobian transform matrix;
+        // note, the si fast sim did this wrong
+        // row col
+        T(0, 0) = cosphi;
+        T(0, 1) = -R * sinphi;
+        T(1, 0) = sinphi;
+        T(1, 1) = R * cosphi;
+
+        J(0, 0) = cosphi;
+        J(0, 1) = sinphi;
+        J(1, 0) = -R * sinphi;
+        J(1, 1) = R * cosphi;
+
+        TMatrixD cmcyl(2, 2);
+        cmcyl(0, 0) = dr * dr;
+        cmcyl(1, 1) = dphi * dphi;
+
+        TMatrixD r = T * cmcyl * J;
+
+        const float sigmaX = sqrt(r(0, 0));
+        const float sigmaY = sqrt(r(1, 1));
+
+        cm(0, 0) = r(0, 0);
+        cm(1, 1) = r(1, 1);
+        cm(0, 1) = r(0, 1);
+        cm(1, 0) = r(1, 0);
+
+        LOG_F( INFO, "MY COVMAT = ( %f, %f, %f )", cm(0, 0), cm(0, 1), 0 );
+        LOG_F( INFO, "MY COVMAT = ( %f, %f, %f )", cm(1, 0), cm(1, 1), 0 );
+        LOG_F( INFO, "MY COVMAT = ( %f, %f, %f )", 0.0, 0.0, 0.0 );
+
+        TMatrixDSym tamvoc(3);
+        tamvoc( 0, 0 ) = cm(0, 0); tamvoc( 0, 1 ) = cm(0, 1); tamvoc( 0, 2 ) = 0.0;
+        tamvoc( 1, 0 ) = cm(1, 0); tamvoc( 1, 1 ) = cm(1, 1); tamvoc( 1, 2 ) = 0.0;
+        tamvoc( 2, 0 ) = 0.0;      tamvoc( 2, 1 ) = 0.0; tamvoc( 2, 2 )      = 0.01*0.01;
+
+
+        return tamvoc;
+    }
+
+void StgMaker::FstStudy(){
+    LOG_SCOPE_FUNCTION(INFO);
+    LOG_INFO << "StgMaker::FstStudy()   " << endm;
+
+    jdb::XmlConfig _xmlconfig;
+    _xmlconfig.loadFile(mConfigFile);
+    // TrackFitter* tf = new TrackFitter(_xmlconfig);
+    // tf->setup(false);
+
+    StEvent *event = (StEvent *)this->GetDataSet("StEvent");
+    if (0 == event) {
+        cout << "No event found" << endl;
+        return;
+    }
+
+
+    map<int, TLorentzVector> mclv;
+    // load the McTracks
     St_g2t_track *g2t_track = (St_g2t_track *)GetDataSet("geant/g2t_track");
+    if ( g2t_track == nullptr ) {
+        LOG_INFO << "NO MC TRACKS" << endm;
+        return;
+    }
+    LOG_INFO << "Checking " << g2t_track->GetNRows() << " Mc Tracks" << endm;
+    for (int irow = 0; irow < g2t_track->GetNRows(); irow++) {
+        g2t_track_st *track = (g2t_track_st *)g2t_track->At(irow);
 
-    if (!g2t_track)
-        return kStWarn;
+        if (0 == track)
+            continue;
 
-    mlt_nt = 1;
-    LOG_INFO << "# mc tracks = " << g2t_track->GetNRows() << endm;
-    histograms["nMcTracks"]->Fill(g2t_track->GetNRows());
+        int track_id = track->id;
+        float pt = track->pt;
+        float eta = track->eta;
+        float phi = atan2(track->p[1], track->p[0]); //track->phi;
+        int q = track->charge;
+        LOG_F(INFO, "Mc Track %d = ( %f, %f, %f ) start=%d", track_id, pt, eta, phi, track->start_vertex_p);
 
-    if (g2t_track) {
-        LOG_SCOPE_F(INFO, "MC Tracks");
-        for (int irow = 0; irow < g2t_track->GetNRows(); irow++) {
-            g2t_track_st *track = (g2t_track_st *)g2t_track->At(irow);
+        TLorentzVector lv( track->p[0], track->p[1], track->p[2], track->e );
+        mclv[ track_id ] = lv;
 
-            if (0 == track)
-                continue;
 
-            int track_id = track->id;
-            float pt2 = track->p[0] * track->p[0] + track->p[1] * track->p[1];
-            float pt = sqrt(pt2);
-            float eta = track->eta;
-            float phi = atan2(track->p[1], track->p[0]); //track->phi;
-            int q = track->charge;
-            LOG_F(INFO, "Mc Track %d = ( %f, %f, %f )", track_id, pt, eta, phi);
+    } // loop on track (irow)
 
-            if (0 == mcTrackMap[track_id]) // should always happen
-                mcTrackMap[track_id] = shared_ptr<McTrack>(new McTrack(pt, eta, phi, q, track->start_vertex_p));
-            if (mGenTree) {
-                LOG_F(INFO, "mlt_nt = %d == track_id = %d, is_shower = %d, start_vtx = %d", mlt_nt, track_id, track->is_shower, track->start_vertex_p);
-                mlt_pt[mlt_nt] = pt;
-                mlt_eta[mlt_nt] = eta;
-                mlt_phi[mlt_nt] = phi;
-                mlt_nt++;
+
+    St_g2t_fts_hit *g2t_stg_hits = (St_g2t_fts_hit *)GetDataSet("geant/g2t_stg_hit");
+
+    StRnDHitCollection *rndCollection = event->rndHitCollection();
+    if (0 == rndCollection) {
+        cout << "No collection found" << endl;
+    }
+    const StSPtrVecRnDHit &hits = rndCollection->hits();
+    LOG_INFO << "Found " << hits.size() << " FST hits from the fast sim" << endm;
+
+    TMatrixDSym hitCov3(3);
+    TVectorD sp(3);
+    // not efficienct but oh well
+    for ( size_t track_index = 1; track_index < g2t_track->GetNRows(); track_index++ ){
+
+        if ( mclv.count( track_index ) == 0 ) continue;
+        g2t_track_st *track = (g2t_track_st *)g2t_track->At(track_index-1);
+        if ( track->start_vertex_p > 1 ) continue;
+
+        int hitId = 0;
+        vector<genfit::SpacepointMeasurement*> space_points;
+
+        for (unsigned int fsthit_index = 0; fsthit_index < hits.size(); fsthit_index++) {
+            StRnDHit *hit = hits[fsthit_index];
+            if (0 == hit) {
+                cout << "No hit found" << endl;
             }
-        } // loop on track (irow)
-    }     // if g2t_track
+            if ( hit->idTruth() != track_index ){
+                // LOG_INFO << "Skipping hit from track : " << hit->idTruth() << " != " << track_index << endm;
+                continue;
+            }
+
+            const StThreeVectorF pos = hit->position();
+            LOG_F(INFO, "Fst Hit = (%f, %f, %f)", hit->position().x(), hit->position().y(), hit->position().z() );
+            LOG_F(INFO, "Fst Hit True = (%f, %f, %f)", hit->double0(), hit->double1(), hit->double2() );
+
+            // TMatrixDSym hitCov3(3);
+            float cartsigXY = 0.01;
+            hitCov3(0, 0) = cartsigXY * cartsigXY;
+            hitCov3(1, 1) = cartsigXY * cartsigXY;
+            hitCov3(2, 2) = 0.0087 * 0.0087;
+            sp[0] = pos.x();
+            sp[1] = pos.y();
+            sp[2] = pos.z();
+            LOG_F(INFO, "making space point");
+            StMatrixF covmat = hit->covariantMatrix();
+            // LOG_F( INFO, "COVMAT = (%f, %f, %f)", covmat[0][0], covmat[0][1], covmat[0][2] );
+            // LOG_F( INFO, "COVMAT = (%f, %f, %f)", covmat[1][0], covmat[1][1], covmat[1][2] );
+            // LOG_F( INFO, "COVMAT = (%f, %f, %f)", covmat[2][0], covmat[2][1], covmat[2][2] );
+
+            // hitCov3(0,0) = covmat[0][0]; hitCov3(0,1) = covmat[0][1]; hitCov3(0,2) = covmat[0][2];
+            // hitCov3(1,0) = covmat[1][0]; hitCov3(1,1) = covmat[1][1]; hitCov3(1,2) = covmat[1][2];
+            // hitCov3(2,0) = covmat[2][0]; hitCov3(2,1) = covmat[2][1]; hitCov3(2,2) = covmat[2][2];
+
+            hitCov3 = makeSiCovMat( TVector3( pos.x(), pos.y(), pos.z() ) );
+            histograms[ "fstStudyFastCovMatXY" ]->Fill( sqrt(covmat[0][0]), sqrt(covmat[1][1]) );
+            histograms[ "fstStudyCovMatXY" ]->Fill( sqrt(hitCov3(0,0)), sqrt(hitCov3(1,1)) );
+            histograms[ "fstStudyCovMatCompareX" ]->Fill( sqrt(hitCov3(0,0)), sqrt(covmat[0][0]) );
+            histograms[ "fstStudyCovMatCompareY" ]->Fill( sqrt(hitCov3(1,1)), sqrt(covmat[1][1]) );
+
+            try{
+                space_points.push_back(new genfit::SpacepointMeasurement(sp, hitCov3, 0, ++hitId, nullptr));
+            } catch ( genfit::Exception &e ){
+                LOG_F(WARNING, "EXCEPTION");
+            }
+
+        }
+
+
+        if ( g2t_stg_hits == nullptr ) continue;
+
+        TVector3 seedPos;
+        int nstg = 0;
+        for (int i = 0; i < g2t_stg_hits->GetNRows(); i++) {
+            // if ( nstg >= 4 ) continue;
+
+            g2t_fts_hit_st *git = (g2t_fts_hit_st *)g2t_stg_hits->At(i);
+            if (0 == git)
+                continue; // geant hit
+            int track_id = git->track_p;
+            int volume_id = git->volume_id;
+            int plane_id = (volume_id - 1) / 4;           // from 1 - 16. four chambers per station
+            float x = git->x[0] + gRandom->Gaus(0, 0.01); // 100 micron blur according to approx sTGC reso
+            float y = git->x[1] + gRandom->Gaus(0, 0.01); // 100 micron blur according to approx sTGC reso
+            float z = git->x[2];
+
+            if ( track_id != track_index ) continue;
+
+            LOG_F(INFO, "STGC Hit: volume_id=%d, plane_id=%d, (%f, %f, %f), track_id=%d", volume_id, plane_id, x, y, z, track_id);
+            
+            // TMatrixDSym hitCov3(3);
+            hitCov3(0, 0) = 0.01 * 0.01; hitCov3(0, 1) = 0; hitCov3(0, 2) = 0;
+            hitCov3(1, 0) = 0; hitCov3(1, 1) = 0.01 * 0.01; hitCov3(1, 2) = 0;
+            hitCov3(2, 0) = 0; hitCov3(2, 1) = 0; hitCov3(2, 2) = 0.005*0.005;
+            sp[0] = x;
+            sp[1] = y;
+            sp[2] = z;
+            seedPos.SetXYZ( x, y, z );
+            
+            space_points.push_back(new genfit::SpacepointMeasurement(sp, hitCov3, 0, ++hitId, nullptr));
+            nstg++;
+        }
+
+        LOG_F( INFO, "We have %lu space points on the track, lets fit it", space_points.size() );
+        if (space_points.size() < 7  ) continue;
+
+        // TVector3 seedPos( sp[0], sp[1], sp[2] );
+        // TVector3 seedMom( mclv[track_index].Px() + gRandom->Gaus( 0, 1 ), mclv[track_index].Py() + gRandom->Gaus( 0, 1 ), mclv[track_index].Pz() + gRandom->Gaus( 0, 1 ) );
+        TVector3 seedMom(   mclv[track_index].Px(), 
+                            mclv[track_index].Py(), 
+                            mclv[track_index].Pz());
+
+        TVector3 pfit = mForwardTracker->getTrackFitter()->fitSpacePoints( space_points, seedPos, seedMom );
+        LOG_F(INFO,"mcp = %0.2f, %0.2f",mclv[track_index].Pt(), pfit.Perp() );
+        histograms["fstStudyPtRes"]->Fill( (mclv[track_index].Pt() - pfit.Perp()) / mclv[track_index].Pt() );
+        histograms["fstStudyPtResVsPt"]->Fill( mclv[track_index].Pt(), (mclv[track_index].Pt() - pfit.Perp())/mclv[track_index].Pt() );
+    }
+
+    return;
+}
+
+
+void StgMaker::loadStgcHits( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap ){
+    /************************************************************/
+    // STGC Hits
+    St_g2t_fts_hit *g2t_stg_hits = (St_g2t_fts_hit *)GetDataSet("geant/g2t_stg_hit");
 
     // Add hits onto the hit loader (from rndHitCollection)
     int count = 0;
 
-    //
-    // Use geant hits directly
-    //
-
-    /************************************************************/
-    // STGC Hits
-    St_g2t_fts_hit *g2t_stg_hits = (St_g2t_fts_hit *)GetDataSet("geant/g2t_stg_hit");
+    // make the Covariance Matrix once and then reuse
+    TMatrixDSym hitCov3;
+    double sigXY = 0.01;
+    hitCov3(0, 0) = sigXY * sigXY;
+    hitCov3(1, 1) = sigXY * sigXY;
+    hitCov3(2, 2) = 0.0; // unused since they are loaded as points on plane
 
     int nstg = 0;
     if (g2t_stg_hits == nullptr) {
@@ -390,8 +577,8 @@ int StgMaker::Make() {
         LOG_SCOPE_F(INFO, "Loading sTGC hits");
 
         LOG_INFO << "# stg hits= " << nstg << endm;
-        histograms["nHitsSTGC"]->Fill(nstg);
-        mlt_n = 0;
+        this->histograms["nHitsSTGC"]->Fill(nstg);
+        this->mlt_n = 0;
         for (int i = 0; i < nstg; i++) {
 
             g2t_fts_hit_st *git = (g2t_fts_hit_st *)g2t_stg_hits->At(i);
@@ -416,16 +603,16 @@ int StgMaker::Make() {
             }
 
             LOG_F(INFO, "STGC Hit: volume_id=%d, plane_id=%d, (%f, %f, %f), track_id=%d", volume_id, plane_id, x, y, z, track_id);
-            histograms["stgc_volume_id"]->Fill(volume_id);
+            this->histograms["stgc_volume_id"]->Fill(volume_id);
 
             if (plane_id < 4 && plane_id >= 0) {
-                histograms[TString::Format("stgc%dHitMap", plane_id).Data()]->Fill(x, y);
+                this->histograms[TString::Format("stgc%dHitMap", plane_id).Data()]->Fill(x, y);
             } else {
                 LOG_F(ERROR, "Out of bounds STGC plane_id!");
                 continue;
             }
 
-            FwdHit *hit = new FwdHit(count++, x, y, z, -plane_id, track_id, mcTrackMap[track_id]);
+            FwdHit *hit = new FwdHit(count++, x, y, z, -plane_id, track_id, hitCov3, mcTrackMap[track_id]);
 
             // Add the hit to the hit map
             hitMap[hit->getSector()].push_back(hit);
@@ -435,7 +622,73 @@ int StgMaker::Make() {
                 mcTrackMap[track_id]->addHit(hit);
         }
     } // Loading sTGC hits
+} // loadStgcHits
 
+void StgMaker::loadFstHits( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
+    LOG_SCOPE_FUNCTION( INFO );
+    if ( true ){
+        loadFstHitsFromGEANT( mcTrackMap, hitMap, count );
+    } else {
+        loadFstHitsFromStEvent( mcTrackMap, hitMap, count );
+    }
+} // loadFstHits
+
+void StgMaker::loadFstHitsFromStEvent( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
+    LOG_SCOPE_FUNCTION( INFO );
+
+    // Get the StEvent handle
+    StEvent *event = (StEvent *)this->GetDataSet("StEvent");
+    if (0 == event) {
+        LOG_F( ERROR, "No StEvent found" );
+        return;
+    }
+
+    StRnDHitCollection *rndCollection = event->rndHitCollection();
+    if (0 == rndCollection) {
+        LOG_F( ERROR, "No StRnDHitCollection found" );
+    }
+
+    const StSPtrVecRnDHit &hits = rndCollection->hits();
+    LOG_F( INFO, "Found %lu FST hits in StEvent collection", hits.size() );
+
+    // we will reuse this to hold the cov mat
+    TMatrixDSym hitCov3;
+    
+
+    for (unsigned int fsthit_index = 0; fsthit_index < hits.size(); fsthit_index++) {
+        StRnDHit *hit = hits[fsthit_index];
+        if (0 == hit) {
+            LOG_F( INFO, "NULL hit at index %lu", fsthit_index );
+        }
+
+        const StThreeVectorF pos = hit->position();
+        LOG_F(INFO, "Fst Hit = (%f, %f, %f)", hit->position().x(), hit->position().y(), hit->position().z() );
+        LOG_F(INFO, "Fst Hit True = (%f, %f, %f)", hit->double0(), hit->double1(), hit->double2() );
+
+        StMatrixF covmat = hit->covariantMatrix();
+
+        // copy covariance matrix element by element from StMatrixF
+        hitCov3(0,0) = covmat[0][0]; hitCov3(0,1) = covmat[0][1]; hitCov3(0,2) = covmat[0][2];
+        hitCov3(1,0) = covmat[1][0]; hitCov3(1,1) = covmat[1][1]; hitCov3(1,2) = covmat[1][2];
+        hitCov3(2,0) = covmat[2][0]; hitCov3(2,1) = covmat[2][1]; hitCov3(2,2) = covmat[2][2];
+
+        hitCov3 = makeSiCovMat( TVector3( pos.x(), pos.y(), pos.z() ) );
+        this->histograms[ "fstStudyFastCovMatXY" ]->Fill( sqrt(covmat[0][0]), sqrt(covmat[1][1]) );
+        this->histograms[ "fstStudyCovMatXY" ]->Fill( sqrt(hitCov3(0,0)), sqrt(hitCov3(1,1)) );
+        this->histograms[ "fstStudyCovMatCompareX" ]->Fill( sqrt(hitCov3(0,0)), sqrt(covmat[0][0]) );
+        this->histograms[ "fstStudyCovMatCompareY" ]->Fill( sqrt(hitCov3(1,1)), sqrt(covmat[1][1]) );
+
+        // try{
+        //     space_points.push_back(new genfit::SpacepointMeasurement(sp, hitCov3, 0, ++hitId, nullptr));
+        // } catch ( genfit::Exception &e ){
+        //     LOG_F(WARNING, "EXCEPTION");
+        // }
+
+    }
+} //loadFstHitsFromStEvent
+
+void StgMaker::loadFstHitsFromGEANT( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
+    LOG_SCOPE_FUNCTION(INFO);
     /************************************************************/
     // FSI Hits
     int nfsi = 0;
@@ -447,53 +700,118 @@ int StgMaker::Make() {
         nfsi = g2t_fsi_hits->GetNRows();
     }
 
-    {
-        LOG_SCOPE_F(INFO, "Loading FSI hits");
-        histograms["nHitsFSI"]->Fill(nfsi);
-        LOG_INFO << "# fsi hits = " << nfsi << endm;
+    // reuse this to store cov mat
+    TMatrixDSym hitCov3;
+    
+    this->histograms["nHitsFSI"]->Fill(nfsi);
+    LOG_INFO << "# fsi hits = " << nfsi << endm;
 
-        for (int i = 0; i < nfsi; i++) { // yes, negative... because are skipping Si in initial tests
+    for (int i = 0; i < nfsi; i++) {
 
-            g2t_fts_hit_st *git = (g2t_fts_hit_st *)g2t_fsi_hits->At(i);
-            if (0 == git)
-                continue; // geant hit
-            int track_id = git->track_p;
-            int volume_id = git->volume_id;  // 4, 5, 6
-            int d = volume_id / 1000;        // disk id
-            int w = (volume_id % 1000) / 10; // wedge id
-            int s = volume_id % 10;          // sensor id
-            LOG_F(INFO, "volume_id=%d, disk=%d, wedge=%d, sensor=%d", volume_id, d, w, s);
-            int plane_id = d - 4;
-            float x = git->x[0];
-            float y = git->x[1];
-            float z = git->x[2];
+        g2t_fts_hit_st *git = (g2t_fts_hit_st *)g2t_fsi_hits->At(i);
+        
+        if (0 == git)
+            continue; // geant hit
+        
+        int track_id = git->track_p;
+        int volume_id = git->volume_id;  // 4, 5, 6
+        int d = volume_id / 1000;        // disk id
+        int w = (volume_id % 1000) / 10; // wedge id
+        int s = volume_id % 10;          // sensor id
+        LOG_F(INFO, "volume_id=%d, disk=%d, wedge=%d, sensor=%d", volume_id, d, w, s);
+        int plane_id = d - 4;
+        float x = git->x[0];
+        float y = git->x[1];
+        float z = git->x[2];
 
-            if (mSiRasterizer->active()) {
-                TVector3 rastered = mSiRasterizer->raster(TVector3(git->x[0], git->x[1], git->x[2]));
-                histograms["fsiHitDeltaR"]->Fill(sqrt(x * x + y * y) - rastered.Perp());
-                histograms["fsiHitDeltaPhi"]->Fill(atan2(y, x) - rastered.Phi());
-                x = rastered.X();
-                y = rastered.Y();
-            }
-
-            LOG_F(INFO, "FSI Hit: volume_id=%d, plane_id=%d, (%f, %f, %f), track_id=%d", volume_id, plane_id, x, y, z, track_id);
-            histograms["fsi_volume_id"]->Fill(d);
-
-            if (plane_id < 3 && plane_id >= 0) {
-                histograms[TString::Format("fsi%dHitMap", plane_id).Data()]->Fill(x, y);
-                histograms[TString::Format("fsi%dHitMapR", plane_id).Data()]->Fill(sqrt(x * x + y * y));
-                histograms[TString::Format("fsi%dHitMapPhi", plane_id).Data()]->Fill(atan2(y, x) + TMath::Pi());
-            } else {
-                LOG_F(ERROR, "Out of bounds FSI plane_id!");
-                continue;
-            }
-
-            FwdHit *hit = new FwdHit(count++, x, y, z, d, track_id, mcTrackMap[track_id]);
-
-            // Add the hit to the hit map
-            fsiHitMap[hit->getSector()].push_back(hit);
+        if (mSiRasterizer->active()) {
+            TVector3 rastered = mSiRasterizer->raster(TVector3(git->x[0], git->x[1], git->x[2]));
+            this->histograms["fsiHitDeltaR"]->Fill(sqrt(x * x + y * y) - rastered.Perp());
+            this->histograms["fsiHitDeltaPhi"]->Fill(atan2(y, x) - rastered.Phi());
+            x = rastered.X();
+            y = rastered.Y();
         }
-    } // Loading FSI hits
+
+        LOG_F(INFO, "FSI Hit: volume_id=%d, plane_id=%d, (%f, %f, %f), track_id=%d", volume_id, plane_id, x, y, z, track_id);
+        this->histograms["fsi_volume_id"]->Fill(d);
+
+        if (plane_id < 3 && plane_id >= 0) {
+            this->histograms[TString::Format("fsi%dHitMap", plane_id).Data()]->Fill(x, y);
+            this->histograms[TString::Format("fsi%dHitMapR", plane_id).Data()]->Fill(sqrt(x * x + y * y));
+            this->histograms[TString::Format("fsi%dHitMapPhi", plane_id).Data()]->Fill(atan2(y, x) + TMath::Pi());
+        } else {
+            LOG_F(ERROR, "Out of bounds FSI plane_id!");
+            continue;
+        }
+
+        hitCov3 = makeSiCovMat( TVector3( x, y, z ) );
+        FwdHit *hit = new FwdHit(count++, x, y, z, d, track_id, hitCov3, mcTrackMap[track_id]);
+
+        // Add the hit to the hit map
+        hitMap[hit->getSector()].push_back(hit);
+    }
+} // loadFstHitsFromGEANT
+
+void StgMaker::loadMcTracks( std::map<int, std::shared_ptr<McTrack>> &mcTrackMap ){
+    LOG_SCOPE_FUNCTION( INFO );
+    // Get geant tracks
+    St_g2t_track *g2t_track = (St_g2t_track *)GetDataSet("geant/g2t_track");
+
+    if (!g2t_track)
+        return;
+
+    mlt_nt = 1;
+    LOG_INFO << "# mc tracks = " << g2t_track->GetNRows() << endm;
+    this->histograms["nMcTracks"]->Fill(g2t_track->GetNRows());
+
+    if (g2t_track) {
+        LOG_SCOPE_F(INFO, "MC Tracks");
+        for (int irow = 0; irow < g2t_track->GetNRows(); irow++) {
+            g2t_track_st *track = (g2t_track_st *)g2t_track->At(irow);
+
+            if (0 == track)
+                continue;
+
+            int track_id = track->id;
+            float pt2 = track->p[0] * track->p[0] + track->p[1] * track->p[1];
+            float pt = sqrt(pt2);
+            float eta = track->eta;
+            float phi = atan2(track->p[1], track->p[0]); //track->phi;
+            int q = track->charge;
+            LOG_F(INFO, "Mc Track %d = ( %f, %f, %f )", track_id, pt, eta, phi);
+
+            if (0 == mcTrackMap[track_id]) // should always happen
+                mcTrackMap[track_id] = shared_ptr<McTrack>(new McTrack(pt, eta, phi, q, track->start_vertex_p));
+            
+            if (mGenTree) {
+                LOG_F(INFO, "mlt_nt = %d == track_id = %d, is_shower = %d, start_vtx = %d", mlt_nt, track_id, track->is_shower, track->start_vertex_p);
+                mlt_pt[mlt_nt] = pt;
+                mlt_eta[mlt_nt] = eta;
+                mlt_phi[mlt_nt] = phi;
+                mlt_nt++;
+            }
+
+        } // loop on track (irow)
+    } // if g2t_track
+} // loadMcTracks
+
+
+//________________________________________________________________________
+int StgMaker::Make() {
+    LOG_INFO << "StgMaker::Make()   " << endm;
+
+    jdb::XmlConfig _xmlconfig;
+    _xmlconfig.loadFile(mConfigFile);
+
+    long long itStart = loguru::now_ns();
+    
+    std::map<int, shared_ptr<McTrack>> &mcTrackMap = mForwardHitLoader->_mctracks;
+    std::map<int, std::vector<KiTrack::IHit *>> &hitMap = mForwardHitLoader->_hits;
+    std::map<int, std::vector<KiTrack::IHit *>> &fsiHitMap = mForwardHitLoader->_fsi_hits;
+
+    loadMcTracks( mcTrackMap );
+    loadStgcHits( mcTrackMap, hitMap );
+    loadFstHits( mcTrackMap, fsiHitMap );
 
     LOG_INFO << "mForwardTracker -> doEvent()" << endm;
 
@@ -536,6 +854,7 @@ int StgMaker::Make() {
 
     LOG_INFO << "Event took " << (loguru::now_ns() - itStart) * 1e-6 << " ms" << endm;
 
+    return kStOk;
     StEvent *event = static_cast<StEvent *>(GetInputDS("StEvent"));
 
     if (0 == event) {

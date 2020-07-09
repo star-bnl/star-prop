@@ -98,7 +98,8 @@ public:
       }
 
       // Create the Hit
-      FwdHit *fhit = new FwdHit( i, x, y, z, vid, tid, mcTrackMap[ tid ] );
+      TMatrixDSym hitCov3;
+      FwdHit *fhit = new FwdHit( i, x, y, z, vid, tid, hitCov3, mcTrackMap[ tid ] );
 
       // fill hitmap
       hitmap[ fhit->getSector() ].push_back( fhit ); // this hitmap is actually used
@@ -262,7 +263,8 @@ public:
       }
 
       // Create the Hit
-      FwdHit *fhit = new FwdHit( i, x, y, z, vid, tid, mcTrackMap[ tid ] );
+      TMatrixDSym hitCov3;
+      FwdHit *fhit = new FwdHit( i, x, y, z, vid, tid, hitCov3,mcTrackMap[ tid ] );
 
       // fill hitmap
       hitmap[ fhit->getSector() ].push_back( fhit ); // this hitmap is actually used
@@ -305,7 +307,8 @@ public:
 
 
       // Create the Hit
-      FwdHit *fhit = new FwdHit( i, x, y, z, vid, tid, nullptr );
+      TMatrixDSym hitCov3;
+      FwdHit *fhit = new FwdHit( i, x, y, z, vid, tid, hitCov3, nullptr );
       // fill hitmap
       hitmap[ fhit->getSector() ].push_back( fhit ); // this hitmap is actually used
     }
@@ -344,7 +347,8 @@ public:
       if ( includeGhosts == false && tid == 0 ) continue;
 
       // Create the Hit
-      FwdHit *fhit = new FwdHit( i, x, y, z, vid, tid, mcTrackMap[ tid ] );
+      TMatrixDSym hitCov3;
+      FwdHit *fhit = new FwdHit( i, x, y, z, vid, tid, hitCov3, mcTrackMap[ tid ] );
 
       // fill hitmap
       hitmap[ fhit->getSector() ].push_back( fhit ); // this hitmap is actually used

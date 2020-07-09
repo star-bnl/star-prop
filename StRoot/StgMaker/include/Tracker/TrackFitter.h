@@ -974,6 +974,54 @@ class TrackFitter {
         }
     }
 
+    TVector3 fitSpacePoints( vector<genfit::SpacepointMeasurement*> spoints, TVector3 &seedPos, TVector3 &seedMom ){
+        LOG_SCOPE_FUNCTION(INFO);
+        auto trackRepPos = new genfit::RKTrackRep(pdg_mu_plus);
+        auto trackRepNeg = new genfit::RKTrackRep(pdg_mu_minus);
+
+        auto fTrack = new genfit::Track(trackRepPos, seedPos, seedMom);
+        fTrack->addTrackRep(trackRepNeg);
+
+        genfit::Track &fitTrack = *fTrack;
+
+
+        try {
+            for ( size_t i = 0; i < spoints.size(); i++ ){
+                fitTrack.insertPoint(new genfit::TrackPoint(spoints[i], &fitTrack));
+            }
+
+            LOG_SCOPE_F(INFO, "Track Fit with GENFIT2");
+            // do the fit
+            LOG_F(INFO, "Processing Track");
+            fitter->processTrackWithRep(&fitTrack, trackRepPos);
+            fitter->processTrackWithRep(&fitTrack, trackRepNeg);
+
+        } catch (genfit::Exception &e) {
+            LOG_F(INFO, "%s", e.what());
+            LOG_F(INFO, "Exception on track fit");
+            std::cerr << e.what();
+        }
+
+        try {
+        fitTrack.checkConsistency();
+
+        fitTrack.determineCardinalRep();
+        auto cardinalRep = fitTrack.getCardinalRep();
+        auto cardinalStatus = fitTrack.getFitStatus(cardinalRep);
+
+        TVector3 p = cardinalRep->getMom(fitTrack.getFittedState(1, cardinalRep));
+        int _q = cardinalRep->getCharge(fitTrack.getFittedState(1, cardinalRep));
+
+        return p;
+        } catch (genfit::Exception &e) {
+            LOG_F(INFO, "%s", e.what());
+            LOG_F(INFO, "Exception on track fit");
+            std::cerr << e.what();
+        }
+        return TVector3(0, 0, 0);
+
+    }
+
     TVector3 fitTrack(vector<KiTrack::IHit *> trackCand, double *Vertex = 0, TVector3 *McSeedMom = 0) {
         LOG_SCOPE_FUNCTION(INFO);
         LOG_INFO << "****************************************************" << endm;

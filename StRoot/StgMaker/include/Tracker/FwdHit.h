@@ -66,7 +66,7 @@ class McTrack {
 class FwdHit : public KiTrack::IHit {
   public:
     FwdHit(unsigned int id, float x, float y, float z, int vid, int tid,
-           std::shared_ptr<McTrack> mcTrack = nullptr)
+           TMatrixDSym covmat, std::shared_ptr<McTrack> mcTrack = nullptr )
         : KiTrack::IHit() {
         _id = id;
         _x = x;
@@ -76,6 +76,7 @@ class FwdHit : public KiTrack::IHit {
         _vid = vid;
         _mcTrack = mcTrack;
         _hit = 0;
+        _covmat = covmat;
 
         int _map[] = {0, 0, 0, 0, 0, 1, 2, 0, 0, 3, 4, 5, 6}; // ftsref6a
 
@@ -104,6 +105,7 @@ class FwdHit : public KiTrack::IHit {
     int _vid;
     unsigned int _id; // just a unique id for each hit in this event.
     std::shared_ptr<McTrack> _mcTrack;
+    TMatrixDSym _covmat;
 
     StHit *_hit;
 };
