@@ -39,229 +39,6 @@
 // hack of a global field pointer
 genfit::AbsBField *_gField = 0;
 
-namespace genfit {
-class FwdKalmanFitterRefTrack : public KalmanFitterRefTrack {
-
-    void processTrackWithRep(Track *tr, const AbsTrackRep *rep, bool resortHits = false) {
-        LOG_SCOPE_FUNCTION(INFO);
-        if (tr->hasFitStatus(rep) && tr->getFitStatus(rep)->isTrackPruned()) {
-            Exception exc("KalmanFitterRefTrack::processTrack: Cannot process pruned track!", __LINE__, __FILE__);
-            throw exc;
-        }
-
-        double oldChi2FW = 1e6;
-        double oldPvalFW = 0.;
-        double oldChi2BW = 1e6;
-        double oldPvalBW = 0.;
-        double chi2FW(0), ndfFW(0);
-        double chi2BW(0), ndfBW(0);
-        int nFailedHits(0);
-
-        KalmanFitStatus *status = new KalmanFitStatus();
-        tr->setFitStatus(status, rep);
-
-        status->setIsFittedWithReferenceTrack(true);
-
-        unsigned int nIt = 0;
-        for (;;) {
-            LOG_F(INFO, "ITERATION %lu", nIt);
-            try {
-                if (debugLvl_ > 0) {
-                    debugOut << " KalmanFitterRefTrack::processTrack with rep " << rep
-                             << " (id == " << tr->getIdForRep(rep) << ")"
-                             << ", iteration nr. " << nIt << "\n";
-                }
-
-                {
-                    LOG_SCOPE_F(INFO, "Preparing track");
-                    // prepare
-                    if (!prepareTrack(tr, rep, resortHits, nFailedHits)) {
-                        if (debugLvl_ > 0) {
-                            debugOut << "KalmanFitterRefTrack::processTrack. Track preparation did not change anything!\n";
-                        }
-
-                        status->setIsFitted();
-
-                        status->setIsFitConvergedPartially();
-                        if (nFailedHits == 0)
-                            status->setIsFitConvergedFully();
-                        else
-                            status->setIsFitConvergedFully(false);
-
-                        status->setNFailedPoints(nFailedHits);
-
-                        status->setHasTrackChanged(false);
-                        status->setCharge(rep->getCharge(*static_cast<KalmanFitterInfo *>(tr->getPointWithMeasurement(0)->getFitterInfo(rep))->getBackwardUpdate()));
-                        status->setNumIterations(nIt);
-                        status->setForwardChi2(chi2FW);
-                        status->setBackwardChi2(chi2BW);
-                        status->setForwardNdf(std::max(0., ndfFW));
-                        status->setBackwardNdf(std::max(0., ndfBW));
-                        if (debugLvl_ > 0) {
-                            status->Print();
-                        }
-                        return;
-                    }
-                }
-
-                if (debugLvl_ > 0) {
-                    debugOut << "KalmanFitterRefTrack::processTrack. Prepared Track:";
-                    tr->Print("C");
-                    //tr->Print();
-                }
-
-                // resort
-                if (resortHits) {
-                    if (tr->sort()) {
-                        if (debugLvl_ > 0) {
-                            debugOut << "KalmanFitterRefTrack::processTrack. Resorted Track:";
-                            tr->Print("C");
-                        }
-                        prepareTrack(tr, rep, resortHits, nFailedHits); // re-prepare if order of hits has changed!
-                        status->setNFailedPoints(nFailedHits);
-                        if (debugLvl_ > 0) {
-                            debugOut << "KalmanFitterRefTrack::processTrack. Prepared resorted Track:";
-                            tr->Print("C");
-                        }
-                    }
-                }
-
-                // fit forward
-                if (debugLvl_ > 0)
-                    debugOut << "KalmanFitterRefTrack::forward fit\n";
-                TrackPoint *lastProcessedPoint = fitTrack(tr, rep, chi2FW, ndfFW, +1);
-
-                // fit backward
-                if (debugLvl_ > 0) {
-                    debugOut << "KalmanFitterRefTrack::backward fit\n";
-                }
-
-                // backward fit must not necessarily start at last hit, set prediction = forward update and blow up cov
-                if (lastProcessedPoint != nullptr) {
-                    KalmanFitterInfo *lastInfo = static_cast<KalmanFitterInfo *>(lastProcessedPoint->getFitterInfo(rep));
-                    if (!lastInfo->hasBackwardPrediction()) {
-                        lastInfo->setBackwardPrediction(new MeasuredStateOnPlane(*(lastInfo->getForwardUpdate())));
-                        lastInfo->getBackwardPrediction()->blowUpCov(blowUpFactor_, resetOffDiagonals_, blowUpMaxVal_); // blow up cov
-                        if (debugLvl_ > 0) {
-                            debugOut << "blow up cov for backward fit at TrackPoint " << lastProcessedPoint << "\n";
-                        }
-                    }
-                }
-
-                fitTrack(tr, rep, chi2BW, ndfBW, -1);
-
-                ++nIt;
-
-                double PvalBW = std::max(0., ROOT::Math::chisquared_cdf_c(chi2BW, ndfBW));
-                double PvalFW = (debugLvl_ > 0) ? std::max(0., ROOT::Math::chisquared_cdf_c(chi2FW, ndfFW)) : 0; // Don't calculate if not debugging as this function potentially takes a lot of time.
-
-                if (debugLvl_ > 0) {
-                    debugOut << "KalmanFitterRefTrack::Track after fit:";
-                    tr->Print("C");
-
-                    debugOut << "old chi2s: " << oldChi2BW << ", " << oldChi2FW
-                             << " new chi2s: " << chi2BW << ", " << chi2FW << std::endl;
-                    debugOut << "old pVals: " << oldPvalBW << ", " << oldPvalFW
-                             << " new pVals: " << PvalBW << ", " << PvalFW << std::endl;
-                }
-
-                // See if p-value only changed little.  If the initial
-                // parameters are very far off, initial chi^2 and the chi^2
-                // after the first iteration will be both very close to zero, so
-                // we need to have at least two iterations here.  Convergence
-                // doesn't make much sense before running twice anyway.
-                bool converged(false);
-                bool finished(false);
-                if (nIt >= minIterations_ && fabs(oldPvalBW - PvalBW) < deltaPval_) {
-                    // if pVal ~ 0, check if chi2 has changed significantly
-                    if (fabs(1 - fabs(oldChi2BW / chi2BW)) > relChi2Change_) {
-                        finished = false;
-                    } else {
-                        finished = true;
-                        converged = true;
-                    }
-
-                    if (PvalBW == 0.)
-                        converged = false;
-                }
-
-                if (finished) {
-                    if (debugLvl_ > 0) {
-                        debugOut << "Fit is finished! ";
-                        if (converged)
-                            debugOut << "Fit is converged! ";
-                        debugOut << "\n";
-                    }
-
-                    if (nFailedHits == 0)
-                        status->setIsFitConvergedFully(converged);
-                    else
-                        status->setIsFitConvergedFully(false);
-
-                    status->setIsFitConvergedPartially(converged);
-                    status->setNFailedPoints(nFailedHits);
-
-                    break;
-                } else {
-                    oldPvalBW = PvalBW;
-                    oldChi2BW = chi2BW;
-                    if (debugLvl_ > 0) {
-                        oldPvalFW = PvalFW;
-                        oldChi2FW = chi2FW;
-                    }
-                }
-
-                if (nIt >= maxIterations_) {
-                    if (debugLvl_ > 0) {
-                        debugOut << "KalmanFitterRefTrack::number of max iterations reached!\n";
-                    }
-                    break;
-                }
-            } catch (Exception &e) {
-                errorOut << e.what();
-                status->setIsFitted(false);
-                status->setIsFitConvergedFully(false);
-                status->setIsFitConvergedPartially(false);
-                status->setNFailedPoints(nFailedHits);
-                if (debugLvl_ > 0) {
-                    status->Print();
-                }
-                return;
-            }
-        }
-
-        TrackPoint *tp = tr->getPointWithMeasurementAndFitterInfo(0, rep);
-
-        double charge(0);
-        if (tp != nullptr) {
-            if (static_cast<KalmanFitterInfo *>(tp->getFitterInfo(rep))->hasBackwardUpdate())
-                charge = static_cast<KalmanFitterInfo *>(tp->getFitterInfo(rep))->getBackwardUpdate()->getCharge();
-        }
-        status->setCharge(charge);
-
-        if (tp != nullptr) {
-            status->setIsFitted();
-        } else { // none of the trackPoints has a fitterInfo
-            status->setIsFitted(false);
-            status->setIsFitConvergedFully(false);
-            status->setIsFitConvergedPartially(false);
-            status->setNFailedPoints(nFailedHits);
-        }
-
-        status->setHasTrackChanged(false);
-        status->setNumIterations(nIt);
-        status->setForwardChi2(chi2FW);
-        status->setBackwardChi2(chi2BW);
-        status->setForwardNdf(ndfFW);
-        status->setBackwardNdf(ndfBW);
-
-        if (debugLvl_ > 0) {
-            status->Print();
-        }
-    }
-};
-} // namespace genfit
-
 class TrackFitter {
 
   public:
@@ -311,8 +88,8 @@ class TrackFitter {
             display = genfit::EventDisplay::getInstance();
 
         // init the fitter
-        // fitter = new genfit::KalmanFitterRefTrack();
-        fitter = new genfit::FwdKalmanFitterRefTrack();
+        fitter = new genfit::KalmanFitterRefTrack();
+        // fitter = new genfit::FwdKalmanFitterRefTrack();
         // fitter = new genfit::KalmanFitter( );
         // fitter = new genfit::GblFitter();
 
@@ -794,18 +571,18 @@ class TrackFitter {
         for (auto h : si_hits) {
             if ( nullptr == h ) continue; // if no Si hit in this plane, skip
 
-            TMatrixDSym hitCovMat = FakeSiHitCov;
+            // TMatrixDSym hitCovMat = FakeSiHitCov;
 
-            if (useFCM == false)
-                hitCovMat = getCovMat(h);
+            // if (useFCM == false)
+            //     hitCovMat = getCovMat(h);
 
-            if (usingRasteredHits) {
-                hitCovMat = makeSiCovMat(h);
-            }
+            // if (usingRasteredHits) {
+            //     hitCovMat = makeSiCovMat(h);
+            // }
 
             hitCoords[0] = h->getX();
             hitCoords[1] = h->getY();
-            genfit::PlanarMeasurement *measurement = new genfit::PlanarMeasurement(hitCoords, hitCovMat, h->getSector(), ++hitId, nullptr);
+            genfit::PlanarMeasurement *measurement = new genfit::PlanarMeasurement(hitCoords, static_cast<FwdHit*>(h)->_covmat, h->getSector(), ++hitId, nullptr);
 
             planeId = h->getSector();
 
@@ -1106,15 +883,15 @@ class TrackFitter {
 		 * loop over the hits, add them to the track
 		 *******************************************************************************************************************************/
         for (auto h : trackCand) {
-            TMatrixDSym hitCovMat = FakeHitCov;
+            // TMatrixDSym hitCovMat = FakeHitCov;
 
-            if (useFCM == false)
-                hitCovMat = getCovMat(h);
+            // if (useFCM == false)
+            //     hitCovMat = getCovMat(h);
 
             hitCoords[0] = h->getX();
             hitCoords[1] = h->getY();
             LOG_F(INFO, "PlanarMeasurement( x=%f, y=%f, sector=%d, hitId=%d )", hitCoords[0], hitCoords[1], h->getSector(), hitId + 1);
-            genfit::PlanarMeasurement *measurement = new genfit::PlanarMeasurement(hitCoords, hitCovMat, h->getSector(), ++hitId, nullptr);
+            genfit::PlanarMeasurement *measurement = new genfit::PlanarMeasurement(hitCoords, static_cast<FwdHit*>(h)->_covmat, h->getSector(), ++hitId, nullptr);
 
             planeId = h->getSector();
 
