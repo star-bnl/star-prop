@@ -1,7 +1,6 @@
 #define LOGURU_IMPLEMENTATION 1
 
 #include "StgMaker/StgMaker.h"
-#include "StgMaker/XmlConfig/XmlConfig.h"
 #include "StgMaker/include/Tracker/FwdHit.h"
 #include "StgMaker/include/Tracker/FwdTracker.h"
 #include "StgMaker/include/Tracker/TrackFitter.h"
@@ -227,8 +226,7 @@ int StgMaker::Init() {
         LOG_F(INFO, "Config File : %s", mConfigFile.c_str());
     }
     std::map<string, string> cmdLineConfig;
-    jdb::XmlConfig _xmlconfig;
-    _xmlconfig.loadFile(configFile, cmdLineConfig);
+    xfg.loadFile(configFile, cmdLineConfig);
 
     // setup the loguru log file
     loguru::add_file("everything.log", loguru::Truncate, loguru::Verbosity_2);
@@ -254,11 +252,11 @@ int StgMaker::Init() {
         mlTree->Branch("tid", &mlt_tid, "tid/I");
 
         std::string path = "TrackFinder.Iteration[0].SegmentBuilder";
-        std::vector<string> paths = _xmlconfig.childrenOf(path);
+        std::vector<string> paths = xfg.childrenOf(path);
 
         for (string p : paths) {
-            string name = _xmlconfig.get<string>(p + ":name");
-            bool active = _xmlconfig.get<bool>(p + ":active", true);
+            string name = xfg.get<string>(p + ":name");
+            bool active = xfg.get<bool>(p + ":active", true);
             mlt_crits[name]; // create the entry
             mlTree->Branch(name.c_str(), &mlt_crits[name]);
             mlTree->Branch((name + "_trackIds").c_str(), &mlt_crit_track_ids[name]);
@@ -266,11 +264,11 @@ int StgMaker::Init() {
 
         // Three hit criteria
         path = "TrackFinder.Iteration[0].ThreeHitSegments";
-        paths = _xmlconfig.childrenOf(path);
+        paths = xfg.childrenOf(path);
 
         for (string p : paths) {
-            string name = _xmlconfig.get<string>(p + ":name");
-            bool active = _xmlconfig.get<bool>(p + ":active", true);
+            string name = xfg.get<string>(p + ":name");
+            bool active = xfg.get<bool>(p + ":active", true);
             mlt_crits[name]; // create the entry
             mlTree->Branch(name.c_str(), &mlt_crits[name]);
             mlTree->Branch((name + "_trackIds").c_str(), &mlt_crit_track_ids[name]);
@@ -279,10 +277,10 @@ int StgMaker::Init() {
         mlTree->SetAutoFlush(0);
     }
 
-    mSiRasterizer = new SiRasterizer(_xmlconfig);
+    mSiRasterizer = new SiRasterizer(xfg);
 
     mForwardTracker = new ForwardTracker();
-    mForwardTracker->setConfig(_xmlconfig);
+    mForwardTracker->setConfig(xfg);
     // only save criteria values if we are generating a tree.
     mForwardTracker->setSaveCriteriaValues(mGenTree);
 
@@ -325,66 +323,66 @@ int StgMaker::Init() {
 };
 
 TMatrixDSym makeSiCovMat(TVector3 hit) {
-        // we can calculate the CovMat since we know the det info, but in future we should probably keep this info in the hit itself
+    // we can calculate the CovMat since we know the det info, but in future we should probably keep this info in the hit itself
 
-        float r_size = .5;//2.85;
-        float phi_size = 0.004088542;
+    float r_size = xfg.get<float>("SiRasterizer:r", 3.0);
+    float phi_size = xfg.get<float>("SiRasterizer:phi", 0.004);
 
-        // measurements on a plane only need 2x2
-        // for Si geom we need to convert from cylindrical to cartesian coords
-        TMatrixDSym cm(2);
-        TMatrixD T(2, 2);
-        TMatrixD J(2, 2);
-        const float x = hit.X();
-        const float y = hit.Y();
-        const float R = sqrt(x * x + y * y);
-        const float cosphi = x / R;
-        const float sinphi = y / R;
-        const float sqrt12 = sqrt(12.);
+    // measurements on a plane only need 2x2
+    // for Si geom we need to convert from cylindrical to cartesian coords
+    TMatrixDSym cm(2);
+    TMatrixD T(2, 2);
+    TMatrixD J(2, 2);
+    const float x = hit.X();
+    const float y = hit.Y();
+    const float R = sqrt(x * x + y * y);
+    const float cosphi = x / R;
+    const float sinphi = y / R;
+    const float sqrt12 = sqrt(12.);
 
-        const float dr = r_size / sqrt12;
-        const float nPhiDivs = 128 * 12; // may change with geom?
-        const float dphi = (phi_size) / sqrt12;
+    const float dr = r_size / sqrt12;
+    const float nPhiDivs = 128 * 12; // may change with geom?
+    const float dphi = (phi_size) / sqrt12;
 
-        // Setup the Transposed and normal Jacobian transform matrix;
-        // note, the si fast sim did this wrong
-        // row col
-        T(0, 0) = cosphi;
-        T(0, 1) = -R * sinphi;
-        T(1, 0) = sinphi;
-        T(1, 1) = R * cosphi;
+    // Setup the Transposed and normal Jacobian transform matrix;
+    // note, the si fast sim did this wrong
+    // row col
+    T(0, 0) = cosphi;
+    T(0, 1) = -R * sinphi;
+    T(1, 0) = sinphi;
+    T(1, 1) = R * cosphi;
 
-        J(0, 0) = cosphi;
-        J(0, 1) = sinphi;
-        J(1, 0) = -R * sinphi;
-        J(1, 1) = R * cosphi;
+    J(0, 0) = cosphi;
+    J(0, 1) = sinphi;
+    J(1, 0) = -R * sinphi;
+    J(1, 1) = R * cosphi;
 
-        TMatrixD cmcyl(2, 2);
-        cmcyl(0, 0) = dr * dr;
-        cmcyl(1, 1) = dphi * dphi;
+    TMatrixD cmcyl(2, 2);
+    cmcyl(0, 0) = dr * dr;
+    cmcyl(1, 1) = dphi * dphi;
 
-        TMatrixD r = T * cmcyl * J;
+    TMatrixD r = T * cmcyl * J;
 
-        const float sigmaX = sqrt(r(0, 0));
-        const float sigmaY = sqrt(r(1, 1));
+    const float sigmaX = sqrt(r(0, 0));
+    const float sigmaY = sqrt(r(1, 1));
 
-        cm(0, 0) = r(0, 0);
-        cm(1, 1) = r(1, 1);
-        cm(0, 1) = r(0, 1);
-        cm(1, 0) = r(1, 0);
+    cm(0, 0) = r(0, 0);
+    cm(1, 1) = r(1, 1);
+    cm(0, 1) = r(0, 1);
+    cm(1, 0) = r(1, 0);
 
-        LOG_F( INFO, "MY COVMAT = ( %f, %f, %f )", cm(0, 0), cm(0, 1), 0 );
-        LOG_F( INFO, "MY COVMAT = ( %f, %f, %f )", cm(1, 0), cm(1, 1), 0 );
-        LOG_F( INFO, "MY COVMAT = ( %f, %f, %f )", 0.0, 0.0, 0.0 );
+    LOG_F( INFO, "MY COVMAT = ( %f, %f, %f )", cm(0, 0), cm(0, 1), 0 );
+    LOG_F( INFO, "MY COVMAT = ( %f, %f, %f )", cm(1, 0), cm(1, 1), 0 );
+    LOG_F( INFO, "MY COVMAT = ( %f, %f, %f )", 0.0, 0.0, 0.0 );
 
-        TMatrixDSym tamvoc(3);
-        tamvoc( 0, 0 ) = cm(0, 0); tamvoc( 0, 1 ) = cm(0, 1); tamvoc( 0, 2 ) = 0.0;
-        tamvoc( 1, 0 ) = cm(1, 0); tamvoc( 1, 1 ) = cm(1, 1); tamvoc( 1, 2 ) = 0.0;
-        tamvoc( 2, 0 ) = 0.0;      tamvoc( 2, 1 ) = 0.0; tamvoc( 2, 2 )      = 0.01*0.01;
+    TMatrixDSym tamvoc(3);
+    tamvoc( 0, 0 ) = cm(0, 0); tamvoc( 0, 1 ) = cm(0, 1); tamvoc( 0, 2 ) = 0.0;
+    tamvoc( 1, 0 ) = cm(1, 0); tamvoc( 1, 1 ) = cm(1, 1); tamvoc( 1, 2 ) = 0.0;
+    tamvoc( 2, 0 ) = 0.0;      tamvoc( 2, 1 ) = 0.0; tamvoc( 2, 2 )      = 0.01*0.01;
 
 
-        return tamvoc;
-    }
+    return tamvoc;
+}
 
 void StgMaker::FstStudy(){
     LOG_SCOPE_FUNCTION(INFO);

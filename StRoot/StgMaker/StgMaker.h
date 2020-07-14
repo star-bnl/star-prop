@@ -4,6 +4,9 @@
 #include "StMaker.h"
 
 #include "GenFit/Track.h"
+#ifndef __CINT__
+#include "StgMaker/XmlConfig/XmlConfig.h"
+#endif
 
 namespace KiTrack {
 class IHit;
@@ -54,6 +57,7 @@ class StgMaker : public StMaker {
     StarFieldAdaptor *mFieldAdaptor;
 
     SiRasterizer *mSiRasterizer;
+    
 
     typedef std::vector<KiTrack::IHit *> Seed_t;
 
@@ -73,6 +77,8 @@ class StgMaker : public StMaker {
     // I could not get the library generation to succeed with these.
     // so I have removed them
     #ifndef __CINT__
+        jdb::XmlConfig xfg;
+
         void loadMcTracks( std::map<int, std::shared_ptr<McTrack>> &mcTrackMap );
         void loadStgcHits( std::map<int, std::shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap );
         void loadFstHits( std::map<int, std::shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count = 0 );
