@@ -322,7 +322,7 @@ int StgMaker::Init() {
     return kStOK;
 };
 
-TMatrixDSym makeSiCovMat(TVector3 hit) {
+TMatrixDSym makeSiCovMat(TVector3 hit, jdb::XmlConfig &xfg) {
     // we can calculate the CovMat since we know the det info, but in future we should probably keep this info in the hit itself
 
     float r_size = xfg.get<float>("SiRasterizer:r", 3.0);
@@ -481,7 +481,7 @@ void StgMaker::FstStudy(){
             // hitCov3(1,0) = covmat[1][0]; hitCov3(1,1) = covmat[1][1]; hitCov3(1,2) = covmat[1][2];
             // hitCov3(2,0) = covmat[2][0]; hitCov3(2,1) = covmat[2][1]; hitCov3(2,2) = covmat[2][2];
 
-            hitCov3 = makeSiCovMat( TVector3( pos.x(), pos.y(), pos.z() ) );
+            hitCov3 = makeSiCovMat( TVector3( pos.x(), pos.y(), pos.z() ), xfg );
             histograms[ "fstStudyFastCovMatXY" ]->Fill( sqrt(covmat[0][0]), sqrt(covmat[1][1]) );
             histograms[ "fstStudyCovMatXY" ]->Fill( sqrt(hitCov3(0,0)), sqrt(hitCov3(1,1)) );
             histograms[ "fstStudyCovMatCompareX" ]->Fill( sqrt(hitCov3(0,0)), sqrt(covmat[0][0]) );
@@ -548,7 +548,6 @@ void StgMaker::FstStudy(){
     return;
 }
 
-
 void StgMaker::loadStgcHits( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap ){
     /************************************************************/
     // STGC Hits
@@ -558,7 +557,7 @@ void StgMaker::loadStgcHits( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std
     int count = 0;
 
     // make the Covariance Matrix once and then reuse
-    TMatrixDSym hitCov3;
+    TMatrixDSym hitCov3(3);
     double sigXY = 0.01;
     hitCov3(0, 0) = sigXY * sigXY;
     hitCov3(1, 1) = sigXY * sigXY;
@@ -624,7 +623,16 @@ void StgMaker::loadStgcHits( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std
 
 void StgMaker::loadFstHits( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
     LOG_SCOPE_FUNCTION( INFO );
-    if ( true ){
+
+    // Get the StEvent handle to see if the rndCollection is available
+    StEvent *event = (StEvent *)this->GetDataSet("StEvent");
+    StRnDHitCollection *rndCollection = nullptr;
+    if (nullptr != event) {
+        rndCollection = event->rndHitCollection();
+    }
+
+    if ( xfg.get<bool>( "SiRasterizer.active", false ) || rndCollection == nullptr ){
+        LOG_F( INFO, "Loading hits from GEANT with SiRasterizer" );
         loadFstHitsFromGEANT( mcTrackMap, hitMap, count );
     } else {
         loadFstHitsFromStEvent( mcTrackMap, hitMap, count );
@@ -650,7 +658,7 @@ void StgMaker::loadFstHitsFromStEvent( std::map<int, shared_ptr<McTrack>> &mcTra
     LOG_F( INFO, "Found %lu FST hits in StEvent collection", hits.size() );
 
     // we will reuse this to hold the cov mat
-    TMatrixDSym hitCov3;
+    TMatrixDSym hitCov3(3);
     
 
     for (unsigned int fsthit_index = 0; fsthit_index < hits.size(); fsthit_index++) {
@@ -670,17 +678,10 @@ void StgMaker::loadFstHitsFromStEvent( std::map<int, shared_ptr<McTrack>> &mcTra
         hitCov3(1,0) = covmat[1][0]; hitCov3(1,1) = covmat[1][1]; hitCov3(1,2) = covmat[1][2];
         hitCov3(2,0) = covmat[2][0]; hitCov3(2,1) = covmat[2][1]; hitCov3(2,2) = covmat[2][2];
 
-        hitCov3 = makeSiCovMat( TVector3( pos.x(), pos.y(), pos.z() ) );
-        this->histograms[ "fstStudyFastCovMatXY" ]->Fill( sqrt(covmat[0][0]), sqrt(covmat[1][1]) );
-        this->histograms[ "fstStudyCovMatXY" ]->Fill( sqrt(hitCov3(0,0)), sqrt(hitCov3(1,1)) );
-        this->histograms[ "fstStudyCovMatCompareX" ]->Fill( sqrt(hitCov3(0,0)), sqrt(covmat[0][0]) );
-        this->histograms[ "fstStudyCovMatCompareY" ]->Fill( sqrt(hitCov3(1,1)), sqrt(covmat[1][1]) );
+        FwdHit *fhit = new FwdHit(count++, hit->position().x(), hit->position().y(), hit->position().z(), hit->layer(), -1, hitCov3, nullptr);
 
-        // try{
-        //     space_points.push_back(new genfit::SpacepointMeasurement(sp, hitCov3, 0, ++hitId, nullptr));
-        // } catch ( genfit::Exception &e ){
-        //     LOG_F(WARNING, "EXCEPTION");
-        // }
+        // Add the hit to the hit map
+        hitMap[fhit->getSector()].push_back(fhit);
 
     }
 } //loadFstHitsFromStEvent
@@ -699,7 +700,7 @@ void StgMaker::loadFstHitsFromGEANT( std::map<int, shared_ptr<McTrack>> &mcTrack
     }
 
     // reuse this to store cov mat
-    TMatrixDSym hitCov3;
+    TMatrixDSym hitCov3(3);
     
     this->histograms["nHitsFSI"]->Fill(nfsi);
     LOG_INFO << "# fsi hits = " << nfsi << endm;
@@ -742,7 +743,7 @@ void StgMaker::loadFstHitsFromGEANT( std::map<int, shared_ptr<McTrack>> &mcTrack
             continue;
         }
 
-        hitCov3 = makeSiCovMat( TVector3( x, y, z ) );
+        hitCov3 = makeSiCovMat( TVector3( x, y, z ), xfg );
         FwdHit *hit = new FwdHit(count++, x, y, z, d, track_id, hitCov3, mcTrackMap[track_id]);
 
         // Add the hit to the hit map

@@ -178,21 +178,6 @@ class TrackFitter {
         rand = new TRandom3();
         rand->SetSeed(0);
 
-        // make a fixed cov mat for hits if we arent going to use the real errors
-        double detectorResolution(cfg.get<float>("TrackFitter.Hits:sigmaXY", 0.01)); // resolution of sTGC detectors
-        LOG_F(INFO, "Hit Covariance Matrix resolution = %f", detectorResolution);
-
-        FakeHitCov.ResizeTo(2, 2);
-        FakeHitCov.UnitMatrix();
-        FakeHitCov *= detectorResolution * detectorResolution;
-
-        double siDetectorResolution(cfg.get<float>("TrackFitter.Hits:sigmaSiXY", 0.1)); // resolution of sTGC detectors
-        FakeSiHitCov.ResizeTo(2, 2);
-        FakeSiHitCov.UnitMatrix();
-        FakeSiHitCov *= siDetectorResolution * siDetectorResolution;
-        LOG_F(INFO, "Si Hit Covariance Matrix resolution = %f", siDetectorResolution);
-
-        useFCM = cfg.get<bool>("TrackFitter.Hits:useFCM", false);
 
         skipSi0 = cfg.get<bool>("TrackFitter.Hits:skipSi0", false);
         skipSi1 = cfg.get<bool>("TrackFitter.Hits:skipSi1", false);
@@ -265,6 +250,17 @@ class TrackFitter {
             nh.second->SetDirectory(gDirectory);
             nh.second->Write();
         }
+    }
+
+    /* Convert the 3x3 covmat to 2x2 by dropping z
+    *
+    */
+    TMatrixDSym CovMatPlane(KiTrack::IHit *h){
+        TMatrixDSym cm(2);
+        cm(0, 0) = static_cast<FwdHit*>(h)->_covmat(0, 0);
+        cm(1, 1) = static_cast<FwdHit*>(h)->_covmat(1, 1);
+        cm(0, 1) = static_cast<FwdHit*>(h)->_covmat(0, 1);
+        return cm;
     }
 
     /* Get the Covariance Matrix for the detector hit point
@@ -571,18 +567,9 @@ class TrackFitter {
         for (auto h : si_hits) {
             if ( nullptr == h ) continue; // if no Si hit in this plane, skip
 
-            // TMatrixDSym hitCovMat = FakeSiHitCov;
-
-            // if (useFCM == false)
-            //     hitCovMat = getCovMat(h);
-
-            // if (usingRasteredHits) {
-            //     hitCovMat = makeSiCovMat(h);
-            // }
-
             hitCoords[0] = h->getX();
             hitCoords[1] = h->getY();
-            genfit::PlanarMeasurement *measurement = new genfit::PlanarMeasurement(hitCoords, static_cast<FwdHit*>(h)->_covmat, h->getSector(), ++hitId, nullptr);
+            genfit::PlanarMeasurement *measurement = new genfit::PlanarMeasurement(hitCoords, CovMatPlane(h), h->getSector(), ++hitId, nullptr);
 
             planeId = h->getSector();
 
@@ -883,15 +870,11 @@ class TrackFitter {
 		 * loop over the hits, add them to the track
 		 *******************************************************************************************************************************/
         for (auto h : trackCand) {
-            // TMatrixDSym hitCovMat = FakeHitCov;
-
-            // if (useFCM == false)
-            //     hitCovMat = getCovMat(h);
 
             hitCoords[0] = h->getX();
             hitCoords[1] = h->getY();
             LOG_F(INFO, "PlanarMeasurement( x=%f, y=%f, sector=%d, hitId=%d )", hitCoords[0], hitCoords[1], h->getSector(), hitId + 1);
-            genfit::PlanarMeasurement *measurement = new genfit::PlanarMeasurement(hitCoords, static_cast<FwdHit*>(h)->_covmat, h->getSector(), ++hitId, nullptr);
+            genfit::PlanarMeasurement *measurement = new genfit::PlanarMeasurement(hitCoords, CovMatPlane(h), h->getSector(), ++hitId, nullptr);
 
             planeId = h->getSector();
 
@@ -913,57 +896,6 @@ class TrackFitter {
 
         try {
             LOG_SCOPE_F(INFO, "Track Fit with GENFIT2");
-            // fitTrack.checkConsistency();
-
-            // {
-            //     LOG_SCOPE_F( INFO, "Fitting Positive Track Rep" );
-
-            //     // prepare the track
-            //     for ( int i = 0; i < 3; i++ ){
-            //         LOG_F( INFO, "Preparing Positive Track" );
-            //         int nFailedHits = 0;
-            //         static_cast< genfit::KalmanFitterRefTrack* >( fitter )
-            //             ->prepareTrack( &fitTrack, trackRepPos, false, nFailedHits );
-
-            //         LOG_F( INFO, "nFailedHits = %d", nFailedHits );
-
-            //         LOG_F( INFO, "Fit track" );
-            //         double chi2=-1, ndf=-1;
-            //         bool fitresult = false;
-
-            //         fitresult = static_cast< genfit::KalmanFitterRefTrack* >( fitter )
-            //             ->fitTrack( &fitTrack, trackRepPos, chi2, ndf, 1 );
-            //         LOG_F( INFO, "Forward Fit: result=%d, chi2=%f, ndf=%f", (int)fitresult, chi2, ndf );
-            //         fitresult = static_cast< genfit::KalmanFitterRefTrack* >( fitter )
-            //             ->fitTrack( &fitTrack, trackRepPos, chi2, ndf, -1 );
-            //         LOG_F( INFO, "Backward Fit: result=%d, chi2=%f, ndf=%f", (int)fitresult, chi2, ndf );
-            //     }
-
-            // }
-
-            // {
-            //     LOG_SCOPE_F( INFO, "Fitting Negative Track Rep" );
-
-            //     for ( int i = 0; i < 3; i++ ){
-            //         LOG_F( INFO, "Preparing Negative Track" );
-            //         int nFailedHits = 0;
-            //         static_cast< genfit::KalmanFitterRefTrack* >( fitter )
-            //             ->prepareTrack( &fitTrack, trackRepNeg, false, nFailedHits );
-
-            //         LOG_F( INFO, "nFailedHits = %d", nFailedHits );
-
-            //         LOG_F( INFO, "Fit track" );
-            //         double chi2=-1, ndf=-1;
-            //         bool fitresult = false;
-
-            //         fitresult = static_cast< genfit::KalmanFitterRefTrack* >( fitter )
-            //             ->fitTrack( &fitTrack, trackRepNeg, chi2, ndf, 1 );
-            //         LOG_F( INFO, "Forward Fit: result=%d, chi2=%f, ndf=%f", (int)fitresult, chi2, ndf );
-            //         fitresult = static_cast< genfit::KalmanFitterRefTrack* >( fitter )
-            //             ->fitTrack( &fitTrack, trackRepNeg, chi2, ndf, -1 );
-            //         LOG_F( INFO, "Backward Fit: result=%d, chi2=%f, ndf=%f", (int)fitresult, chi2, ndf );
-            //     }
-            // }
 
             // do the fit
             LOG_F(INFO, "Processing Track");
@@ -1023,18 +955,6 @@ class TrackFitter {
             p = cardinalRep->getMom(fitTrack.getFittedState(1, cardinalRep));
             _q = cardinalRep->getCharge(fitTrack.getFittedState(1, cardinalRep));
             _p = p;
-
-            // studyProjectionToVertex(cardinalRep, fitTrack);
-            /*
-			  studyProjectionToECal( cardinalRep, fitTrack );
-
-			if ( _q > 0 ){
-				studyProjectionToSi(cardinalRep, trackRepNeg, fitTrack);
-			} else if ( _q < 0 ) {
-				studyProjectionToSi(cardinalRep, trackRepPos, fitTrack);
-			}
-
-			*/
 
         } catch (genfit::Exception &e) {
             LOG_F(INFO, "*********************FIT SUMMARY*********************");
@@ -1112,9 +1032,6 @@ class TrackFitter {
     genfit::AbsTrackRep *pion_track_rep = nullptr;
     vector<genfit::SharedPlanePtr> DetPlanes;
     vector<genfit::SharedPlanePtr> SiDetPlanes;
-    bool useFCM = false;
-    TMatrixDSym FakeHitCov;
-    TMatrixDSym FakeSiHitCov;
 
     TRandom *rand = nullptr;
 

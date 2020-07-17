@@ -76,6 +76,7 @@ class FwdHit : public KiTrack::IHit {
         _vid = vid;
         _mcTrack = mcTrack;
         _hit = 0;
+        _covmat.ResizeTo( 3, 3 );
         _covmat = covmat;
 
         int _map[] = {0, 0, 0, 0, 0, 1, 2, 0, 0, 3, 4, 5, 6}; // ftsref6a
