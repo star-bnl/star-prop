@@ -630,8 +630,9 @@ void StgMaker::loadFstHits( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std:
     if (nullptr != event) {
         rndCollection = event->rndHitCollection();
     }
-
-    if ( xfg.get<bool>( "SiRasterizer.active", false ) || rndCollection == nullptr ){
+    bool siRasterizer = xfg.get<bool>( "SiRasterizer:active", false );
+    LOG_F( INFO, "siRasterizer active=%d, r=%f", (int)(siRasterizer), xfg.get<float>( "SiRasterizer:r") );
+    if ( siRasterizer || rndCollection == nullptr ){
         LOG_F( INFO, "Loading hits from GEANT with SiRasterizer" );
         loadFstHitsFromGEANT( mcTrackMap, hitMap, count );
     } else {
