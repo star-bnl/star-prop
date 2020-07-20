@@ -572,9 +572,40 @@ class ForwardTrackMaker {
         qPlotter->afterIteration(0, recoTracks);
     }
 
+
+    /**
+    * @brief Slices a hitmap into a phi section
+    * 
+    * @param inputMap INPUT hitmap to process
+    * @param outputMap OUTPUT hitmap, will be cleared and filled with only the hits from inputMap that are within phi region
+    * @param phi_min The minimum phi to accept
+    * @param phi_max The maximum Phi to accept
+    * 
+    * @returns The number of hits in the outputMap
+    */
+    size_t sliceHitMapInPhi( std::map<int, std::vector<IHit*> > &inputMap, std::map<int, std::vector<IHit*> > &outputMap, float phi_min, float phi_max ){
+        size_t n_hits_kept = 0;
+
+        outputMap.clear(); // child STL containers will get cleared too
+        for ( auto kv : inputMap ){
+            for ( IHit* hit : kv.second ){
+                TVector3 vec(hit->getX(), hit->getY(), hit->getZ() );
+                if ( vec.Phi() < phi_min || vec.Phi() > phi_max ) continue;
+
+                // now add the hits to the sliced map
+                outputMap[kv.first].push_back( hit );
+                n_hits_kept ++;
+            } // loop on hits
+        } // loop on map
+        return n_hits_kept;
+    }
+
     void doTrackIteration(size_t iIteration, std::map<int, std::vector<KiTrack::IHit *>> &hitmap) {
         LOG_SCOPE_FUNCTION(INFO);
         LOG_F(INFO, "Tracking Iteration %lu", iIteration);
+
+        // empty the list of reco tracks for the iteration
+        recoTracksThisItertion.clear();
 
         // check to see if we have hits!
         size_t nHitsThisIteration = nHitsInHitMap(hitmap);
@@ -588,6 +619,60 @@ class ForwardTrackMaker {
 
         // this starts the timer for the iteration
         qPlotter->startIteration();
+
+
+        if ( false ) { // no phi slicing!
+            /*************************************************************/
+            // Steps 2 - 4 here
+            /*************************************************************/
+            // auto acceptedTracks = doTrackingOnHitmapSubset( iIteration, hitmap );
+            // recoTracksThisItertion.insert( recoTracksThisItertion.end(), acceptedTracks.begin(), acceptedTracks.end() );
+        } else {
+
+            std::map<int, std::vector<IHit*> > slicedHitMap;
+            std::string pslPath = "TrackFinder.Iteration["+ std::to_string(iIteration) + "]:nPhiSlices";
+            if ( false == cfg.exists( pslPath ) ) pslPath = "TrackFinder:nPhiSlices";
+            size_t phi_slice_count = cfg.get<size_t>( pslPath, 1 );
+
+            if ( phi_slice_count == 0 || phi_slice_count > 100 ){
+                LOG_F( WARNING, "Invalid phi_slice_count = %lu, resetting to 1", phi_slice_count);
+                phi_slice_count= 1;
+            }
+            
+            LOG_F( INFO, "Using %lu phi_slices", phi_slice_count );
+            float phi_slice = 2 * TMath::Pi() / (float) phi_slice_count;
+            for ( size_t phi_slice_index = 0; phi_slice_index < phi_slice_count; phi_slice_index++ ){
+
+                float phi_min = phi_slice_index * phi_slice - TMath::Pi();
+                float phi_max = (phi_slice_index + 1) * phi_slice - TMath::Pi();
+                LOG_F( INFO, "Working with hits in %0.2f < phi < %0.2f", phi_min, phi_max );
+
+                /*************************************************************/
+                // Step 1A
+                // Slice the hitmap into a phi section if needed
+                // If we do that, check again that we arent wasting time on empty sections
+                /*************************************************************/
+                size_t nHitsThisSlice = 0;
+                if ( phi_slice_count > 1 ){
+                    nHitsThisSlice = sliceHitMapInPhi( hitmap, slicedHitMap, phi_min, phi_max );
+                    if ( nHitsThisSlice < 4 ) {
+                        LOG_F( INFO, "This phi ( %f < phi < %f ) only has %lu hits, Skipping this Slice", phi_min, phi_max, nHitsThisSlice );
+                        continue;
+                    } else {
+                        LOG_F( INFO, "Working with %lu hits this Slice", nHitsThisSlice );
+                    }
+                } else { // no need to slice
+                    // I think this incurs a copy, maybe we can find a way to avoid.
+                    slicedHitMap = hitmap;
+                }
+                
+                /*************************************************************/
+                // Steps 2 - 4 here
+                /*************************************************************/
+                // auto acceptedTracks = doTrackingOnHitmapSubset( iIteration, slicedHitMap );
+                // recoTracksThisItertion.insert( recoTracksThisItertion.end(), acceptedTracks.begin(), acceptedTracks.end() );
+        }
+
 
         /*************************************************************/
         // Step 2
@@ -973,6 +1058,7 @@ class ForwardTrackMaker {
     size_t nTrueTracksWith7;
 
     std::vector<Seed_t> recoTracks; // the tracks recod from all iterations
+    std::vector<Seed_t> recoTracksThisItertion;
     std::vector<float> recoTrackQuality;
     std::vector<int> recoTrackIdTruth;
     std::vector<TVector3> fitMoms;
