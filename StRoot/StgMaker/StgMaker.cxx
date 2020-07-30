@@ -205,7 +205,7 @@ int StgMaker::Finish() {
     }
 
     // gDirectory->cd();
-    gDirectory->Write();
+    // gDirectory->Write();
 
     if (mGenTree) {
         mlTree->Print();
@@ -288,8 +288,18 @@ int StgMaker::Init() {
     mForwardTracker->setLoader(mForwardHitLoader);
     mForwardTracker->initialize();
 
+    histograms["McEventEta"] = new TH1D("McEventEta", ";MC Track Eta", 1000, -5, 5);
+    histograms["McEventPt"] = new TH1D("McEventPt", ";MC Track Pt (GeV/c)", 1000, 0, 10);
+    histograms["McEventPhi"] = new TH1D("McEventPhi", ";MC Track Phi", 1000, 0, 6.2831852);
+
+    // these are tracks within 2.5 < eta < 4.0
+    histograms["McEventFwdEta"] = new TH1D("McEventFwdEta", ";MC Track Eta", 1000, -5, 5);
+    histograms["McEventFwdPt"] = new TH1D("McEventFwdPt", ";MC Track Pt (GeV/c)", 1000, 0, 10);
+    histograms["McEventFwdPhi"] = new TH1D("McEventFwdPhi", ";MC Track Phi", 1000, 0, 6.2831852);
+
     // create histograms
     histograms["nMcTracks"] = new TH1I("nMcTracks", ";# MC Tracks/Event", 1000, 0, 1000);
+    histograms["nMcTracksFwd"] = new TH1I("nMcTracksFwd", ";# MC Tracks/Event", 1000, 0, 1000);
     histograms["nHitsSTGC"] = new TH1I("nHitsSTGC", ";# STGC Hits/Event", 1000, 0, 1000);
     histograms["nHitsFSI"] = new TH1I("nHitsFSI", ";# FSIT Hits/Event", 1000, 0, 1000);
 
@@ -371,9 +381,9 @@ TMatrixDSym makeSiCovMat(TVector3 hit, jdb::XmlConfig &xfg) {
     cm(0, 1) = r(0, 1);
     cm(1, 0) = r(1, 0);
 
-    LOG_F( INFO, "MY COVMAT = ( %f, %f, %f )", cm(0, 0), cm(0, 1), 0 );
-    LOG_F( INFO, "MY COVMAT = ( %f, %f, %f )", cm(1, 0), cm(1, 1), 0 );
-    LOG_F( INFO, "MY COVMAT = ( %f, %f, %f )", 0.0, 0.0, 0.0 );
+    // LOG_F( INFO, "MY COVMAT = ( %f, %f, %f )", cm(0, 0), cm(0, 1), 0 );
+    // LOG_F( INFO, "MY COVMAT = ( %f, %f, %f )", cm(1, 0), cm(1, 1), 0 );
+    // LOG_F( INFO, "MY COVMAT = ( %f, %f, %f )", 0.0, 0.0, 0.0 );
 
     TMatrixDSym tamvoc(3);
     tamvoc( 0, 0 ) = cm(0, 0); tamvoc( 0, 1 ) = cm(0, 1); tamvoc( 0, 2 ) = 0.0;
@@ -780,7 +790,8 @@ void StgMaker::loadMcTracks( std::map<int, std::shared_ptr<McTrack>> &mcTrackMap
             int q = track->charge;
             LOG_F(INFO, "Mc Track %d = ( %f, %f, %f )", track_id, pt, eta, phi);
 
-            if (0 == mcTrackMap[track_id]) // should always happen
+            // no need to add in secondaries or mid rapidity tracs
+            if (0 == mcTrackMap[track_id] ) 
                 mcTrackMap[track_id] = shared_ptr<McTrack>(new McTrack(pt, eta, phi, q, track->start_vertex_p));
             
             if (mGenTree) {
@@ -810,6 +821,40 @@ int StgMaker::Make() {
     std::map<int, std::vector<KiTrack::IHit *>> &fsiHitMap = mForwardHitLoader->_fsi_hits;
 
     loadMcTracks( mcTrackMap );
+
+    {
+        LOG_SCOPE_F( INFO, "McEvent" );
+        // now check the Mc tracks against the McEvent filter
+        size_t nForwardTracks = 0;
+        for (auto mctm : mcTrackMap ){
+            if ( mctm.second == nullptr ) continue;
+
+            LOG_F( INFO, "Filling track (%f, %f, %f)", mctm.second->_pt, mctm.second->_eta, mctm.second->_phi );
+            histograms[ "McEventPt" ] ->Fill( mctm.second->_pt );
+            histograms[ "McEventEta" ] ->Fill( mctm.second->_eta );
+            histograms[ "McEventPhi" ] ->Fill( mctm.second->_phi );
+
+            if ( mctm.second->_eta > 2.5 && mctm.second->_eta < 4.0 ){
+                histograms[ "McEventFwdPt" ] ->Fill( mctm.second->_pt );
+                histograms[ "McEventFwdEta" ] ->Fill( mctm.second->_eta );
+                histograms[ "McEventFwdPhi" ] ->Fill( mctm.second->_phi );
+
+                if ( mctm.second->_pt > 0.05 )
+                    nForwardTracks++;
+            }
+        }
+
+        histograms[ "nMcTracksFwd" ]->Fill( nForwardTracks );
+
+        LOG_F( INFO, "There are %lu tracks in forward region", nForwardTracks );
+        size_t maxForwardTracks = xfg.get<size_t>( "McEvent.Mult:max", 10000 );
+        if ( nForwardTracks > maxForwardTracks ){
+            LOG_F( INFO, "Skipping event with more than %lu forward tracks", maxForwardTracks );
+            return kStOk;
+        }
+    }
+
+
     loadStgcHits( mcTrackMap, hitMap );
     loadFstHits( mcTrackMap, fsiHitMap );
 
