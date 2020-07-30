@@ -1,4 +1,4 @@
-#include "StFtsFastSimulatorMaker.h"
+#include "StSiSimulatorMaker.h"
 
 #include "St_base/StMessMgr.h"
 
@@ -72,7 +72,7 @@ float RMAX[] = {1.05 * 15.0, 1.05 * 25.0, 1.05 * 25.0, 1.05 * 28.0, 1.05 * 28.0,
 //NEXT IS only for disk ARRAY 456 with the radius from 5 to 28.
 float RSegment[] = {5., 7.875, 10.75, 13.625, 16.5, 19.375, 22.25, 25.125, 28.};
 
-void StFtsFastSimulatorMaker::setDisk(const int i, const float rmn, const float rmx) {
+void StSiSimulatorMaker::setDisk(const int i, const float rmn, const float rmx) {
     RMIN[i] = rmn;
     RMAX[i] = rmx;
 }
@@ -153,7 +153,7 @@ int octantToGlobal(const float &xoctant, /* input */
 const bool verbose = true;
 const bool merge_hits = true;
 
-StFtsFastSimulatorMaker::StFtsFastSimulatorMaker(const Char_t *name)
+StSiSimulatorMaker::StSiSimulatorMaker(const Char_t *name)
    : StMaker(name),
    mNumR(64),
    mNumPHI(128),
@@ -211,7 +211,7 @@ StFtsFastSimulatorMaker::StFtsFastSimulatorMaker(const Char_t *name)
    mStagger(0.0),
    mConstEta(false) {}
 
-int StFtsFastSimulatorMaker::Init() {
+int StSiSimulatorMaker::Init() {
 
    AddHist(hTrutHitYXDisk = new TH3F("hTrutHitYXDisk", "Global hits before segmentation", 151, -75.5, 75.5, 151, -75.5, 75.5, 10, 0, 10));
    AddHist(hTrutHitRDisk = new TH2F("hTrutHitRDisk", "Global hits before segmentation", 400, 0, 40, 10, 0, 10));
@@ -269,8 +269,8 @@ int StFtsFastSimulatorMaker::Init() {
    return StMaker::Init();
 }
 
-Int_t StFtsFastSimulatorMaker::Make() {
-   LOG_DEBUG << "StFtsFastSimulatorMaker::Make" << endm;
+Int_t StSiSimulatorMaker::Make() {
+   LOG_DEBUG << "StSiSimulatorMaker::Make" << endm;
    // Get the existing StEvent, or add one if it doesn't exist.
    StEvent *event = static_cast<StEvent *>(GetDataSet("StEvent"));
    if (!event) {
@@ -301,7 +301,7 @@ Int_t StFtsFastSimulatorMaker::Make() {
 /* This should fill StFtsStrip for realistic simulator and let clustering fill StFtsHit */
 /* For now skipping StFtsStrip and clustering, and fill StFtsHits directly here*/
 
-void StFtsFastSimulatorMaker::fillSilicon(StEvent *event) {
+void StSiSimulatorMaker::fillSilicon(StEvent *event) {
 
    //    StFtsHitCollection * fsicollection = event->fsiCollection();
    StRnDHitCollection *fsicollection = event->rndHitCollection();
@@ -669,7 +669,7 @@ Rmax =    23.13971
 }
 //
 
-int StFtsFastSimulatorMaker::Finish() {
+int StSiSimulatorMaker::Finish() {
    fOut->cd();
    hTrutHitYXDisk->Write();
    hTrutHitRDisk->Write();

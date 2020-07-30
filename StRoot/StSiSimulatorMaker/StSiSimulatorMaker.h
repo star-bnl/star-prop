@@ -1,5 +1,5 @@
-#ifndef ST_FTS_SIMULATOR_MAKER_H
-#define ST_FTS_SIMULATOR_MAKER_H
+#ifndef ST_SI_SIMULATOR_MAKER_H
+#define ST_SI_SIMULATOR_MAKER_H
 
 class g2t_emc_hit_st;
 class StFtsHit;
@@ -15,10 +15,10 @@ class StRnDHitCollection;
 
 class StRnDHit;
 
-class StFtsFastSimulatorMaker : public StMaker {
+class StSiSimulatorMaker : public StMaker {
   public:
-    explicit StFtsFastSimulatorMaker(const Char_t *name = "fsiSim");
-    virtual ~StFtsFastSimulatorMaker() {}
+    explicit StSiSimulatorMaker(const Char_t *name = "fsiSim");
+    virtual ~StSiSimulatorMaker() {}
     Int_t Make();
     int Init();
     int Finish();
@@ -129,11 +129,11 @@ class StFtsFastSimulatorMaker : public StMaker {
 
     bool mConstEta;
 
-    ClassDef(StFtsFastSimulatorMaker, 0)
+    ClassDef(StSiSimulatorMaker, 0)
 };
 
-inline const char *StFtsFastSimulatorMaker::GetCVS() const {
-    static const char cvs[] = "Tag $Name:  $ $Id: StFtsFastSimulatorMaker.h,v 1.1 2018/11/06 18:56:05 jdb Exp $ built " __DATE__ " " __TIME__;
+inline const char *StSiSimulatorMaker::GetCVS() const {
+    static const char cvs[] = "Tag $Name:  $ $Id: StSiSimulatorMaker.h,v 1.1 2018/11/06 18:56:05 jdb Exp $ built " __DATE__ " " __TIME__;
     return cvs;
 }
 
