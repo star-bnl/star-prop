@@ -48,10 +48,10 @@ class QualityPlotter {
             hb_InvPtRes2D.load(cfg, "QualityPlotter.Bins.InvPtRes2D");
         }
 
-        hist["InvPtRes"] = new TH1F("InvPtRes", ";(p_{T}^{RC} - p_{T}^{MC}) / p_{T}^{MC}", hb_InvPtRes.nBins(), hb_InvPtRes.bins.data());
-        hist["InvPtResVsNHits"] = new TH2F("InvPtResVsNHits", ";(p_{T}^{RC} - p_{T}^{MC}) / p_{T}^{MC}", 10, 0, 10, hb_InvPtRes.nBins(), hb_InvPtRes.bins.data());
-        hist["PtRes"] = new TH1F("PtRes", ";(p_{T}^{RC} - p_{T}^{MC}) / p_{T}^{MC}", hb_InvPtRes.nBins(), hb_InvPtRes.bins.data());
-        hist["PtResVsTrue"] = new TH2F("PtResVsTrue", ";q^{MC} #times p_{T}^{MC};(p_{T}^{RC} - p_{T}^{MC}) / p_{T}^{MC}", 100, -5, 5, hb_InvPtRes2D.nBins(), hb_InvPtRes2D.bins.data());
+        hist["InvPtRes"] = new TH1F("InvPtRes", ";(p_{T}^{MC} - p_{T}^{RC}) / p_{T}^{MC}", hb_InvPtRes.nBins(), hb_InvPtRes.bins.data());
+        hist["InvPtResVsNHits"] = new TH2F("InvPtResVsNHits", ";(p_{T}^{MC} - p_{T}^{RC}) / p_{T}^{MC}", 10, 0, 10, hb_InvPtRes.nBins(), hb_InvPtRes.bins.data());
+        hist["PtRes"] = new TH1F("PtRes", ";(p_{T}^{MC} - p_{T}^{RC}) / p_{T}^{MC}", hb_InvPtRes.nBins(), hb_InvPtRes.bins.data());
+        hist["PtResVsTrue"] = new TH2F("PtResVsTrue", ";q^{MC} #times p_{T}^{MC};(p_{T}^{MC} - p_{T}^{RC}) / p_{T}^{MC}", 100, -5, 5, hb_InvPtRes2D.nBins(), hb_InvPtRes2D.bins.data());
         hist["InvPtResVsTrue"] = new TH2F("InvPtResVsTrue", ";q^{MC} #times p_{T}^{MC}; #sigma_{p_{T}^{-1}}", 100, -5, 5, hb_InvPtRes2D.nBins(), hb_InvPtRes2D.bins.data());
         hist["DeltaPt"] = new TH1F("DeltaPt", ";p_{T}^{RC} - p_{T}^{MC} (GeV/c)", hb_InvPtRes.nBins(), hb_InvPtRes.bins.data());
         hist["InvPtResVsEta"] = new TH2F("InvPtResVsEta", ";#eta^{MC}; #sigma_{p_{T}^{-1}}", 300, 2, 5, hb_InvPtRes2D.nBins(), hb_InvPtRes2D.bins.data());
