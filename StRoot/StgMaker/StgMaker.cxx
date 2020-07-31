@@ -679,7 +679,7 @@ void StgMaker::loadFstHitsFromStEvent( std::map<int, shared_ptr<McTrack>> &mcTra
         }
 
         const StThreeVectorF pos = hit->position();
-        LOG_F(INFO, "Fst Hit = (%f, %f, %f)", hit->position().x(), hit->position().y(), hit->position().z() );
+        LOG_F(INFO, "Fst Hit = (%f, %f, %f), idTruth=%d", hit->position().x(), hit->position().y(), hit->position().z(), hit->idTruth() );
         LOG_F(INFO, "Fst Hit True = (%f, %f, %f)", hit->double0(), hit->double1(), hit->double2() );
 
         StMatrixF covmat = hit->covariantMatrix();
@@ -689,7 +689,8 @@ void StgMaker::loadFstHitsFromStEvent( std::map<int, shared_ptr<McTrack>> &mcTra
         hitCov3(1,0) = covmat[1][0]; hitCov3(1,1) = covmat[1][1]; hitCov3(1,2) = covmat[1][2];
         hitCov3(2,0) = covmat[2][0]; hitCov3(2,1) = covmat[2][1]; hitCov3(2,2) = covmat[2][2];
 
-        FwdHit *fhit = new FwdHit(count++, hit->position().x(), hit->position().y(), hit->position().z(), hit->layer(), -1, hitCov3, nullptr);
+        LOG_F( INFO, "mcTrackMap[hit->idTruth()]->_pt=%0.2f", mcTrackMap[hit->idTruth()]->_pt );
+        FwdHit *fhit = new FwdHit(count++, hit->position().x(), hit->position().y(), hit->position().z(), hit->layer(), hit->idTruth(), hitCov3, mcTrackMap[hit->idTruth()]);
 
         // Add the hit to the hit map
         hitMap[fhit->getSector()].push_back(fhit);
