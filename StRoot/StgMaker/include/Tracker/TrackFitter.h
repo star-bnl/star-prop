@@ -144,10 +144,13 @@ class TrackFitter {
             // try to read from GEOMETRY
             if ( fwdGeoUtils.stgcZ( 0 ) > 1.0 ) { // returns 0.0 on failure
                 DET_Z.clear();
-                DET_Z.push_back( fwdGeoUtils.stgcZ( 0 ) );
-                DET_Z.push_back( fwdGeoUtils.stgcZ( 1 ) );
-                DET_Z.push_back( fwdGeoUtils.stgcZ( 2 ) );
-                DET_Z.push_back( fwdGeoUtils.stgcZ( 3 ) );
+                float z_delta = 0.435028;   // not sure why but when loaded from the geom 
+                                            // z location is shifted
+                                            // TODO investigate better solution. 
+                DET_Z.push_back( fwdGeoUtils.stgcZ( 0 ) + z_delta );
+                DET_Z.push_back( fwdGeoUtils.stgcZ( 1 ) + z_delta );
+                DET_Z.push_back( fwdGeoUtils.stgcZ( 2 ) + z_delta );
+                DET_Z.push_back( fwdGeoUtils.stgcZ( 3 ) + z_delta );
                 LOG_F( INFO, "From GEOMETRY : sTGC Z = %0.2f, %0.2f, %0.2f, %0.2f", DET_Z[0], DET_Z[1], DET_Z[2], DET_Z[3] );
             } else {
                 DET_Z.push_back(280.904449);
