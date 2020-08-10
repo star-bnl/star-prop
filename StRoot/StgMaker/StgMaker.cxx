@@ -558,13 +558,28 @@ void StgMaker::FstStudy(){
     return;
 }
 
-void StgMaker::loadStgcHits( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap ){
+void StgMaker::loadStgcHits( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
+    LOG_SCOPE_FUNCTION( INFO );
+
+    // Get the StEvent handle to see if the rndCollection is available
+    StEvent *event = (StEvent *)this->GetDataSet("StEvent");
+    StRnDHitCollection *rndCollection = nullptr;
+    if (nullptr != event) {
+        rndCollection = event->rndHitCollection();
+    }
+    LOG_F( INFO, "load sTGC from StEvent: %d", (int)( rndCollection != nullptr ) );
+    if ( rndCollection == nullptr ){
+        LOG_F( INFO, "Loading sTGC hits directly from GEANT hits" );
+        loadStgcHitsFromGEANT( mcTrackMap, hitMap, count );
+    } else {
+        loadStgcHitsFromStEvent( mcTrackMap, hitMap, count );
+    }
+} // loadFstHits
+
+void StgMaker::loadStgcHitsFromGEANT( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
     /************************************************************/
     // STGC Hits
     St_g2t_fts_hit *g2t_stg_hits = (St_g2t_fts_hit *)GetDataSet("geant/g2t_stg_hit");
-
-    // Add hits onto the hit loader (from rndHitCollection)
-    int count = 0;
 
     // make the Covariance Matrix once and then reuse
     TMatrixDSym hitCov3(3);
@@ -631,6 +646,56 @@ void StgMaker::loadStgcHits( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std
     } // Loading sTGC hits
 } // loadStgcHits
 
+void StgMaker::loadStgcHitsFromStEvent( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
+    LOG_SCOPE_FUNCTION( INFO );
+
+    // Get the StEvent handle
+    StEvent *event = (StEvent *)this->GetDataSet("StEvent");
+    if (0 == event) {
+        LOG_F( ERROR, "No StEvent found" );
+        return;
+    }
+
+    StRnDHitCollection *rndCollection = event->rndHitCollection();
+    if (0 == rndCollection) {
+        LOG_F( ERROR, "No StRnDHitCollection found" );
+    }
+
+    const StSPtrVecRnDHit &hits = rndCollection->hits();
+    LOG_F( INFO, "Found %lu FST hits in StEvent collection", hits.size() );
+
+    // we will reuse this to hold the cov mat
+    TMatrixDSym hitCov3(3);
+    
+
+    for (unsigned int stgchit_index = 0; stgchit_index < hits.size(); stgchit_index++) {
+        StRnDHit *hit = hits[stgchit_index];
+        if (0 == hit) {
+            LOG_F( INFO, "NULL hit at index %lu", stgchit_index );
+        }
+        if ( hit->layer() <= 6 ){
+            // skip FST hits here
+            continue;
+        }
+
+        const StThreeVectorF pos = hit->position();
+        LOG_F(INFO, "sTGC Hit = (%f, %f, %f), idTruth=%d, layer=%d", hit->position().x(), hit->position().y(), hit->position().z(), hit->idTruth(), hit->layer() );
+
+        StMatrixF covmat = hit->covariantMatrix();
+
+        // copy covariance matrix element by element from StMatrixF
+        hitCov3(0,0) = covmat[0][0]; hitCov3(0,1) = covmat[0][1]; hitCov3(0,2) = covmat[0][2];
+        hitCov3(1,0) = covmat[1][0]; hitCov3(1,1) = covmat[1][1]; hitCov3(1,2) = covmat[1][2];
+        hitCov3(2,0) = covmat[2][0]; hitCov3(2,1) = covmat[2][1]; hitCov3(2,2) = covmat[2][2];
+
+        LOG_F( INFO, "mcTrackMap[hit->idTruth()]->_pt=%0.2f", mcTrackMap[hit->idTruth()]->_pt );
+        FwdHit *fhit = new FwdHit(count++, hit->position().x(), hit->position().y(), hit->position().z(), hit->layer(), hit->idTruth(), hitCov3, mcTrackMap[hit->idTruth()]);
+
+        // Add the hit to the hit map
+        hitMap[fhit->getSector()].push_back(fhit);
+    }
+} //loadStgcHitsFromStEvent
+
 void StgMaker::loadFstHits( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
     LOG_SCOPE_FUNCTION( INFO );
 
@@ -677,10 +742,14 @@ void StgMaker::loadFstHitsFromStEvent( std::map<int, shared_ptr<McTrack>> &mcTra
         if (0 == hit) {
             LOG_F( INFO, "NULL hit at index %lu", fsthit_index );
         }
+        if ( hit->layer() > 6 ){
+            // skip sTGC hits here
+            continue;
+        }
 
         const StThreeVectorF pos = hit->position();
-        LOG_F(INFO, "Fst Hit = (%f, %f, %f), idTruth=%d", hit->position().x(), hit->position().y(), hit->position().z(), hit->idTruth() );
-        LOG_F(INFO, "Fst Hit True = (%f, %f, %f)", hit->double0(), hit->double1(), hit->double2() );
+        LOG_F(INFO, "Fst Hit = (%f, %f, %f), idTruth=%d, layer=%d", hit->position().x(), hit->position().y(), hit->position().z(), hit->idTruth(), hit->layer() );
+        // LOG_F(INFO, "Fst Hit True = (%f, %f, %f)", hit->double0(), hit->double1(), hit->double2() );
 
         StMatrixF covmat = hit->covariantMatrix();
 

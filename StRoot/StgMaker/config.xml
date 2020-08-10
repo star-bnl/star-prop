@@ -40,9 +40,7 @@
 
 	</TrackFinder>
 
-	<TrackFitter constB="false" display="false" noMaterialEffects="false" off="false" refitSi="true">
-		<Vertex sigmaXY="0.01" sigmaZ="5" includeInFit="true" />
-		
+	<TrackFitter constB="false" display="false" noMaterialEffects="false" off="false" refitSi="false">
 		<!-- for MC only -->
 		<Hits sigmaXY="0.01" useFCM="true" sigmaSiXY="0.01" />
 	</TrackFitter>
