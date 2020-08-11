@@ -662,7 +662,7 @@ void StFwdTrackMaker::loadStgcHitsFromStEvent( std::map<int, shared_ptr<McTrack>
     }
 
     const StSPtrVecRnDHit &hits = rndCollection->hits();
-    LOG_F( INFO, "Found %lu FST hits in StEvent collection", hits.size() );
+    LOG_F( INFO, "Found %lu total hits in StEvent collection", hits.size() );
 
     // we will reuse this to hold the cov mat
     TMatrixDSym hitCov3(3);
@@ -688,8 +688,12 @@ void StFwdTrackMaker::loadStgcHitsFromStEvent( std::map<int, shared_ptr<McTrack>
         hitCov3(1,0) = covmat[1][0]; hitCov3(1,1) = covmat[1][1]; hitCov3(1,2) = covmat[1][2];
         hitCov3(2,0) = covmat[2][0]; hitCov3(2,1) = covmat[2][1]; hitCov3(2,2) = covmat[2][2];
 
-        LOG_F( INFO, "mcTrackMap[hit->idTruth()]->_pt=%0.2f", mcTrackMap[hit->idTruth()]->_pt );
-        FwdHit *fhit = new FwdHit(count++, hit->position().x(), hit->position().y(), hit->position().z(), hit->layer(), hit->idTruth(), hitCov3, mcTrackMap[hit->idTruth()]);
+        shared_ptr<McTrack> mct = nullptr;
+        if ( mcTrackMap.count( hit->idTruth() ) ){
+            LOG_F( INFO, "mcTrackMap[hit->idTruth()]->_pt=%0.2f", mcTrackMap[hit->idTruth()]->_pt );
+            mct = mcTrackMap[hit->idTruth()];
+        }
+        FwdHit *fhit = new FwdHit(count++, hit->position().x(), hit->position().y(), hit->position().z(), hit->layer(), hit->idTruth(), hitCov3, mct);
 
         // Add the hit to the hit map
         hitMap[fhit->getSector()].push_back(fhit);
@@ -731,7 +735,7 @@ void StFwdTrackMaker::loadFstHitsFromStEvent( std::map<int, shared_ptr<McTrack>>
     }
 
     const StSPtrVecRnDHit &hits = rndCollection->hits();
-    LOG_F( INFO, "Found %lu FST hits in StEvent collection", hits.size() );
+    LOG_F( INFO, "Found %lu total hits in StEvent collection", hits.size() );
 
     // we will reuse this to hold the cov mat
     TMatrixDSym hitCov3(3);
