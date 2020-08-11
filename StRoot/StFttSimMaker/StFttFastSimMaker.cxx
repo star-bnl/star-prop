@@ -352,7 +352,8 @@ void StFttFastSimMaker::fillThinGapChambers(StEvent *event) {
         float xhit = hit->x[0];
         float yhit = hit->x[1];
         float zhit = hit->x[2];
-        int disk = hit->volume_id;
+        int volume_id = hit->volume_id;
+        int disk = (volume_id - 1) / 4 + 7; // add 7 to differentiat from FST - dedicated collection will not need 
 
         if (disk <= 6)
             continue;
