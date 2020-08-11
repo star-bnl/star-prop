@@ -1,6 +1,6 @@
-#include "StgMaker/XmlConfig/XmlConfig.h"
-#include "StgMaker/XmlConfig/XmlString.h"
-#include "StgMaker/XmlConfig/Utils.h"
+#include "StFwdTrackMaker/XmlConfig/XmlConfig.h"
+#include "StFwdTrackMaker/XmlConfig/XmlString.h"
+#include "StFwdTrackMaker/XmlConfig/Utils.h"
 
 #include "St_base/StMessMgr.h"
 

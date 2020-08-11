@@ -8,11 +8,11 @@
 #include "TRandom.h"
 #include "TRandom3.h"
 
-#include "StgMaker/include/Tracker/FwdHit.h"
-#include "StgMaker/include/Tracker/loguru.h"
-#include "StgMaker/include/Tracker/ConfigUtil.h"
+#include "StFwdTrackMaker/include/Tracker/FwdHit.h"
+#include "StFwdTrackMaker/include/Tracker/loguru.h"
+#include "StFwdTrackMaker/include/Tracker/ConfigUtil.h"
 
-#include "StgMaker/XmlConfig/XmlConfig.h"
+#include "StFwdTrackMaker/XmlConfig/XmlConfig.h"
 
 class IHitLoader
 {

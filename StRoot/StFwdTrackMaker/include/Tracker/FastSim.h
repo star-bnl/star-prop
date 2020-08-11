@@ -1,8 +1,8 @@
 #ifndef FastSim_h
 #define FastSim_h
 
-#include "StgMaker/include/Tracker/loguru.h"
-#include "StgMaker/include/Tracker/FwdHit.h"
+#include "StFwdTrackMaker/include/Tracker/loguru.h"
+#include "StFwdTrackMaker/include/Tracker/FwdHit.h"
 
 #include <map>
 #include <string>

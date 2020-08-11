@@ -29,12 +29,12 @@
 
 #include <vector>
 
-#include "StgMaker/XmlConfig/HistoBins.h"
-#include "StgMaker/XmlConfig/XmlConfig.h"
-#include "StgMaker/include/Tracker/FwdHit.h"
-#include "StgMaker/include/Tracker/STARField.h"
-#include "StgMaker/include/Tracker/loguru.h"
-#include "StgMaker/include/Tracker/FwdGeomUtils.h"
+#include "StFwdTrackMaker/XmlConfig/HistoBins.h"
+#include "StFwdTrackMaker/XmlConfig/XmlConfig.h"
+#include "StFwdTrackMaker/include/Tracker/FwdHit.h"
+#include "StFwdTrackMaker/include/Tracker/STARField.h"
+#include "StFwdTrackMaker/include/Tracker/loguru.h"
+#include "StFwdTrackMaker/include/Tracker/FwdGeomUtils.h"
 
 // hack of a global field pointer
 genfit::AbsBField *_gField = 0;

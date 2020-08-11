@@ -1,9 +1,9 @@
 #define LOGURU_IMPLEMENTATION 1
 
-#include "StgMaker/StgMaker.h"
-#include "StgMaker/include/Tracker/FwdHit.h"
-#include "StgMaker/include/Tracker/FwdTracker.h"
-#include "StgMaker/include/Tracker/TrackFitter.h"
+#include "StFwdTrackMaker/StFwdTrackMaker.h"
+#include "StFwdTrackMaker/include/Tracker/FwdHit.h"
+#include "StFwdTrackMaker/include/Tracker/FwdTracker.h"
+#include "StFwdTrackMaker/include/Tracker/TrackFitter.h"
 
 #include "KiTrack/IHit.h"
 
@@ -188,17 +188,17 @@ class ForwardHitLoader : public IHitLoader {
 };
 
 //________________________________________________________________________
-StgMaker::StgMaker() : StMaker("stg"), mForwardTracker(0), mForwardHitLoader(0), mFieldAdaptor(new StarFieldAdaptor()){
+StFwdTrackMaker::StFwdTrackMaker() : StMaker("fwdTrack"), mForwardTracker(0), mForwardHitLoader(0), mFieldAdaptor(new StarFieldAdaptor()){
 
                                                                                  };
 
-int StgMaker::Finish() {
+int StFwdTrackMaker::Finish() {
     LOG_SCOPE_FUNCTION(INFO);
 
     mForwardTracker->finish();
 
-    gDirectory->mkdir("StgMaker");
-    gDirectory->cd("StgMaker");
+    gDirectory->mkdir("StFwdTrackMaker");
+    gDirectory->cd("StFwdTrackMaker");
     for (auto nh : histograms) {
         nh.second->SetDirectory(gDirectory);
         nh.second->Write();
@@ -218,7 +218,7 @@ int StgMaker::Finish() {
 }
 
 //________________________________________________________________________
-int StgMaker::Init() {
+int StFwdTrackMaker::Init() {
     // Initialize configuration file
     std::string configFile = "config.xml";
     if (mConfigFile.length() > 4) {
@@ -394,9 +394,9 @@ TMatrixDSym makeSiCovMat(TVector3 hit, jdb::XmlConfig &xfg) {
     return tamvoc;
 }
 
-void StgMaker::FstStudy(){
+void StFwdTrackMaker::FstStudy(){
     LOG_SCOPE_FUNCTION(INFO);
-    LOG_INFO << "StgMaker::FstStudy()   " << endm;
+    LOG_INFO << "StFwdTrackMaker::FstStudy()   " << endm;
 
     jdb::XmlConfig _xmlconfig;
     _xmlconfig.loadFile(mConfigFile);
@@ -558,7 +558,7 @@ void StgMaker::FstStudy(){
     return;
 }
 
-void StgMaker::loadStgcHits( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
+void StFwdTrackMaker::loadStgcHits( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
     LOG_SCOPE_FUNCTION( INFO );
 
     // Get the StEvent handle to see if the rndCollection is available
@@ -576,7 +576,7 @@ void StgMaker::loadStgcHits( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std
     }
 } // loadFstHits
 
-void StgMaker::loadStgcHitsFromGEANT( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
+void StFwdTrackMaker::loadStgcHitsFromGEANT( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
     /************************************************************/
     // STGC Hits
     St_g2t_fts_hit *g2t_stg_hits = (St_g2t_fts_hit *)GetDataSet("geant/g2t_stg_hit");
@@ -646,7 +646,7 @@ void StgMaker::loadStgcHitsFromGEANT( std::map<int, shared_ptr<McTrack>> &mcTrac
     } // Loading sTGC hits
 } // loadStgcHits
 
-void StgMaker::loadStgcHitsFromStEvent( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
+void StFwdTrackMaker::loadStgcHitsFromStEvent( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
     LOG_SCOPE_FUNCTION( INFO );
 
     // Get the StEvent handle
@@ -696,7 +696,7 @@ void StgMaker::loadStgcHitsFromStEvent( std::map<int, shared_ptr<McTrack>> &mcTr
     }
 } //loadStgcHitsFromStEvent
 
-void StgMaker::loadFstHits( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
+void StFwdTrackMaker::loadFstHits( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
     LOG_SCOPE_FUNCTION( INFO );
 
     // Get the StEvent handle to see if the rndCollection is available
@@ -715,7 +715,7 @@ void StgMaker::loadFstHits( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std:
     }
 } // loadFstHits
 
-void StgMaker::loadFstHitsFromStEvent( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
+void StFwdTrackMaker::loadFstHitsFromStEvent( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
     LOG_SCOPE_FUNCTION( INFO );
 
     // Get the StEvent handle
@@ -767,7 +767,7 @@ void StgMaker::loadFstHitsFromStEvent( std::map<int, shared_ptr<McTrack>> &mcTra
     }
 } //loadFstHitsFromStEvent
 
-void StgMaker::loadFstHitsFromGEANT( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
+void StFwdTrackMaker::loadFstHitsFromGEANT( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
     LOG_SCOPE_FUNCTION(INFO);
     /************************************************************/
     // FSI Hits
@@ -832,7 +832,7 @@ void StgMaker::loadFstHitsFromGEANT( std::map<int, shared_ptr<McTrack>> &mcTrack
     }
 } // loadFstHitsFromGEANT
 
-void StgMaker::loadMcTracks( std::map<int, std::shared_ptr<McTrack>> &mcTrackMap ){
+void StFwdTrackMaker::loadMcTracks( std::map<int, std::shared_ptr<McTrack>> &mcTrackMap ){
     LOG_SCOPE_FUNCTION( INFO );
     // Get geant tracks
     St_g2t_track *g2t_track = (St_g2t_track *)GetDataSet("geant/g2t_track");
@@ -878,8 +878,8 @@ void StgMaker::loadMcTracks( std::map<int, std::shared_ptr<McTrack>> &mcTrackMap
 
 
 //________________________________________________________________________
-int StgMaker::Make() {
-    LOG_INFO << "StgMaker::Make()   " << endm;
+int StFwdTrackMaker::Make() {
+    LOG_INFO << "StFwdTrackMaker::Make()   " << endm;
 
     jdb::XmlConfig _xmlconfig;
     _xmlconfig.loadFile(mConfigFile);
@@ -1012,11 +1012,11 @@ int StgMaker::Make() {
     return kStOK;
 }
 //________________________________________________________________________
-void StgMaker::Clear(const Option_t *opts) {
+void StFwdTrackMaker::Clear(const Option_t *opts) {
     mForwardHitLoader->clear();
 }
 //________________________________________________________________________
-void StgMaker::FillEvent() {
+void StFwdTrackMaker::FillEvent() {
 
     StEvent *event = static_cast<StEvent *>(GetInputDS("StEvent"));
     assert(event); // we warned ya
@@ -1091,7 +1091,7 @@ void StgMaker::FillEvent() {
     LOG_INFO << "  number accepted = " << track_count_accept << endm;
 }
 //________________________________________________________________________
-void StgMaker::FillTrack(StTrack *otrack, genfit::Track *itrack, const Seed_t &iseed, StTrackDetectorInfo *info) {
+void StFwdTrackMaker::FillTrack(StTrack *otrack, genfit::Track *itrack, const Seed_t &iseed, StTrackDetectorInfo *info) {
     const double z_fst[] = {93.3, 140.0, 186.6};
     const double z_stgc[] = {280.9, 303.7, 326.6, 349.4};
 
@@ -1140,7 +1140,7 @@ void StgMaker::FillTrack(StTrack *otrack, genfit::Track *itrack, const Seed_t &i
     //covM[k++] = M(0,5); covM[k++] = M(1,5); covM[k++] = M(2,5); covM[k++] = M(3,5); covM[k++] = M(4,5); covM[k++] = M(5,5);
 }
 //________________________________________________________________________
-void StgMaker::FillTrackFlags(StTrack *otrack, genfit::Track *itrack) {
+void StFwdTrackMaker::FillTrackFlags(StTrack *otrack, genfit::Track *itrack) {
 
     int flag = 0;
     // StiStEventFiller::setFlag does two things.  1) it sets the track flags, indicating
@@ -1197,7 +1197,7 @@ void StgMaker::FillTrackFlags(StTrack *otrack, genfit::Track *itrack) {
     // failed fits.  (???).  So we will not publish bad track flags.
 }
 //________________________________________________________________________
-void StgMaker::FillTrackMatches(StTrack *otrack, genfit::Track *itrack) {
+void StFwdTrackMaker::FillTrackMatches(StTrack *otrack, genfit::Track *itrack) {
 
     // TODO:
 
@@ -1220,7 +1220,7 @@ void StgMaker::FillTrackMatches(StTrack *otrack, genfit::Track *itrack) {
     // ... can easily get to the HCAL from there...
 }
 //________________________________________________________________________
-void StgMaker::FillTrackFitTraits(StTrack *otrack, genfit::Track *itrack) {
+void StFwdTrackMaker::FillTrackFitTraits(StTrack *otrack, genfit::Track *itrack) {
 
     const double z_fst[] = {93.3, 140.0, 186.6};
     const double z_stgc[] = {280.9, 303.7, 326.6, 349.4};
@@ -1332,7 +1332,7 @@ void StgMaker::FillTrackFitTraits(StTrack *otrack, genfit::Track *itrack) {
     otrack->setFitTraits(fit_traits);
 }
 //________________________________________________________________________
-void StgMaker::FillTrackGeometry(StTrack *otrack, genfit::Track *itrack, double zplane, int io) {
+void StFwdTrackMaker::FillTrackGeometry(StTrack *otrack, genfit::Track *itrack, double zplane, int io) {
 
     int ipoint = 0;
 
@@ -1428,7 +1428,7 @@ void StgMaker::FillTrackGeometry(StTrack *otrack, genfit::Track *itrack, double 
         otrack->setOuterGeometry(geometry);
 }
 //________________________________________________________________________
-void StgMaker::FillTrackDcaGeometry(StTrack *otrack_, genfit::Track *itrack) {
+void StFwdTrackMaker::FillTrackDcaGeometry(StTrack *otrack_, genfit::Track *itrack) {
 
     // Recast to global track
     StGlobalTrack *otrack = dynamic_cast<StGlobalTrack *>(otrack_);
@@ -1571,7 +1571,7 @@ void StgMaker::FillTrackDcaGeometry(StTrack *otrack_, genfit::Track *itrack) {
 #endif
 }
 // //________________________________________________________________________
-void StgMaker::FillDetectorInfo(StTrackDetectorInfo *info, genfit::Track *track, bool increment) {
+void StFwdTrackMaker::FillDetectorInfo(StTrackDetectorInfo *info, genfit::Track *track, bool increment) {
 
     //   // here is where we would fill in
     //   // 1) total number of hits

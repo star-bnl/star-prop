@@ -16,14 +16,14 @@
 #include <string>
 #include <vector>
 
-#include "StgMaker/include/Tracker/ConfigUtil.h"
-#include "StgMaker/include/Tracker/FastSim.h"
-#include "StgMaker/include/Tracker/FwdHit.h"
-#include "StgMaker/include/Tracker/HitLoader.h"
-#include "StgMaker/include/Tracker/QualityPlotter.h"
-#include "StgMaker/include/Tracker/TrackFitter.h"
-#include "StgMaker/include/Tracker/VertexFinder.h"
-#include "StgMaker/include/Tracker/loguru.h"
+#include "StFwdTrackMaker/include/Tracker/ConfigUtil.h"
+#include "StFwdTrackMaker/include/Tracker/FastSim.h"
+#include "StFwdTrackMaker/include/Tracker/FwdHit.h"
+#include "StFwdTrackMaker/include/Tracker/HitLoader.h"
+#include "StFwdTrackMaker/include/Tracker/QualityPlotter.h"
+#include "StFwdTrackMaker/include/Tracker/TrackFitter.h"
+#include "StFwdTrackMaker/include/Tracker/VertexFinder.h"
+#include "StFwdTrackMaker/include/Tracker/loguru.h"
 
 #include "Criteria/Criteria.h"
 #include "Criteria/ICriterion.h"
@@ -35,7 +35,7 @@
 
 #include "GenFit/FitStatus.h"
 
-#include "StgMaker/XmlConfig/XmlConfig.h"
+#include "StFwdTrackMaker/XmlConfig/XmlConfig.h"
 
 // Utility class for evaluating ID and QA truth
 struct MCTruthUtils {

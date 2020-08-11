@@ -13,9 +13,9 @@
 
 #include <sys/stat.h>
 
-#include "StgMaker/XmlConfig/Utils.h"
-#include "StgMaker/XmlConfig/IObject.h"
-#include "StgMaker/XmlConfig/RapidXmlWrapper.h"
+#include "StFwdTrackMaker/XmlConfig/Utils.h"
+#include "StFwdTrackMaker/XmlConfig/IObject.h"
+#include "StFwdTrackMaker/XmlConfig/RapidXmlWrapper.h"
 
 
 namespace jdb

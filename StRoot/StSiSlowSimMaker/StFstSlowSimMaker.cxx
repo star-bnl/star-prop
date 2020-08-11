@@ -1,4 +1,4 @@
-#include "StSiSimulatorMaker.h"
+#include "StFstSlowSimMaker.h"
 
 #include "St_base/StMessMgr.h"
 
@@ -22,57 +22,61 @@
 
 #include <array>
 
-TCanvas *canvas = 0;
-StMatrixF Hack1to6(const StHit *stHit);
+namespace FstSlowSim {
 
-constexpr float PI = atan2(0.0, -1.0);
-constexpr float SQRT12 = sqrt(12.0);
+   TCanvas *canvas = 0;
+   StMatrixF Hack1to6(const StHit *stHit);
 
-const float OCTANT_WIDTH_PHI = PI / 4;
-const float OCTANT_GLOBAL_PHI_MIN[] = {-PI / 8, PI / 8, 3 * PI / 8, 5 * PI / 8, 7 * PI / 8, 9 * PI / 8, 11 * PI / 8, 13 * PI / 8};
-const float OCTANT_GLOBAL_PHI_MAX[] = {PI / 8, 3 * PI / 8, 5 * PI / 8, 7 * PI / 8, 9 * PI / 8, 11 * PI / 8, 13 * PI / 8, 15 * PI / 8};
+   constexpr float PI = atan2(0.0, -1.0);
+   constexpr float SQRT12 = sqrt(12.0);
 
-const float OCTANT_XMIN[] = {6.0f, 6.0f, 6.0f, 6.0f, 6.0f, 6.0f}; // octant size in each disk...
-const float OCTANT_XMAX[] = {42.0f, 42.0f, 66.0f, 66.0f, 66.0f, 66.0f};
+   const float OCTANT_WIDTH_PHI = PI / 4;
+   const float OCTANT_GLOBAL_PHI_MIN[] = {-PI / 8, PI / 8, 3 * PI / 8, 5 * PI / 8, 7 * PI / 8, 9 * PI / 8, 11 * PI / 8, 13 * PI / 8};
+   const float OCTANT_GLOBAL_PHI_MAX[] = {PI / 8, 3 * PI / 8, 5 * PI / 8, 7 * PI / 8, 9 * PI / 8, 11 * PI / 8, 13 * PI / 8, 15 * PI / 8};
 
-const float PAD_WIDTH = 6.0f;
-const float STRIP_WIDTH = 0.3f;  // must divide nicly into 6cm
-const float WIRE_SPACING = 0.3f; // ditto
+   const float OCTANT_XMIN[] = {6.0f, 6.0f, 6.0f, 6.0f, 6.0f, 6.0f}; // octant size in each disk...
+   const float OCTANT_XMAX[] = {42.0f, 42.0f, 66.0f, 66.0f, 66.0f, 66.0f};
 
-//
-// Disk segmentation
-//
-// float RMIN[] = {   0.85 * 2.56505,   0.85 * 3.41994,   0.85 * 4.27484,  0.85 * 5.13010, 0.85 * 5.985, 0.85 * 6.83988 };
-// float RMAX[] = {  1.15 * 11.56986,  1.15 * 15.42592,  1.15 * 19.28199, 1.15 * 23.13971, 1.15 * 26.99577, 1.15 * 30.84183 };
-// float RMIN[] = {   0.85 * 2.0,   0.85 * 2.07,   0.85 * 2.59,  0.85 * 3.11, 0.85 * 3.63, 0.85 * 4.15};
-// // float RMAX[] = {  1.15 * 19.3,  1.15 * 25.7,  1.15 * 32.1, 1.15 * 32.25, 1.15 * 32.25, 1.15 * 32.25};
-// float RMAX[] = {  1.15 * 15.0,  1.15 * 20.0,  1.15 * 25.0, 1.15 * 32.25, 1.15 * 32.25, 1.15 * 32.25};
-//
-// float RMIN[] = {   0.85 * 4.3,   0.85 * 4.3,   0.85 * 4.3,  0.85 * 5.0, 0.85 * 5.0, 0.85 * 5.0};
-// float RMAX[] = {  1.15 * 15.0,  1.15 * 25.0,  1.15 * 25.0, 1.15 * 30.5, 1.15 * 30.5, 1.15 * 30.5};
-//
-float RMIN[] = {0.95 * 4.3, 0.95 * 4.3, 0.95 * 4.3, 0.95 * 5.0, 0.95 * 5.0, 0.95 * 5.0};
-float RMAX[] = {1.05 * 15.0, 1.05 * 25.0, 1.05 * 25.0, 1.05 * 28.0, 1.05 * 28.0, 1.05 * 28.0};
+   const float PAD_WIDTH = 6.0f;
+   const float STRIP_WIDTH = 0.3f;  // must divide nicly into 6cm
+   const float WIRE_SPACING = 0.3f; // ditto
 
-//
-// next is for test with the default seg, from 5.0 to 30.5. divide even
-// for (int i=0;i<9;i++) cout << 5*0.85+(30.5*1.15-5*0.85)/8.*i << " , ";
-// float RSegment[] = {4.25 , 8.10312 , 11.9562 , 15.8094 , 19.6625 , 23.5156 , 27.3687 , 31.2219 , 35.075};
-//
-//NEXT IS only for disk ARRAY 456 with the radius from 5 to 30.5
-// for (int i=0;i<8;i++)  cout << 6.5+(30.5-6.5)/7.*i << " , ";
-// for 5.0 - 6.5, then the other is divided uniform
-// float RSegment[] = {5.0*0.85, 6.5 , 9.92857 , 13.3571 , 16.7857 , 20.2143 , 23.6429 , 27.0714 , 30.5 * 1.15};
-//
-//NEXT IS only for disk ARRAY 456 with the radius from 5 to 28. half and half 11.5
-//for first half, first one is 1.5 cm, later three divide even
-//second half, divide even
-// float RSegment[] = {5.0*0.95, 6.5 , 9.833, 13.16, 16.5 , 19.375, 22.25, 25.125 , 28.0 * 1.05};
+   //
+   // Disk segmentation
+   //
+   // float RMIN[] = {   0.85 * 2.56505,   0.85 * 3.41994,   0.85 * 4.27484,  0.85 * 5.13010, 0.85 * 5.985, 0.85 * 6.83988 };
+   // float RMAX[] = {  1.15 * 11.56986,  1.15 * 15.42592,  1.15 * 19.28199, 1.15 * 23.13971, 1.15 * 26.99577, 1.15 * 30.84183 };
+   // float RMIN[] = {   0.85 * 2.0,   0.85 * 2.07,   0.85 * 2.59,  0.85 * 3.11, 0.85 * 3.63, 0.85 * 4.15};
+   // // float RMAX[] = {  1.15 * 19.3,  1.15 * 25.7,  1.15 * 32.1, 1.15 * 32.25, 1.15 * 32.25, 1.15 * 32.25};
+   // float RMAX[] = {  1.15 * 15.0,  1.15 * 20.0,  1.15 * 25.0, 1.15 * 32.25, 1.15 * 32.25, 1.15 * 32.25};
+   //
+   // float RMIN[] = {   0.85 * 4.3,   0.85 * 4.3,   0.85 * 4.3,  0.85 * 5.0, 0.85 * 5.0, 0.85 * 5.0};
+   // float RMAX[] = {  1.15 * 15.0,  1.15 * 25.0,  1.15 * 25.0, 1.15 * 30.5, 1.15 * 30.5, 1.15 * 30.5};
+   //
+   float RMIN[] = {0.95 * 4.3, 0.95 * 4.3, 0.95 * 4.3, 0.95 * 5.0, 0.95 * 5.0, 0.95 * 5.0};
+   float RMAX[] = {1.05 * 15.0, 1.05 * 25.0, 1.05 * 25.0, 1.05 * 28.0, 1.05 * 28.0, 1.05 * 28.0};
 
-//NEXT IS only for disk ARRAY 456 with the radius from 5 to 28.
-float RSegment[] = {5., 7.875, 10.75, 13.625, 16.5, 19.375, 22.25, 25.125, 28.};
+   //
+   // next is for test with the default seg, from 5.0 to 30.5. divide even
+   // for (int i=0;i<9;i++) cout << 5*0.85+(30.5*1.15-5*0.85)/8.*i << " , ";
+   // float RSegment[] = {4.25 , 8.10312 , 11.9562 , 15.8094 , 19.6625 , 23.5156 , 27.3687 , 31.2219 , 35.075};
+   //
+   //NEXT IS only for disk ARRAY 456 with the radius from 5 to 30.5
+   // for (int i=0;i<8;i++)  cout << 6.5+(30.5-6.5)/7.*i << " , ";
+   // for 5.0 - 6.5, then the other is divided uniform
+   // float RSegment[] = {5.0*0.85, 6.5 , 9.92857 , 13.3571 , 16.7857 , 20.2143 , 23.6429 , 27.0714 , 30.5 * 1.15};
+   //
+   //NEXT IS only for disk ARRAY 456 with the radius from 5 to 28. half and half 11.5
+   //for first half, first one is 1.5 cm, later three divide even
+   //second half, divide even
+   // float RSegment[] = {5.0*0.95, 6.5 , 9.833, 13.16, 16.5 , 19.375, 22.25, 25.125 , 28.0 * 1.05};
 
-void StSiSimulatorMaker::setDisk(const int i, const float rmn, const float rmx) {
+   //NEXT IS only for disk ARRAY 456 with the radius from 5 to 28.
+   float RSegment[] = {5., 7.875, 10.75, 13.625, 16.5, 19.375, 22.25, 25.125, 28.};
+
+}
+
+void StFstSlowSimMaker::setDisk(const int i, const float rmn, const float rmx) {
     RMIN[i] = rmn;
     RMAX[i] = rmx;
 }
@@ -153,7 +157,7 @@ int octantToGlobal(const float &xoctant, /* input */
 const bool verbose = true;
 const bool merge_hits = true;
 
-StSiSimulatorMaker::StSiSimulatorMaker(const Char_t *name)
+StFstSlowSimMaker::StFstSlowSimMaker(const Char_t *name)
    : StMaker(name),
    mNumR(64),
    mNumPHI(128),
@@ -173,6 +177,15 @@ StSiSimulatorMaker::StSiSimulatorMaker(const Char_t *name)
    hRecoHitPhiZ(0),
    hGlobalDRDisk(0),
    hGlobalZ(0),
+
+   hRRcVsRMc({0, 0, 0, 0, 0, 0, 0, 0}),
+   hRMc({0, 0, 0, 0, 0, 0, 0, 0}),
+   hRRc({0, 0, 0, 0, 0, 0, 0, 0}),
+
+   hGlobalDeltaR(0),   
+   hGlobalDeltaPhi(0), 
+   hGlobalDeltaRAll({0, 0, 0, 0, 0, 0, 0, 0}),   
+   hGlobalDeltaPhiAll({0, 0, 0, 0, 0, 0, 0, 0}),   
 
    hOctantYX(0),
    hOctantWireYX(0),
@@ -209,9 +222,13 @@ StSiSimulatorMaker::StSiSimulatorMaker(const Char_t *name)
    mWindow(3.0),
    mStereo(2 * TMath::Pi() / 8 / 6),
    mStagger(0.0),
+   mCrossTalkSwitch(true),
+   mREffSwitch(true),
+   mRstripEff({0.95, 0.95, 0.95, 0.95, 0.90, 0.90, 0.90, 0.90}),
+   mNoiseSwitch(false),
    mConstEta(false) {}
 
-int StSiSimulatorMaker::Init() {
+int StFstSlowSimMaker::Init() {
 
    AddHist(hTrutHitYXDisk = new TH3F("hTrutHitYXDisk", "Global hits before segmentation", 151, -75.5, 75.5, 151, -75.5, 75.5, 10, 0, 10));
    AddHist(hTrutHitRDisk = new TH2F("hTrutHitRDisk", "Global hits before segmentation", 400, 0, 40, 10, 0, 10));
@@ -227,6 +244,31 @@ int StSiSimulatorMaker::Init() {
    AddHist(hGlobalDRDisk = new TH2F("hGlobalDRDisk", "; Reco. r - MC r [cm]; Events;", 1000, -50, 50, 10, 0, 10));
    AddHist(hGlobalZ = new TH1F("hGlobalZ", "; Z [cm]; Events;", 6000, 0, 600));
 
+   AddHist(hGlobalDeltaR = new TH1F("hGlobalDeltaR", "R Residual; counts", 100, -11.75, 11.75)); // cm
+   AddHist(hGlobalDeltaPhi = new TH1F("hGlobalDeltaPhi", "Phi Residual; counts", 100, -0.01, 0.01)); // rad   
+   for(int i_rstrip = 0; i_rstrip < 8; ++i_rstrip){
+      std::string HistName;
+      std::string HistTitle;
+      HistName = Form("hGlobalDeltaRRstrip%d", i_rstrip);
+      HistTitle = Form("R Residual Rstrip %d; counts", i_rstrip);
+      AddHist(hGlobalDeltaRAll[i_rstrip] = new TH1F(HistName.c_str(), HistTitle.c_str(), 100, -11.75, 11.75));
+      HistName = Form("hGlobalDeltaPhiRstrip%d", i_rstrip);
+      HistTitle = Form("Phi Residual Rstrip %d; counts", i_rstrip);
+      AddHist(hGlobalDeltaPhiAll[i_rstrip] = new TH1F(HistName.c_str(), HistTitle.c_str(), 100, -0.01, 0.01));
+
+      HistName = Form("hRRcVsRMcRstrip%d", i_rstrip);
+      HistTitle = Form("R_{RC} vs R_{MC} Rstrip %d; R_{MC}; R_{RC}", i_rstrip);
+      AddHist(hRRcVsRMc[i_rstrip] = new TH2F(HistName.c_str(), HistTitle.c_str(), 100, 4.75, 28.25, 100, 4.75, 28.25));
+
+      HistName = Form("hRMcRstrip%d", i_rstrip);
+      HistTitle = Form("R_{MC} Rstrip %d; R_{MC}; counts", i_rstrip);
+      AddHist(hRMc[i_rstrip] = new TH1F(HistName.c_str(), HistTitle.c_str(), 100, 4.75, 28.25)); // cm
+
+      HistName = Form("hRRcRstrip%d", i_rstrip);
+      HistTitle = Form("R_{RC} Rstrip %d; R_{RC}; counts", i_rstrip);
+      AddHist(hRRc[i_rstrip] = new TH1F(HistName.c_str(), HistTitle.c_str(), 100, 4.75, 28.25)); // cm
+
+   }
    AddHist(hOctantYX = new TH2F("hOctantYX", "Octant hits before segmentation", 151, -75.5, 75.5, 151, -75.5, 75.5));
 
    AddHist(hOctantStripYX = new TH2F("hOctantStripYX", "Octant hits with strip segmentation", 141, -0.25, 70.25, 141, -35.25, 35.25));
@@ -269,8 +311,8 @@ int StSiSimulatorMaker::Init() {
    return StMaker::Init();
 }
 
-Int_t StSiSimulatorMaker::Make() {
-   LOG_DEBUG << "StSiSimulatorMaker::Make" << endm;
+Int_t StFstSlowSimMaker::Make() {
+   LOG_DEBUG << "StFstSlowSimMaker::Make" << endm;
    // Get the existing StEvent, or add one if it doesn't exist.
    StEvent *event = static_cast<StEvent *>(GetDataSet("StEvent"));
    if (!event) {
@@ -301,7 +343,7 @@ Int_t StSiSimulatorMaker::Make() {
 /* This should fill StFtsStrip for realistic simulator and let clustering fill StFtsHit */
 /* For now skipping StFtsStrip and clustering, and fill StFtsHits directly here*/
 
-void StSiSimulatorMaker::fillSilicon(StEvent *event) {
+void StFstSlowSimMaker::fillSilicon(StEvent *event) {
 
    //    StFtsHitCollection * fsicollection = event->fsiCollection();
    StRnDHitCollection *fsicollection = event->rndHitCollection();
@@ -315,7 +357,8 @@ void StSiSimulatorMaker::fillSilicon(StEvent *event) {
    //I guess this should be RSEG[NDISC][MAXR+1] array to give better R segements
    //For now this is just unform R segments regardless of disc
    //static const float RMIN[NDISC]={ 2.5, 2.5, 2.5, 2.5}; //hack this need to get right numbers
-   //static const float RMAX[NDISC]={23.2,23.2,23.2,23.2}; //hack this need to get right numbers
+   //static const float RMAX[NDISC]={23.2,23.2
+   //1-D histogram with a float per channel (see TH1 d,23.2,23.2}; //hack this need to get right numbers
    //    static const float PI=atan2(0.0,-1.0);
    //    static const float SQRT12=sqrt(12.0);
    /*
@@ -377,12 +420,12 @@ Rmax =    23.13971
    // Read the g2t table
    St_g2t_fts_hit *hitTable = static_cast<St_g2t_fts_hit *>(GetDataSet("g2t_fsi_hit"));
    if (!hitTable) {
-      LOG_INFO << "g2t_fsi_hit table is empty" << endm;
+     // LOG_INFO << "g2t_fsi_hit table is empty" << endm;
       return; // Nothing to do
    }           // if
 
    const Int_t nHits = hitTable->GetNRows();
-   LOG_DEBUG << "g2t_fsi_hit table has " << nHits << " hits" << endm;
+   //LOG_DEBUG << "g2t_fsi_hit table has " << nHits << " hits" << endm;
    const g2t_fts_hit_st *hit = hitTable->GetTable();
    //    StPtrVecFtsHit hits; //temp storage for hits
    StPtrVecRnDHit hits;
@@ -390,24 +433,26 @@ Rmax =    23.13971
    // track table
    St_g2t_track *trkTable = static_cast<St_g2t_track *>(GetDataSet("g2t_track"));
    if (!trkTable) {
-      LOG_INFO << "g2t_track table is empty" << endm;
+     // LOG_INFO << "g2t_track table is empty" << endm;
       return; // Nothing to do
    }           // if
 
    const Int_t nTrks = trkTable->GetNRows();
-   LOG_DEBUG << "g2t_track table has " << nTrks << " tracks" << endm;
+   //LOG_DEBUG << "g2t_track table has " << nTrks << " tracks" << endm;
    const g2t_track_st *trk = trkTable->GetTable();
 
+   gRandom->SetSeed(0);
+  
    int count = 0;
    for (Int_t i = 0; i < nHits; ++i) {
       hit = (g2t_fts_hit_st *)hitTable->At(i);
       if (hit) {
          int volume_id = hit->volume_id;
-         LOG_INFO << "volume_id = " << volume_id << endm;
+//LOG_INFO << "volume_id = " << volume_id << endm;
          int d = volume_id / 1000;        // disk id
          int w = (volume_id % 1000) / 10; // wedge id
          int s = volume_id % 10;          // sensor id
-         LOG_INFO << "d = " << d << ", w = " << w << ", s = " << s << endm;
+       //  LOG_INFO << "d = " << d << ", w = " << w << ", s = " << s << endm;
 
          //     LOG_INFO << " volume id = " << d << endm;
          //if (d > 6) continue;   // skip large disks
@@ -451,8 +496,8 @@ Rmax =    23.13971
          while (pp >= 2.0 * PI)
                pp -= 2.0 * PI;
 
-         LOG_INFO << "rr = " << rr << " pp=" << pp << endm;
-         LOG_INFO << "RMIN = " << RMIN[d - 1] << " RMAX= " << RMAX[d - 1] << endm;
+         //LOG_INFO << "rr = " << rr << " pp=" << pp << endm;
+         //LOG_INFO << "RMIN = " << RMIN[d - 1] << " RMAX= " << RMAX[d - 1] << endm;
          // compute point eta
          float theta = TMath::ATan2(rr, z); // rastered eta
          float eta = -TMath::Log(TMath::Tan(theta / 2));
@@ -460,20 +505,49 @@ Rmax =    23.13971
          // Cuts made on rastered value
          if (rr < RMIN[d - 1] || rr > RMAX[d - 1])
                continue;
-         LOG_INFO << "rr = " << rr << endm;
+         //LOG_INFO << "rr = " << rr << endm;
 
          // Strip numbers on rastered value
          int ir = int(MAXR * (rr - RMIN[d - 1]) / (RMAX[d - 1] - RMIN[d - 1]));
          // LOG_INFO << "ir1 = " << ir << endm;
-         for (int ii = 0; ii < MAXR; ii++)
-               if (rr > RSegment[ii] && rr <= RSegment[ii + 1])
+         for (int ii = 0; ii < MAXR; ii++){
+               if (rr > RSegment[ii] && rr <= RSegment[ii + 1]){
                   ir = ii;
+               }
+         }
+	
+	 int ir_mc = ir;	 
+
+	 if (mREffSwitch == true) {
+	       double ran = gRandom->Uniform(0.0,1.0);
+	       if (mRstripEff[ir_mc] < ran) continue; 
+	 }      
+
+	 if (mCrossTalkSwitch == true) { 
+               if (ir_mc >= 0 && ir_mc <= 7) ir = getCrossTalkRSegment(ir_mc);
+         }
+	 
+	 std::cout << "Rstrip MC = " << ir_mc << " Rstrip RC = " << ir << std::endl;
+        
+         /*
+         if (mREffSwitch) {
+  	       double ran = gRandom->Uniform(0.0,1.0);
+	       if (mRstripEff[ir] < ran) continue; 
+         }
+         if (mCrossTalkSwitch) {
+	       //if(ir >= 4 && ir <= 7) ir = getCrossTalkRSegment(ir); // Cross talk implemented for outer sector
+               ir = getCrossTalkRSegment(ir);
+         }
+         */
+
          // LOG_INFO << "ir2 = " << ir << endm;
          // Phi number
          int ip = int(MAXPHI * pp / 2.0 / PI);
+         std::cout << "DISK: " << d-1 << std::endl;
+         std::cout << "Phi strip: " << ip << std::endl;
 
          // Guard against out-of-bounds on constant eta binning
-         if (mConstEta) {
+         if (mConstEta == true) {
                if (eta < etaMn)
                   continue;
                if (eta > etaMx)
@@ -483,9 +557,11 @@ Rmax =    23.13971
          // Strip numbers on rastered value (eta)
          int ieta = int(nbins * (eta - etaMn) / (etaMx - etaMn));
 
-         if (ir >= 8)
+         if (ir >= 8 || ir < 0){
+               //std::cout << "                                OUT OF BOUNDS" << std::endl;
                continue;
-
+         }  
+       
          if (MAXR)
                assert(ir < MAXR);
          if (MAXPHI)
@@ -496,9 +572,9 @@ Rmax =    23.13971
          {
 
                if (verbose)
-                  LOG_INFO << Form("NEW d=%1d xyz=%8.4f %8.4f %8.4f r=%8.4f phi=%8.4f iR=%2d iPhi=%4d dE=%8.4f[MeV] truth=%d",
-                                    d, x, y, z, r, p, ir, ip, e * 1000.0, t)
-                           << endm;
+                //  LOG_INFO << Form("NEW d=%1d xyz=%8.4f %8.4f %8.4f r=%8.4f phi=%8.4f iR=%2d iPhi=%4d dE=%8.4f[MeV] truth=%d",
+              //                      d, x, y, z, r, p, ir, ip, e * 1000.0, t)
+                //           << endm;
 
                count++;
                fsihit = new StRnDHit();
@@ -514,7 +590,8 @@ Rmax =    23.13971
                   // float r0 = RMIN[d - 1] + (ir + 0.5) * (RMAX[d - 1] - RMIN[d - 1]) / float(MAXR);
                   // float dr = (RMAX[d - 1] - RMIN[d - 1]) / float(MAXR);
                   // ONLY valide for the disk array 456, no difference for each disk
-                  float r0 = (RSegment[ir] + RSegment[ir + 1]) * 0.5;
+                  
+		  float r0 = (RSegment[ir] + RSegment[ir + 1]) * 0.5;
                   float dr = RSegment[ir + 1] - RSegment[ir];
                   // LOG_INFO << "r0 = " << r00 << endm;
                   float x0 = r0 * cos(p0) + xc;
@@ -566,10 +643,10 @@ Rmax =    23.13971
                hits.push_back(fsihit);
                _map[d - 1][ir][ip] = fsihit;
                enrsum[d - 1][ir][ip] += e; // Add energy to running sum
-               enrmax[d - 1][ir][ip] = e;  // Set maximum energy
+               enrmax[d - 1][ir][ip] = e;  // Set maximum energy (?????)
 
-               LOG_INFO << Form("NEW d=%1d xyz=%8.4f %8.4f %8.4f ", d, x, y, z) << endm;
-               LOG_INFO << Form("smeared xyz=%8.4f %8.4f %8.4f ", fsihit->position().x(), fsihit->position().y(), fsihit->position().z()) << endm;
+             //  LOG_INFO << Form("NEW d=%1d xyz=%8.4f %8.4f %8.4f ", d, x, y, z) << endm;
+              // LOG_INFO << Form("smeared xyz=%8.4f %8.4f %8.4f ", fsihit->position().x(), fsihit->position().y(), fsihit->position().z()) << endm;
 
                TVector2 hitpos_mc(x, y);
                TVector2 hitpos_rc(fsihit->position().x(), fsihit->position().y());
@@ -591,6 +668,14 @@ Rmax =    23.13971
                hGlobalDRDisk->Fill(hitpos_rc.Mod() - hitpos_mc.Mod(), d);
                hGlobalZ->Fill(fsihit->position().z());
 
+	       hRRcVsRMc[ir_mc]->Fill(hitpos_mc.Mod(), hitpos_rc.Mod());
+	       hRMc[ir_mc]->Fill(hitpos_mc.Mod());
+	       hRRc[ir_mc]->Fill(hitpos_rc.Mod());
+
+               hGlobalDeltaR->Fill(hitpos_rc.Mod() - hitpos_mc.Mod());
+               hGlobalDeltaPhi->Fill(hitpos_rc.Phi() - hitpos_mc.Phi());  
+               hGlobalDeltaRAll[ir_mc]->Fill(hitpos_rc.Mod() - hitpos_mc.Mod());
+  	       hGlobalDeltaPhiAll[ir_mc]->Fill(hitpos_rc.Phi() - hitpos_mc.Phi());           
                h2LocalXY->Fill(x, y);
                h2LocalSmearedXY->Fill(fsihit->position().x(), fsihit->position().y());
                h2LocalDeltaXY->Fill(fsihit->position().x() - x, fsihit->position().y() - y);
@@ -608,7 +693,8 @@ Rmax =    23.13971
                // h3GlobalSmearedXYR->Fill(fsihit->position().x(), fsihit->position().y(), d);
                // h3GlobalDeltaXYR-> Fill(fsihit->position().x() - x, fsihit->position().y() - y, d);
 
-         } else // Adding energy to old hit
+         } 
+         else // Adding energy to old hit
          {
                //     LOG_INFO << Form("ADD d=%1d xyz=%8.4f %8.4f %8.4f r=%8.4f phi=%8.4f iR=%2d iPhi=%4d dE=%8.4f[MeV] truth=%d",
                //            d,x,y,z,r,p,ir,ip,e*1000.0,t) <<endm;
@@ -633,22 +719,22 @@ Rmax =    23.13971
 
    // TODO: put back to StarRandom global
    // StarRandom &SiRand = StarRandom::Instance();
-   TRandom *SiRand = new TRandom3();
-   SiRand->SetSeed(0);
+   //TRandom *SiRand = new TRandom3();
+   //SiRand->SetSeed(0);
 
    // Loop over hits and digitize
    for (int i = 0; i < nfsihit; i++) {
       //hack! do digitization here, or more realistic smearing
       // TODO : PUT BACK TO SiRand with above
       // double rnd_save = SiRand.flat(0., 1.);
-      double rnd_save = SiRand->Rndm();
+      //double rnd_save = SiRand->Rndm();
 
       // cout <<"to be saved : " << rnd_save << " , discard prob : "<< mInEff << endl;
-      if (rnd_save > mInEff)
+      //if (rnd_save > mInEff)
          fsicollection->addHit(hits[i]);
    }
    if (verbose)
-      LOG_INFO << Form("Found %d/%d g2t hits in %d cells, created %d hits with ADC>0", count, nHits, nfsihit, fsicollection->numberOfHits()) << endm;
+      //LOG_INFO << Form("Found %d/%d g2t hits in %d cells, created %d hits with ADC>0", count, nHits, nfsihit, fsicollection->numberOfHits()) << endm;
    //    fsicollection->print(1);
    for (int id = 0; id < NDISC; id++) {
       for (int ir = 0; ir < MAXR; ir++) {
@@ -669,13 +755,23 @@ Rmax =    23.13971
 }
 //
 
-int StSiSimulatorMaker::Finish() {
+int StFstSlowSimMaker::Finish() {
    fOut->cd();
    hTrutHitYXDisk->Write();
    hTrutHitRDisk->Write();
    hTrutHitRShower[0]->Write();
    hTrutHitRShower[1]->Write();
    hTrutHitRShower[2]->Write();
+
+   hGlobalDeltaR->Write();
+   hGlobalDeltaPhi->Write();
+   for (int i_rstrip = 0; i_rstrip < 8; ++i_rstrip){
+       hGlobalDeltaRAll[i_rstrip]->Write();
+       hGlobalDeltaPhiAll[i_rstrip]->Write();
+       hRRcVsRMc[i_rstrip]->Write();
+       hRMc[i_rstrip]->Write();
+       hRRc[i_rstrip]->Write();
+   }
    hTrutHitPhiDisk->Write();
    hTrutHitPhiZ->Write();
    hRecoHitYXDisk->Write();
@@ -957,4 +1053,44 @@ StMatrixF Hack1to6(const StHit *stHit) {
     }
 
     return mtxF;
+}
+
+//_____________________________________________________________________________
+int StFstSlowSimMaker::getCrossTalkRSegment(int rstrip)
+{
+
+  const double ctRate[8][7] = {	
+	{0.0000, 0.0000, 0.0000, 0.7419, 0.9413, 0.9775, 1.0000},
+	{0.0000, 0.0000, 0.0247, 0.8773, 0.9809, 1.0000, 1.0000},
+	{0.0000, 0.0052, 0.0668, 0.8726, 1.0000, 1.0000, 1.0000},
+	{0.0097, 0.0651, 0.1495, 1.0000, 1.0000, 1.0000, 1.0000},
+	{0.0000, 0.0000, 0.0000, 0.8780, 0.9810, 0.9915, 1.0000},
+	{0.0000, 0.0000, 0.1343, 0.9141, 0.9889, 1.0000, 1.0000},
+	{0.0000, 0.0372, 0.1889, 0.9288, 1.0000, 1.0000, 1.0000},
+	{0.0415, 0.2166, 0.3871, 1.0000, 1.0000, 1.0000, 1.0000}
+   };
+//print value
+  const int deltaBin[7] = {-3, -2, -1, 0, 1, 2, 3};
+  
+  double ran = gRandom->Uniform(0.0,1.0);
+
+  int ctBin = -999;
+  if(rstrip > -100)
+  {
+    for(int i_delta = 0; i_delta < 7; ++i_delta)
+    {
+      if(ran >= ctRate[rstrip][i_delta] && ran < ctRate[rstrip][i_delta+1])
+      {
+	ctBin = i_delta+1;
+      }
+    }
+    if(ran >= 0.0 && ran < ctRate[rstrip][0])
+    {
+      ctBin = 0;
+    }
+  }
+
+  if(ctBin > -1) return rstrip + deltaBin[ctBin];
+
+  return ctBin;
 }

@@ -1,11 +1,11 @@
-#ifndef __StgMaker_h__
-#define __StgMaker_h__
+#ifndef ST_FWD_TRACK_MAKER_H
+#define ST_FWD_TRACK_MAKER_H
 
 #include "StMaker.h"
 
 #include "GenFit/Track.h"
 #ifndef __CINT__
-#include "StgMaker/XmlConfig/XmlConfig.h"
+#include "StFwdTrackMaker/XmlConfig/XmlConfig.h"
 #endif
 
 namespace KiTrack {
@@ -29,13 +29,13 @@ class McTrack;
 
 const size_t MAX_TREE_ELEMENTS = 10000;
 
-class StgMaker : public StMaker {
+class StFwdTrackMaker : public StMaker {
 
-    ClassDef(StgMaker, 0);
+    ClassDef(StFwdTrackMaker, 0);
 
   public:
-    StgMaker();
-    ~StgMaker(){/* nada */};
+    StFwdTrackMaker();
+    ~StFwdTrackMaker(){/* nada */};
 
     int Init();
     int Finish();

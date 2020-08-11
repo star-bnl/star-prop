@@ -18,4 +18,4 @@ set_property(SOURCE "${STAR_SRC}/pams/sim/g2t/g2r_get.F" PROPERTY AGETOF_ADDITIO
 
 # StgMaker: Add include directory for ROOT dictionary generation with installed
 # external dependencies
-set_property(SOURCE "${PROJECT_SOURCE_DIR}/StRoot/StgMaker" PROPERTY INCLUDE_DIRECTORIES "${STAR_INSTALL_INCLUDEDIR}")
+set_property(SOURCE "${PROJECT_SOURCE_DIR}/StRoot/StFwdTrackMaker" PROPERTY INCLUDE_DIRECTORIES "${STAR_INSTALL_INCLUDEDIR}")

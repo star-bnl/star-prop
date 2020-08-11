@@ -11,10 +11,10 @@
 
 #include "GenFit/FitStatus.h"
 
-#include "StgMaker/XmlConfig/HistoBins.h"
-#include "StgMaker/XmlConfig/XmlConfig.h"
-#include "StgMaker/include/Tracker/FwdHit.h"
-#include "StgMaker/include/Tracker/loguru.h"
+#include "StFwdTrackMaker/XmlConfig/HistoBins.h"
+#include "StFwdTrackMaker/XmlConfig/XmlConfig.h"
+#include "StFwdTrackMaker/include/Tracker/FwdHit.h"
+#include "StFwdTrackMaker/include/Tracker/loguru.h"
 
 class QualityPlotter {
   public:
