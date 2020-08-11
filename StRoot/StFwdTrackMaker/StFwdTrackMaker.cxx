@@ -678,8 +678,10 @@ void StFwdTrackMaker::loadStgcHitsFromStEvent( std::map<int, shared_ptr<McTrack>
             continue;
         }
 
+        int layer = hit->layer() - 7;
+
         const StThreeVectorF pos = hit->position();
-        LOG_F(INFO, "sTGC Hit = (%f, %f, %f), idTruth=%d, layer=%d", hit->position().x(), hit->position().y(), hit->position().z(), hit->idTruth(), hit->layer() );
+        LOG_F(INFO, "sTGC Hit = (%f, %f, %f), idTruth=%d, layer=%d", hit->position().x(), hit->position().y(), hit->position().z(), hit->idTruth(), layer );
 
         StMatrixF covmat = hit->covariantMatrix();
 
@@ -693,7 +695,7 @@ void StFwdTrackMaker::loadStgcHitsFromStEvent( std::map<int, shared_ptr<McTrack>
             LOG_F( INFO, "mcTrackMap[hit->idTruth()]->_pt=%0.2f", mcTrackMap[hit->idTruth()]->_pt );
             mct = mcTrackMap[hit->idTruth()];
         }
-        FwdHit *fhit = new FwdHit(count++, hit->position().x(), hit->position().y(), hit->position().z(), hit->layer(), hit->idTruth(), hitCov3, mct);
+        FwdHit *fhit = new FwdHit(count++, hit->position().x(), hit->position().y(), hit->position().z(), -layer, hit->idTruth(), hitCov3, mct);
 
         // Add the hit to the hit map
         hitMap[fhit->getSector()].push_back(fhit);
