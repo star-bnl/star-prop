@@ -7,7 +7,8 @@
 #include "StEvent/StRnDHit.h"
 #include "StEvent/StRnDHitCollection.h"
 #include "StThreeVectorF.hh"
-#include "StarGenerator/UTIL/StarRandom.h"
+// TODO resolve StarRandom
+// #include "StarGenerator/UTIL/StarRandom.h"
 #include "TCanvas.h"
 #include "TCernLib.h"
 #include "TH2F.h"
@@ -17,6 +18,8 @@
 #include "tables/St_g2t_fts_hit_Table.h"
 #include "tables/St_g2t_track_Table.h"
 #include <array>
+
+#include "TRandom3.h"
 
 constexpr float PI = atan2(0.0, -1.0);
 constexpr float SQRT12 = sqrt(12.0);
@@ -268,9 +271,9 @@ bool StFttFastSimMaker::sTGCOverlaps(StRnDHit *hitA, StRnDHit *hitB) {
 
 void StFttFastSimMaker::fillThinGapChambers(StEvent *event) {
     // Read the g2t table
-    St_g2t_fts_hit *hitTable = static_cast<St_g2t_fts_hit *>(GetDataSet("g2t_fts_hit"));
+    St_g2t_fts_hit *hitTable = static_cast<St_g2t_fts_hit *>(GetDataSet("g2t_stg_hit"));
     if (!hitTable) {
-        LOG_INFO << "g2t_fts_hit table is empty" << endm;
+        LOG_INFO << "g2t_stg_hit table is empty" << endm;
         return;
     } // if !hitTable
 
@@ -282,7 +285,10 @@ void StFttFastSimMaker::fillThinGapChambers(StEvent *event) {
     const int nhits = hitTable->GetNRows();
     const g2t_fts_hit_st *hit = hitTable->GetTable();
 
-    StarRandom &rand = StarRandom::Instance();
+    // TODO resolve StarRandom
+    // StarRandom &rand = StarRandom::Instance();
+    TRandom3 *rand = new TRandom3();
+    rand->SetSeed(0);
 
     // vector<float> pos_x, pos_y, pos_z, rot_x, rot_y;
     // vector<int> hit_disk
@@ -353,8 +359,8 @@ void StFttFastSimMaker::fillThinGapChambers(StEvent *event) {
 
         float theta = diskRotation(disk);
 
-        float x_blurred = xhit + rand.gauss(STGC_SIGMA_X);
-        float y_blurred = yhit + rand.gauss(STGC_SIGMA_Y);
+        float x_blurred = xhit + rand->Gaus(0.0f, STGC_SIGMA_X);
+        float y_blurred = yhit + rand->Gaus(0.0f, STGC_SIGMA_Y);
 
         float x_rot = -999, y_rot = -999;
         this->rot(-theta, x_blurred, y_blurred, x_rot, y_rot);
