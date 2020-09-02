@@ -52,27 +52,95 @@
 
 //_______________________________________________________________________________________
 // For now, accept anything we are passed, no matter what it is or how bad it is
-template <typename T>
-bool accept(T) { return true; }
+template<typename T> bool accept( T ) { return true; }
 
-template <>
-bool accept(genfit::Track *track) {
-
+// Basic sanity cuts on genfit tracks
+template<> bool accept( genfit::Track *track )
+{
     // This also gets rid of failed fits (but may need to explicitly
     // for fit failure...)
-    if (track->getNumPoints() <= 0)
-        return false; // fit may have failed
+    if (track->getNumPoints() <= 0 ) return false; // fit may have failed
 
+    auto cardinal = track->getCardinalRep();
+
+    // Check that the track fit converged
+    auto status = track->getFitStatus( cardinal );
+    if ( 0 == status->isFitConverged() ) {
+      return false;
+    }
+
+
+    // Next, check that all points on the track have fitter info
+    // (may be another indication of a failed fit?)
+    for ( auto point : track->getPoints() ) {
+      if ( !point->hasFitterInfo(cardinal) ) {
+	return false;
+      }
+    }
+
+    // Following line fails with an exception, because some tracks lack 
+    //   forward update, or prediction in fitter info at the first point
+    //
+    // genfit::KalmanFitterInfo::getFittedState(bool) const of 
+    //                         GenFit/fitters/src/KalmanFitterInfo.cc:250
+  
     // Fitted state at the first point
-    const auto &atFirstPoint = track->getFittedState();
+    // const auto &atFirstPoint = track->getFittedState();
 
-    TVector3 momentum = atFirstPoint.getMom();
-    double pt = momentum.Perp();
+    // Getting the fitted state from a track occasionally fails, because
+    // the first point on the fit doesn't have forward/backward fit
+    // information.  So we want the first point with fit info...
+ 
+    genfit::TrackPoint* first = 0;
+    unsigned int ipoint = 0;
+    for ( ipoint = 0; ipoint < track->getNumPoints(); ipoint++ ) {
+      first = track->getPointWithFitterInfo( ipoint );
+      if ( first ) break;
+    } 
+  
+    // No points on the track have fit information
+    if ( 0 == first ) {
+      LOG_INFO << "No fit information on track" << endm;
+      return false;
+    }
 
-    if (pt < 0.10)
-        return false; // below this
+    auto& fittedState= track->getFittedState(ipoint);
+
+    TVector3 momentum = fittedState.getMom();
+    double   pt       = momentum.Perp();
+
+    if (pt < 0.10 ) return false; // below this
 
     return true;
+ 
+};
+
+//_______________________________________________________________________________________
+// // Truth handlers
+int TheTruth ( const Seed_t& seed, int &qa ) {
+
+  int count = 0;
+  std::map<int,int> truth;
+  for ( auto hit : seed ) {
+    count++; // add another hit
+    FwdHit* fhit = dynamic_cast<FwdHit*>(hit);
+    if ( 0 == fhit ) continue;
+    truth[ fhit->_tid ]++;
+  }
+
+  int id = -1;
+  int nmax = -1;
+  for (auto const& it : truth ) {
+    if ( it.second > nmax ) {
+      nmax = it.second;
+      id   = it.first;
+    }
+  }
+  // QA is stored as an integer representing the percentage of hits which
+  // vote the same way on the track
+  qa = int( 100.0 * double(nmax) / double(count) );
+  return id;
+
 };
 
 class SiRasterizer {
