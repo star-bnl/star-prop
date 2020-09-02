@@ -300,6 +300,8 @@ int StFwdTrackMaker::Init() {
     // create histograms
     histograms["nMcTracks"] = new TH1I("nMcTracks", ";# MC Tracks/Event", 1000, 0, 1000);
     histograms["nMcTracksFwd"] = new TH1I("nMcTracksFwd", ";# MC Tracks/Event", 1000, 0, 1000);
+    histograms["nMcTracksFwdNoThreshold"] = new TH1I("nMcTracksFwdNoThreshold", ";# MC Tracks/Event", 1000, 0, 1000);
+
     histograms["nHitsSTGC"] = new TH1I("nHitsSTGC", ";# STGC Hits/Event", 1000, 0, 1000);
     histograms["nHitsFSI"] = new TH1I("nHitsFSI", ";# FSIT Hits/Event", 1000, 0, 1000);
 
@@ -312,6 +314,9 @@ int StFwdTrackMaker::Init() {
     // there are 4 stgc stations
     for (int i = 0; i < 4; i++) {
         histograms[TString::Format("stgc%dHitMap", i).Data()] = new TH2F(TString::Format("stgc%dHitMap", i), TString::Format("STGC Layer %d; x (cm); y(cm)"), 200, -100, 100, 200, -100, 100);
+
+        histograms[TString::Format("stgc%dHitMapPrim", i).Data()] = new TH2F(TString::Format("stgc%dHitMapPrim", i), TString::Format("STGC Layer %d; x (cm); y(cm)"), 200, -100, 100, 200, -100, 100);
+        histograms[TString::Format("stgc%dHitMapSec", i).Data()] = new TH2F(TString::Format("stgc%dHitMapSec", i), TString::Format("STGC Layer %d; x (cm); y(cm)"), 200, -100, 100, 200, -100, 100);
     }
 
     // There are 3 silicon stations
@@ -567,8 +572,10 @@ void StFwdTrackMaker::loadStgcHits( std::map<int, shared_ptr<McTrack>> &mcTrackM
     if (nullptr != event) {
         rndCollection = event->rndHitCollection();
     }
+
+    string fttFromGEANT = xfg.get<string>( "Source:ftt", "" );
     LOG_F( INFO, "load sTGC from StEvent: %d", (int)( rndCollection != nullptr ) );
-    if ( rndCollection == nullptr ){
+    if ( rndCollection == nullptr || "GEANT" == fttFromGEANT ){
         LOG_F( INFO, "Loading sTGC hits directly from GEANT hits" );
         loadStgcHitsFromGEANT( mcTrackMap, hitMap, count );
     } else {
@@ -601,6 +608,9 @@ void StFwdTrackMaker::loadStgcHitsFromGEANT( std::map<int, shared_ptr<McTrack>> 
         LOG_INFO << "# stg hits= " << nstg << endm;
         this->histograms["nHitsSTGC"]->Fill(nstg);
         this->mlt_n = 0;
+
+        bool filterGEANT = xfg.get<bool>( "Source:fttFilter", false );
+        LOG_F( INFO, "Filter FTT GEANT hits? = %d", (int)filterGEANT );
         for (int i = 0; i < nstg; i++) {
 
             g2t_fts_hit_st *git = (g2t_fts_hit_st *)g2t_stg_hits->At(i);
@@ -632,6 +642,17 @@ void StFwdTrackMaker::loadStgcHitsFromGEANT( std::map<int, shared_ptr<McTrack>> 
             } else {
                 LOG_F(ERROR, "Out of bounds STGC plane_id!");
                 continue;
+            }
+
+            // this rejects GEANT hits with eta -999 - do we understand this effect?
+
+            if ( filterGEANT ) {
+                if ( mcTrackMap[track_id] && fabs(mcTrackMap[track_id]->_eta) > 5.0 ){
+                    this->histograms[TString::Format("stgc%dHitMapSec", plane_id).Data()]->Fill(x, y);
+                    continue;
+                } else if ( mcTrackMap[track_id] && fabs(mcTrackMap[track_id]->_eta) < 5.0 ){
+                    this->histograms[TString::Format("stgc%dHitMapPrim", plane_id).Data()]->Fill(x, y);
+                }
             }
 
             FwdHit *hit = new FwdHit(count++, x, y, z, -plane_id, track_id, hitCov3, mcTrackMap[track_id]);
@@ -864,7 +885,10 @@ void StFwdTrackMaker::loadMcTracks( std::map<int, std::shared_ptr<McTrack>> &mcT
             float eta = track->eta;
             float phi = atan2(track->p[1], track->p[0]); //track->phi;
             int q = track->charge;
-            LOG_F(INFO, "Mc Track %d = ( %f, %f, %f )", track_id, pt, eta, phi);
+
+            // if ( fabs(eta) < 5.0 ){
+                LOG_F(INFO, "Mc Track %d = ( %f, %f, %f, vertex=%d, shower=%d )", track_id, pt, eta, phi, track->start_vertex_p, track->is_shower );
+            // }
 
             // no need to add in secondaries or mid rapidity tracs
             if (0 == mcTrackMap[track_id] ) 
@@ -902,25 +926,28 @@ int StFwdTrackMaker::Make() {
         LOG_SCOPE_F( INFO, "McEvent" );
         // now check the Mc tracks against the McEvent filter
         size_t nForwardTracks = 0;
+        size_t nForwardTracksNoThreshold = 0;
         for (auto mctm : mcTrackMap ){
             if ( mctm.second == nullptr ) continue;
 
-            LOG_F( INFO, "Filling track (%f, %f, %f)", mctm.second->_pt, mctm.second->_eta, mctm.second->_phi );
-            histograms[ "McEventPt" ] ->Fill( mctm.second->_pt );
-            histograms[ "McEventEta" ] ->Fill( mctm.second->_eta );
-            histograms[ "McEventPhi" ] ->Fill( mctm.second->_phi );
+            // LOG_F( INFO, "Filling track (%f, %f, %f)", mctm.second->_pt, mctm.second->_eta, mctm.second->_phi );
+            // histograms[ "McEventPt" ] ->Fill( mctm.second->_pt );
+            // histograms[ "McEventEta" ] ->Fill( mctm.second->_eta );
+            // histograms[ "McEventPhi" ] ->Fill( mctm.second->_phi );
 
             if ( mctm.second->_eta > 2.5 && mctm.second->_eta < 4.0 ){
-                histograms[ "McEventFwdPt" ] ->Fill( mctm.second->_pt );
-                histograms[ "McEventFwdEta" ] ->Fill( mctm.second->_eta );
-                histograms[ "McEventFwdPhi" ] ->Fill( mctm.second->_phi );
+                // histograms[ "McEventFwdPt" ] ->Fill( mctm.second->_pt );
+                // histograms[ "McEventFwdEta" ] ->Fill( mctm.second->_eta );
+                // histograms[ "McEventFwdPhi" ] ->Fill( mctm.second->_phi );
 
-                if ( mctm.second->_pt > 0.05 )
+                nForwardTracksNoThreshold++;
+                if ( mctm.second->_pt > 0.05  )
                     nForwardTracks++;
             }
         }
 
         histograms[ "nMcTracksFwd" ]->Fill( nForwardTracks );
+        histograms[ "nMcTracksFwdNoThreshold" ]->Fill( nForwardTracksNoThreshold );
 
         LOG_F( INFO, "There are %lu tracks in forward region", nForwardTracks );
         size_t maxForwardTracks = xfg.get<size_t>( "McEvent.Mult:max", 10000 );
