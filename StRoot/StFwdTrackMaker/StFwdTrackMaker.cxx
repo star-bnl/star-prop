@@ -6,6 +6,7 @@
 #include "StFwdTrackMaker/include/Tracker/TrackFitter.h"
 
 #include "KiTrack/IHit.h"
+#include "GenFit/Track.h"
 
 #include "TMath.h"
 

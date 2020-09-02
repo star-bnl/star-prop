@@ -3,15 +3,18 @@
 
 #include "StChain/StMaker.h"
 
-#include "GenFit/Track.h"
-
 #ifndef __CINT__
+#include "GenFit/Track.h"
 #include "StFwdTrackMaker/XmlConfig/XmlConfig.h"
 #endif
 
 namespace KiTrack {
 class IHit;
 };
+
+namespace genfit {
+  class Track;
+}
 
 class ForwardTracker;
 class ForwardHitLoader;
