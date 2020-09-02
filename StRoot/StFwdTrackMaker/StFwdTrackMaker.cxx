@@ -189,8 +189,12 @@ class ForwardHitLoader : public IHitLoader {
 
 //________________________________________________________________________
 StFwdTrackMaker::StFwdTrackMaker() : StMaker("fwdTrack"), mForwardTracker(0), mForwardHitLoader(0), mFieldAdaptor(new StarFieldAdaptor()){
-
-                                                                                 };
+    SetAttr("useFtt",1);                 // Default Ftt on 
+    SetAttr("useFst",1);                 // Default Fst on
+    SetAttr("config", "config.xml");     // Default configuration file (user may override before Init())
+    SetAttr("logfile","everything.log"); // Default filename for log-guru output 
+    SetAttr("fillEvent",1); // fill StEvent
+};
 
 int StFwdTrackMaker::Finish() {
     LOG_SCOPE_FUNCTION(INFO);
@@ -220,7 +224,7 @@ int StFwdTrackMaker::Finish() {
 //________________________________________________________________________
 int StFwdTrackMaker::Init() {
     // Initialize configuration file
-    std::string configFile = "config.xml";
+    std::string configFile = SAttr("config");
     if (mConfigFile.length() > 4) {
         configFile = mConfigFile;
         LOG_F(INFO, "Config File : %s", mConfigFile.c_str());
@@ -229,7 +233,8 @@ int StFwdTrackMaker::Init() {
     xfg.loadFile(configFile, cmdLineConfig);
 
     // setup the loguru log file
-    loguru::add_file("everything.log", loguru::Truncate, loguru::Verbosity_2);
+    std::string loggerFile = SAttr("logfile"); // user can changed before Init
+    loguru::add_file( loggerFile.c_str(), loguru::Truncate, loguru::Verbosity_2);
     loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
 
     if (mGenTree) {
@@ -786,13 +791,18 @@ int StFwdTrackMaker::Make() {
     }
 
 
-    loadStgcHits( mcTrackMap, hitMap );
-    loadFstHits( mcTrackMap, fsiHitMap );
+    if ( IAttr("useFtt") ) 
+        loadStgcHits( mcTrackMap, hitMap );
+    
+    if ( IAttr("useFst") )
+        loadFstHits( mcTrackMap, fsiHitMap );
 
     LOG_INFO << "mForwardTracker -> doEvent()" << endm;
 
     // Process single event
     mForwardTracker->doEvent();
+
+
 
     if (mGenTree) {
         LOG_SCOPE_F(INFO, "Saving Criteria into TTree");
