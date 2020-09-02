@@ -1,9 +1,10 @@
 #ifndef ST_FWD_TRACK_MAKER_H
 #define ST_FWD_TRACK_MAKER_H
 
-#include "StMaker.h"
+#include "StChain/StMaker.h"
 
 #include "GenFit/Track.h"
+
 #ifndef __CINT__
 #include "StFwdTrackMaker/XmlConfig/XmlConfig.h"
 #endif
@@ -16,14 +17,17 @@ class ForwardTracker;
 class ForwardHitLoader;
 class StarFieldAdaptor;
 
+class StGlobalTrack;
 class StRnDHitCollection;
 class StTrack;
 class StTrackDetectorInfo;
 class SiRasterizer;
 class McTrack;
 
+// ROOT includes
 #include "TNtuple.h"
 #include "TTree.h"
+// STL includes
 #include <vector>
 #include <memory>
 
@@ -57,7 +61,6 @@ class StFwdTrackMaker : public StMaker {
     StarFieldAdaptor *mFieldAdaptor;
 
     SiRasterizer *mSiRasterizer;
-    
 
     typedef std::vector<KiTrack::IHit *> Seed_t;
 
@@ -73,7 +76,6 @@ class StFwdTrackMaker : public StMaker {
     std::map<string, std::vector<float>> mlt_crits;
     std::map<string, std::vector<int>> mlt_crit_track_ids;
 
-    void FstStudy();
     // I could not get the library generation to succeed with these.
     // so I have removed them
     #ifndef __CINT__
