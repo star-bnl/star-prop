@@ -488,7 +488,7 @@ void StFwdTrackMaker::loadStgcHits( std::map<int, shared_ptr<McTrack>> &mcTrackM
     } else {
         loadStgcHitsFromStEvent( mcTrackMap, hitMap, count );
     }
-} // loadFstHits
+} // loadStgcHits
 
 void StFwdTrackMaker::loadStgcHitsFromGEANT( std::map<int, shared_ptr<McTrack>> &mcTrackMap, std::map<int, std::vector<KiTrack::IHit *>> &hitMap, int count ){
     /************************************************************/
