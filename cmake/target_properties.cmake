@@ -82,6 +82,7 @@ if(TARGET StFwdTrackMaker)
 		PREFIX "external/"
 		URL "https://github.com/star-bnl/KiTrack/archive/efd317b8.tar.gz"
 		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAR_INSTALL_PREFIX} -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+		           -DCMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}
 	)
 
 	ExternalProject_Add(

@@ -22,12 +22,11 @@ public:
   virtual std::map<int, std::vector<KiTrack::IHit *> > &load( unsigned long long iEvent ) = 0;
   virtual std::map<int, std::vector<KiTrack::IHit *> > &loadSi( unsigned long long iEvent ) {};
   virtual std::map<int, shared_ptr<McTrack>> &getMcTrackMap() = 0;
-
 };
+
 
 class McHitLoader : public IHitLoader
 {
-
 public:
   McHitLoader(  jdb::XmlConfig &_cfg ) : cfg(_cfg)
   {
@@ -62,6 +61,7 @@ public:
 
     return 0;
   }
+
   std::map<int, std::vector<KiTrack::IHit *> > &load( unsigned long long iEvent )
   {
     LOG_SCOPE_FUNCTION( INFO );
@@ -87,8 +87,6 @@ public:
       float x = tree_x[i];
       float y = tree_y[i];
       float z = tree_z[i];
-
-
 
       LOG_F( 3, "Hit at (%0.2f, %0.2f, %0.2f) in vol=%d from track=%d", x, y, z, vid, tid );
 
@@ -117,10 +115,10 @@ public:
   }
 
 protected:
+
   jdb::XmlConfig &cfg;
   TFile *fInput;
   TTree *tree;
-
 
   // Data
   std::map<int, std::vector<KiTrack::IHit *> > hitmap;
@@ -138,9 +136,9 @@ protected:
 class FastSimHitLoader : public IHitLoader
 {
 public:
+
   FastSimHitLoader(  jdb::XmlConfig &_cfg ) : cfg(_cfg)
   {
-
     fInput = new TFile( cfg.get<TString>( "Input:url", "../../SimHitsTuple.root") );
     tree = (TTree *)fInput->Get("hits" );
 
@@ -190,6 +188,7 @@ public:
     tree->SetBranchAddress( "ftsvid", &ftsvid);
     tree->SetBranchAddress( "ftstid", &ftstid);
   }
+
   unsigned long long nEvents()
   {
     if ( nullptr != tree )
@@ -197,6 +196,7 @@ public:
 
     return 0;
   }
+
   std::map<int, std::vector<KiTrack::IHit *> > &load( unsigned long long iEvent )
   {
     LOG_SCOPE_FUNCTION( INFO );
@@ -391,7 +391,6 @@ protected:
   std::map<int, shared_ptr<McTrack>> mcTrackMap; // key is track id (track_p) value is McTrack
   std::map< int, std::vector<KiTrack::IHit *> > hits_map_by_track; // this is used for evaluation with MC tracks
 
-
   const static unsigned int tree_max_n = 9999;
   const static unsigned int tree_max_track = 4999;
   // tree data
@@ -402,14 +401,10 @@ protected:
   float mctpt[tree_max_track], mcteta[tree_max_track], mctphi[tree_max_track];
   int mctq[tree_max_track];
 
-
   // FTS hits
   unsigned int ftsn, ftsvid[tree_max_n], ftstid[tree_max_n];
   float ftsx[tree_max_n], ftsy[tree_max_n], ftsz[tree_max_n];
   float ftsmcx1[tree_max_n], ftsmcy1[tree_max_n], ftsmcx2[tree_max_n], ftsmcy2[tree_max_n];
-
 };
-
-
 
 #endif
