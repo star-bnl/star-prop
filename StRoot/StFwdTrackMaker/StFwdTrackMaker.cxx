@@ -12,21 +12,28 @@
 #include <limits>
 #include <map>
 #include <string>
+#include <string>
+#include <vector>
 
-#include "StEvent.h"
-#include "StGlobalTrack.h"
-#include "StHelixModel.h"
-#include "StPrimaryTrack.h"
-#include "StRnDHit.h"
-#include "StRnDHitCollection.h"
-#include "StTrack.h"
-#include "StTrackGeometry.h"
-#include "StTrackNode.h"
+#include "StEvent/StEvent.h"
+#include "StEvent/StGlobalTrack.h"
+#include "StEvent/StHelixModel.h"
+#include "StEvent/StPrimaryTrack.h"
+#include "StEvent/StRnDHit.h"
+#include "StEvent/StRnDHitCollection.h"
+#include "StEvent/StTrack.h"
+#include "StEvent/StTrackGeometry.h"
+#include "StEvent/StTrackNode.h"
+#include "StEvent/StPrimaryVertex.h"
+#include "StEvent/StEnumerations.h"
+#include "StEvent/StTrackDetectorInfo.h"
+
+#include "StEventUtilities/StEventHelper.h"
 
 #include "tables/St_g2t_fts_hit_Table.h"
 #include "tables/St_g2t_track_Table.h"
 
-#include "StarMagField.h"
+#include "StarMagField/StarMagField.h"
 
 #include "StEventUtilities/StEventHelper.h"
 
@@ -35,6 +42,10 @@
 
 #include "St_base/StMessMgr.h"
 #include "StarClassLibrary/StPhysicalHelix.hh"
+#include "StarClassLibrary/SystemOfUnits.h"
+
+#include <SystemOfUnits.h>
+#include <exception>
 
 #include "TROOT.h"
 #include "TLorentzVector.h"
