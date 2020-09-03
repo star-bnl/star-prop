@@ -36,8 +36,6 @@
 #include "StFwdTrackMaker/include/Tracker/loguru.h"
 #include "StFwdTrackMaker/include/Tracker/FwdGeomUtils.h"
 
-// hack of a global field pointer
-genfit::AbsBField *_gField = 0;
 
 class TrackFitter {
 
