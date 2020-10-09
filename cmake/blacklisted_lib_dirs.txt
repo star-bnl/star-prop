@@ -37,3 +37,4 @@ StRoot/StSpinPool         # blacklisted in cons
 StRoot/StStrangePool      # blacklisted in cons
 StRoot/StSvtPool          # requires subdir processing
 StRoot/StTofPool          # blacklisted in cons?
+StRoot/CVS
