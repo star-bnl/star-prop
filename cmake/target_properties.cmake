@@ -60,7 +60,21 @@ if(TARGET StGenericVertexMaker)
 	add_dependencies(StGenericVertexMakerNoSti StDb_Tables geometry_Tables sim_Tables)
 endif()
 
-if(TARGET StgMaker)
+if(TARGET StarGeneratorUtil)
+	target_include_directories(StarGeneratorUtil PRIVATE "${STAR_SRC}/StRoot/")
+endif()
+
+if(TARGET StarGeneratorBase)
+	add_dependencies(StarGeneratorBase StarGeneratorUtil geometry_Tables sim_Tables)
+	target_include_directories(StarGeneratorBase PRIVATE "${STAR_SRC}/StRoot/" "${STAR_INSTALL_INCLUDEDIR}" "${STAR_INSTALL_PREFIX}/include_all/" "${STAR_INSTALL_PREFIX}/include_all/tables")
+endif()
+
+if(TARGET StarGeneratorEvent)
+	add_dependencies(StarGeneratorEvent StarGeneratorBase geometry_Tables sim_Tables)
+	target_include_directories(StarGeneratorEvent PRIVATE "${STAR_SRC}/StRoot/" "${STAR_INSTALL_PREFIX}/include_all/" "${STAR_INSTALL_PREFIX}/include_all/tables")
+endif()
+
+if(TARGET StFwdTrackMaker)
 	include(ExternalProject)
 
 	ExternalProject_Add(
@@ -79,9 +93,10 @@ if(TARGET StgMaker)
 			-DINCLUDE_OUTPUT_DIRECTORY=include/GenFit -DEigen3_DIR=${Eigen3_DIR}
 	)
 
-	add_dependencies(StgMaker GenFit KiTrack St_g2t)
-	target_include_directories(StgMaker PRIVATE "${STAR_INSTALL_INCLUDEDIR}"
-	                                            "${PROJECT_SOURCE_DIR}/StRoot")
+	add_dependencies(StFwdTrackMaker GenFit KiTrack St_g2t)
+	target_include_directories(StFwdTrackMaker PRIVATE "${STAR_INSTALL_INCLUDEDIR}"
+												"${PROJECT_SOURCE_DIR}/StRoot"
+												"${PROJECT_SOURCE_DIR}/StRoot/StFwdTrackMaker") 
 endif()
 
 if(TARGET StIstRawHitMaker)
